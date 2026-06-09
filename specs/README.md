@@ -25,15 +25,16 @@ Feature specs should use `specs/_templates/feature-spec-template.md`.
 |---|---|---|
 | `SPEC-000` | Ready | Product vision and MVP boundary |
 | `SPEC-001` | Ready | Cross-feature API conventions |
+| `SPEC-010` | Ready | Backend scaffold and local PostgreSQL database |
 | `SPEC-101` | Ready | Authentication and users |
 | `SPEC-102` | Ready | Organizations and RBAC |
 | `SPEC-103` | Ready | Projects and tasks |
 | `SPEC-201` | Draft | Background jobs and notifications |
-| `SPEC-301` | Ready | Deployment and operations |
+| `SPEC-301` | Ready | Production deployment and operations |
 
 Implementation order should usually follow spec dependencies:
 
 ```text
-SPEC-101 -> SPEC-102 -> SPEC-103 -> SPEC-201
-SPEC-301 can start after backend/frontend scaffolding exists and should evolve with each service.
+SPEC-010 -> SPEC-101 -> SPEC-102 -> SPEC-103 -> SPEC-201
+SPEC-301 starts after SPEC-010 and should evolve as backend, frontend, Redis, and worker services exist.
 ```

@@ -1,4 +1,4 @@
-# SPEC-301 — Deployment and Operations
+# SPEC-301 — Production Deployment and Operations
 
 Status: Ready  
 Owner: Arquitecto de specs  
@@ -6,20 +6,25 @@ Last updated: 2026-06-08
 
 ## Problem
 
-The project should be demonstrable through a real public URL without recruiters needing to run it locally. It must have a credible deployment path on a rented VPS.
+The project should be demonstrable through a real public URL without recruiters needing to run it locally. It must have a credible production deployment path on a rented VPS, building on the local backend/database foundation from `SPEC-010`.
 
 ## Goals
 
-- Provide local Docker Compose setup.
 - Provide production Docker Compose setup.
 - Use Caddy as reverse proxy with automatic TLS.
-- Document environment variables.
-- Provide health checks.
+- Document production environment variables.
+- Provide production health checks and smoke checks.
 - Provide PostgreSQL backup and restore procedures.
 - Keep deployment simple enough for a solo developer portfolio project.
 
+## Dependencies
+
+- Requires `SPEC-010` local backend scaffold, PostgreSQL service, health endpoint, and `.env.example` foundation.
+- Expands as frontend, Redis, worker, and background-job specs become implemented.
+
 ## Non-Goals
 
+- Defining the initial local PostgreSQL/backend scaffold. That belongs to `SPEC-010`.
 - Kubernetes.
 - Cloud-managed PostgreSQL in first deployment.
 - Multi-region deployment.
@@ -33,45 +38,51 @@ The project should be demonstrable through a real public URL without recruiters 
 - BR-4: Deployment docs must include backup and restore before public launch.
 - BR-5: Health endpoint must not expose secrets or sensitive internals.
 - BR-6: Caddy terminates TLS and proxies to frontend/backend services.
-- BR-7: Local Compose must support running without production-only TLS or domain settings.
-- BR-8: Production deployment must document which services are exposed publicly and which remain private on the Docker network.
+- BR-7: Production deployment must document which services are exposed publicly and which remain private on the Docker network.
+- BR-8: Production Compose must not expose PostgreSQL or Redis publicly by default.
+- BR-9: Production settings must override local debug and cookie/security defaults where applicable.
 
 ## Target Services
 
+Minimum production services after `SPEC-010`:
+
 - `backend`
-- `frontend`
 - `postgres`
-- `redis`
-- `worker` after SPEC-201
-- `beat` only if scheduled jobs exist
 - `caddy`
+
+Services added when their specs exist:
+
+- `frontend` after frontend scaffold/UI specs exist
+- `redis` after background job or cache specs require it
+- `worker` after `SPEC-201`
+- `beat` only if scheduled jobs exist
 
 ## Required Files
 
-- `docker-compose.yml`
 - `docker-compose.prod.yml`
-- `.env.example`
-- backend `Dockerfile`
-- frontend `Dockerfile`
+- production `.env.example` additions or deployment docs for production-only variables
+- backend production `Dockerfile` behavior if different from local
+- frontend `Dockerfile` after frontend exists
 - Caddy config
 - `docs/deployment.md`
 - backup/restore scripts or documented commands
 
 ## Acceptance Criteria
 
-- AC-1: Given Docker is installed locally, when local setup instructions are followed, then the app starts successfully.
-- AC-2: Given production env variables, when production Compose starts, then backend, frontend, database, Redis, and Caddy start successfully.
+- AC-1: Given production env variables, when production Compose starts, then backend, database, and Caddy start successfully; frontend, Redis, and worker are included once their specs are implemented.
+- AC-2: Given Caddy is configured with a domain, when public traffic reaches the VPS, then Caddy terminates TLS and routes frontend/API traffic correctly.
 - AC-3: Given `/health` is requested, when backend dependencies are healthy enough for traffic, then it returns success without sensitive details.
 - AC-4: Given the documented PostgreSQL backup command, when it is run, then a restorable backup is produced.
-- AC-5: Given `.env.example`, when a developer reads it, then all required variables are documented without real secrets.
+- AC-5: Given deployment docs and `.env.example`, when a developer reads them, then all production-required variables are documented without real secrets.
 - AC-6: Given CI runs, when the project is in a valid state, then lint/tests/build checks pass.
 - AC-7: Given production Compose is used, when services start, then PostgreSQL and Redis are not publicly exposed by default.
 
 ## Harness Requirements
 
 - Docker build check.
-- Local smoke test.
-- Backend health endpoint test.
+- Production Compose config validation when possible.
+- Production smoke test.
+- Backend health endpoint test through Caddy when production proxy exists.
 - CI check for common committed secret patterns if practical.
 
 Required commands once available:
@@ -86,6 +97,7 @@ make verify
 - Reverse proxy: Caddy.
 - Production database persistence: named Docker volume unless a VPS-specific host path is documented.
 - Backup frequency recommendation: daily before public demo; exact automation may be manual for first release.
+- Local Compose and baseline backend/database behavior are owned by `SPEC-010`.
 
 ## Deployment-Time Questions
 

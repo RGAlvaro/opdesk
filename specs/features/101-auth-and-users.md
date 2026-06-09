@@ -25,6 +25,10 @@ Users need secure access to OpsDesk before organizations, projects, tasks, and p
 - Persistent refresh token revocation list.
 - Billing-related identity.
 
+## Dependencies
+
+- Requires `SPEC-010` backend scaffold, PostgreSQL service, SQLAlchemy session setup, and Alembic baseline.
+
 ## Actors And Permissions
 
 | Actor | Permission | Notes |

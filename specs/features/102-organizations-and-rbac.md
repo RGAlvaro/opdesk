@@ -18,6 +18,7 @@ Users must work inside organizations/workspaces, and every tenant-scoped resourc
 
 ## Dependencies
 
+- Requires `SPEC-010` backend scaffold, PostgreSQL service, SQLAlchemy session setup, and Alembic baseline.
 - Requires `SPEC-101` user identity and authenticated session behavior.
 
 ## Non-Goals

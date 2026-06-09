@@ -18,8 +18,9 @@ Some actions should not block API responses. OpsDesk needs background jobs for e
 
 ## Dependencies
 
+- Requires `SPEC-010` backend scaffold and local Docker Compose foundation.
 - Requires `SPEC-103` task assignment and update behavior to be implemented first.
-- Requires Redis service configuration from `SPEC-301` local/production Compose work.
+- Requires Redis service configuration to be specified before this spec moves to `Ready`.
 
 ## Non-Goals
 
@@ -75,3 +76,4 @@ make smoke
 - [ ] Is persistent job audit needed for portfolio value?
 - [ ] Exact Celery configuration and retry policy.
 - [ ] Should task assignment notification be email-only, log-only for demo, or both?
+- [ ] Should local Redis/worker Compose wiring be owned by this spec or split into a smaller infrastructure spec before implementation?

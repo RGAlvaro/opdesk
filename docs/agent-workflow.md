@@ -22,9 +22,10 @@ Act as Review agent. Read AGENTS.md, specs/features/[SPEC_FILE], specs/001-api-c
 
 ## Suggested First Sequence
 
-1. Scaffold backend, database, health endpoint, Makefile, and Docker basics under SPEC-301.
+1. Scaffold backend, database, health endpoint, Makefile, and Docker basics under SPEC-010.
 2. Implement SPEC-101 auth backend and tests.
 3. Implement SPEC-102 organizations/RBAC backend and tests.
 4. Implement SPEC-103 projects/tasks backend and tests.
 5. Scaffold frontend app shell and implement critical auth/org/task UI flows.
 6. Return to SPEC-201 for background jobs once task assignment exists.
+7. Expand SPEC-301 production deployment as services become real.

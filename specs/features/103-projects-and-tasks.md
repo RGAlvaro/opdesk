@@ -19,6 +19,7 @@ Teams need to organize operational work into projects and track tasks with assig
 
 ## Dependencies
 
+- Requires `SPEC-010` backend scaffold, PostgreSQL service, SQLAlchemy session setup, and Alembic baseline.
 - Requires `SPEC-101` authenticated user identity.
 - Requires `SPEC-102` organizations, memberships, and role checks.
 
