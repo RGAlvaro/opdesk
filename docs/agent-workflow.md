@@ -5,19 +5,19 @@ Use these role prompts when asking Codex to work in this repository.
 ## Spec Architecture
 
 ```text
-Act as Arquitecto de specs. Read AGENTS.md and the relevant specs. Create or update the spec for [feature]. Do not implement code. Ensure the spec includes business rules, acceptance criteria,API impact, data impact, permission rules, and harness requirements.
+Act as Arquitecto de specs. Read AGENTS.md, docs/implementation-log.md, docs/decisions/, and the relevant specs. Create or update the spec for [feature]. Do not implement code. Ensure the spec includes business rules, acceptance criteria, API impact, data impact, permission rules, and harness requirements. Update implementation-log or ADRs if spec readiness or durable decisions change.
 ```
 
 ## Implementation
 
 ```text
-Act as Ingeniero de software. Read AGENTS.md, specs/README.md, specs/001-api-conventions.md, and specs/features/[SPEC_FILE]. Implement only this spec. Before editing, provide a short plan. Add or update required tests and run the relevant harness commands.
+Act as Ingeniero de software. Read AGENTS.md, docs/implementation-log.md, relevant docs/decisions/, specs/README.md, specs/001-api-conventions.md, and specs/features/[SPEC_FILE]. Implement only this spec. Before editing, provide a short plan. Add or update required tests and run the relevant harness commands. Update docs/implementation-log.md before review.
 ```
 
 ## Review
 
 ```text
-Act as Review agent. Read AGENTS.md, specs/features/[SPEC_FILE], specs/001-api-conventions.md, and the current diff. Review implementation against the spec. Produce a coverage matrix and return APPROVED, CHANGES_REQUESTED, or BLOCKED_BY_SPEC_GAP.
+Act as Review agent. Read AGENTS.md, docs/implementation-log.md, relevant docs/decisions/, specs/features/[SPEC_FILE], specs/001-api-conventions.md, and the current diff. Review implementation against the spec. Verify project memory is current. Produce a coverage matrix and return APPROVED, CHANGES_REQUESTED, or BLOCKED_BY_SPEC_GAP.
 ```
 
 ## Suggested First Sequence

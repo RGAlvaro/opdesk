@@ -33,6 +33,8 @@ The repository should evolve only as needed by active specs:
 ├── frontend/
 ├── specs/
 └── docs/
+    ├── implementation-log.md
+    └── decisions/
 ```
 
 Do not create the full structure blindly.
@@ -45,6 +47,7 @@ Do not create the full structure blindly.
 4. If requested behavior is not covered by the active spec, update the spec first.
 5. Tests and harness commands are part of the feature contract.
 6. A feature is not complete just because the app runs locally.
+7. Durable project memory belongs in committed files: specs, tests, migrations, docs, `docs/implementation-log.md`, and `docs/decisions/`.
 
 ## Workflow
 
@@ -55,6 +58,20 @@ Spec -> Plan -> Tasks -> Implement -> Validate -> Review -> Merge
 ```
 
 Before editing code, provide a short plan naming likely files and risks. Keep implementation spec-scoped and small. Run the relevant harness commands. If a command cannot be run, state why and what remains unverified.
+
+## Project Memory
+
+Use these files to preserve context across sessions, branches, and future agents:
+
+- `specs/`: source of truth for intended behavior.
+- `docs/implementation-log.md`: chronological record of spec work, commits, validation evidence, review decisions, and known gaps.
+- `docs/decisions/`: architecture decision records for durable technical choices that affect future implementation.
+- Git history and PRs: immutable evidence of merged work and review.
+- Tests and migrations: executable memory of implemented behavior and data shape.
+
+Before starting a non-trivial implementation or review, check `docs/implementation-log.md` and relevant ADRs in `docs/decisions/` in addition to required specs.
+
+Create or update an ADR when a decision is hard to infer from code alone, likely to be revisited, or affects multiple specs. Examples: package manager choice, backend module layout, migration strategy, auth token storage, deployment topology, background job broker, frontend state architecture.
 
 ## Required Reading Before Code Edits
 
@@ -70,6 +87,12 @@ Before editing code, provide a short plan naming likely files and risks. Keep im
 ### Arquitecto de specs
 
 Creates and refines specs. Do not implement product code in this role.
+
+Memory responsibilities:
+
+- Add or update ADRs for architecture-level choices made while preparing specs.
+- Record spec readiness changes and open questions in `docs/implementation-log.md` when they affect implementation order.
+- Keep `specs/README.md` aligned with new specs, statuses, and dependency order.
 
 Required output:
 
@@ -97,6 +120,8 @@ Rules:
 - Add or update required tests.
 - Update `.env.example` when adding config.
 - Update README/docs only when setup, usage, deployment, or public API behavior changes.
+- Update `docs/implementation-log.md` with spec ID, branch/commit, files changed summary, validation run, and known gaps before review.
+- Add or update ADRs only when implementation requires a durable technical decision not already captured by specs.
 
 Required output:
 
@@ -128,6 +153,8 @@ Blocking conditions:
 - Required validation not run and no acceptable reason given.
 - Secrets committed.
 - Docker/local setup broken for touched services.
+- Missing implementation-log update for completed implementation work.
+- Missing ADR for a durable cross-cutting decision introduced by the implementation.
 
 Required output:
 
@@ -147,6 +174,12 @@ Required changes:
 Validation evidence:
 - command: result
 ```
+
+Memory responsibilities:
+
+- Verify `docs/implementation-log.md` reflects the implementation and validation evidence.
+- Verify any new durable architecture decision is captured in `docs/decisions/`.
+- Do not approve implementation if the project memory is materially stale for the active spec.
 
 ## Coding Rules
 
