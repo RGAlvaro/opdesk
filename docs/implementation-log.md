@@ -39,7 +39,7 @@ Known gaps:
 
 Role: Ingeniero de software
 Branch: spec-010-backend-scaffold
-Commit/PR: `be18383`, follow-up pending
+Commit/PR: `be18383`, `36f9757`
 Status: Implemented
 
 Summary:
@@ -62,7 +62,7 @@ Review:
 - decision: N/A
 
 Known gaps:
-- Formal Review agent re-check is pending after review fixes.
+- Formal Review agent pass is pending.
 
 ### 2026-06-09 — SPEC-010 — ADR requirement before implementation
 
