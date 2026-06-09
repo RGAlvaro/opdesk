@@ -38,12 +38,12 @@ Known gaps:
 ### 2026-06-09 — SPEC-010 — Backend scaffold implemented
 
 Role: Ingeniero de software
-Branch: main
-Commit/PR: Pending
+Branch: spec-010-backend-scaffold
+Commit/PR: `be18383`, follow-up pending
 Status: Implemented
 
 Summary:
-- Implemented FastAPI backend scaffold with `/health`, settings, SQLAlchemy session setup, Alembic baseline wiring, and backend tests.
+- Implemented FastAPI backend scaffold with `/health`, settings, SQLAlchemy session setup, Alembic baseline wiring, empty baseline revision, and backend tests.
 - Added local PostgreSQL and backend services through Docker Compose with named PostgreSQL volume and health gating.
 - Added `.env.example`, `Makefile`, `README.md`, `backend/Dockerfile`, backend `.dockerignore`, and Poetry lockfile.
 - Added ADRs for package manager choice, backend module layout, and local/container database URL strategy.
@@ -56,13 +56,13 @@ Validation:
 - command: `make migrations-check`: PASS — no new upgrade operations detected
 - command: `make test-backend-db`: PASS — 1 DB test passed against Docker PostgreSQL
 - command: `make smoke`: PASS — Docker Compose backend/PostgreSQL started and `/health` returned `{"status":"ok"}`
-- command: `make verify`: PASS
+- command: `make verify`: PASS — includes `alembic upgrade head` and `alembic check`
 
 Review:
 - decision: N/A
 
 Known gaps:
-- Formal Review agent pass is still pending.
+- Formal Review agent re-check is pending after review fixes.
 
 ### 2026-06-09 — SPEC-010 — ADR requirement before implementation
 
