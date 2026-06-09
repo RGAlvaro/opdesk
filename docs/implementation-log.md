@@ -39,7 +39,7 @@ Known gaps:
 
 Role: Ingeniero de software
 Branch: spec-010-backend-scaffold
-Commit/PR: `be18383`, `36f9757`, `d97031d`
+Commit/PR: `be18383`, `36f9757`, `d97031d`, `ea31737`
 Status: Implemented
 
 Summary:
@@ -60,10 +60,10 @@ Validation:
 - command: `make verify`: PASS — includes `alembic upgrade head` and `alembic check`
 
 Review:
-- decision: N/A
+- decision: APPROVED
 
 Known gaps:
-- Formal Review agent pass is pending.
+- None.
 
 ### 2026-06-09 — SPEC-010 — ADR requirement before implementation
 
