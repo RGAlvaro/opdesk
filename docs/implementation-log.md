@@ -39,7 +39,7 @@ Known gaps:
 
 Role: Ingeniero de software
 Branch: spec-010-backend-scaffold
-Commit/PR: `be18383`, `36f9757`
+Commit/PR: `be18383`, `36f9757`, `d97031d`
 Status: Implemented
 
 Summary:
@@ -47,6 +47,7 @@ Summary:
 - Added local PostgreSQL and backend services through Docker Compose with named PostgreSQL volume and health gating.
 - Added `.env.example`, `Makefile`, `README.md`, `backend/Dockerfile`, backend `.dockerignore`, and Poetry lockfile.
 - Added ADRs for package manager choice, backend module layout, and local/container database URL strategy.
+- Tightened `AGENTS.md` memory rules so review-fix commits and validation reruns must update this log before review.
 
 Validation:
 - command: `make lint`: PASS
