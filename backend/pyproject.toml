@@ -1,0 +1,45 @@
+[tool.poetry]
+name = "opdesk-backend"
+version = "0.1.0"
+description = "OpsDesk FastAPI backend"
+authors = ["OpsDesk"]
+readme = "../README.md"
+packages = [{ include = "app" }]
+
+[tool.poetry.dependencies]
+python = "^3.12"
+fastapi = "^0.124.0"
+uvicorn = { extras = ["standard"], version = "^0.38.0" }
+pydantic-settings = "^2.12.0"
+sqlalchemy = "^2.0.45"
+alembic = "^1.17.0"
+psycopg = { extras = ["binary"], version = "^3.3.0" }
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^9.0.0"
+httpx = "^0.28.0"
+ruff = "^0.14.0"
+mypy = "^1.19.0"
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+markers = [
+    "db: tests that require a running PostgreSQL database",
+]
+
+[tool.mypy]
+python_version = "3.12"
+plugins = []
+strict = true
+warn_unused_configs = true

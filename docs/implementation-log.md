@@ -35,6 +35,55 @@ Known gaps:
 
 ## Entries
 
+### 2026-06-09 — SPEC-010 — Backend scaffold implemented
+
+Role: Ingeniero de software
+Branch: main
+Commit/PR: Pending
+Status: Implemented
+
+Summary:
+- Implemented FastAPI backend scaffold with `/health`, settings, SQLAlchemy session setup, Alembic baseline wiring, and backend tests.
+- Added local PostgreSQL and backend services through Docker Compose with named PostgreSQL volume and health gating.
+- Added `.env.example`, `Makefile`, `README.md`, `backend/Dockerfile`, backend `.dockerignore`, and Poetry lockfile.
+- Added ADRs for package manager choice, backend module layout, and local/container database URL strategy.
+
+Validation:
+- command: `make lint`: PASS
+- command: `make format-check`: PASS
+- command: `make test-backend`: PASS — 4 passed, 1 DB test deselected
+- command: `make typecheck`: PASS
+- command: `make migrations-check`: PASS — no new upgrade operations detected
+- command: `make test-backend-db`: PASS — 1 DB test passed against Docker PostgreSQL
+- command: `make smoke`: PASS — Docker Compose backend/PostgreSQL started and `/health` returned `{"status":"ok"}`
+- command: `make verify`: PASS
+
+Review:
+- decision: N/A
+
+Known gaps:
+- Formal Review agent pass is still pending.
+
+### 2026-06-09 — SPEC-010 — ADR requirement before implementation
+
+Role: Arquitecto de specs
+Branch: main
+Commit/PR: Pending
+Status: Ready
+
+Summary:
+- Clarified that `SPEC-010` implementation must create ADRs for durable scaffold choices.
+- Required ADR coverage for package manager choice, backend module layout, and local/container database configuration strategy.
+
+Validation:
+- command: NOT RUN — spec/documentation-only change.
+
+Review:
+- decision: N/A
+
+Known gaps:
+- `SPEC-010` implementation still pending.
+
 ### 2026-06-09 — SPEC-010 — Backend scaffold foundation spec
 
 Role: Arquitecto de specs
