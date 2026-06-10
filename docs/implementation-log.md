@@ -39,7 +39,7 @@ Known gaps:
 
 Role: Ingeniero de software
 Branch: spec-010-backend-scaffold
-Commit/PR: `be18383`, `36f9757`, `d97031d`, `ea31737`
+Commit/PR: `be18383`, `36f9757`, `d97031d`, `ea31737`, PR https://github.com/RGAlvaro/opdesk/pull/1
 Status: Implemented
 
 Summary:
