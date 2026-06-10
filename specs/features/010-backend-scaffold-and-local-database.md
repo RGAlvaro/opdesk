@@ -1,8 +1,8 @@
 # SPEC-010 — Backend Scaffold and Local Database
 
-Status: Ready  
+Status: Implemented  
 Owner: Arquitecto de specs  
-Last updated: 2026-06-08
+Last updated: 2026-06-10
 
 ## Problem
 

@@ -39,8 +39,8 @@ Known gaps:
 
 Role: Ingeniero de software
 Branch: spec-010-backend-scaffold
-Commit/PR: `be18383`, `36f9757`, `d97031d`, `ea31737`, PR https://github.com/RGAlvaro/opdesk/pull/1
-Status: Implemented
+Commit/PR: `be18383`, `36f9757`, `d97031d`, `ea31737`, `3c84c46`, PR https://github.com/RGAlvaro/opdesk/pull/1, merge `ac242cd`
+Status: Merged
 
 Summary:
 - Implemented FastAPI backend scaffold with `/health`, settings, SQLAlchemy session setup, Alembic baseline wiring, empty baseline revision, and backend tests.
