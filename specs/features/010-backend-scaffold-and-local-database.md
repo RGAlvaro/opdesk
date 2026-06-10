@@ -186,4 +186,5 @@ Before Make targets exist, use exact direct commands documented in `specs/harnes
 - Prefer Poetry unless the implementation explicitly updates setup docs and harness commands to another package manager.
 - Use PostgreSQL-compatible types from the start, especially for UUID and timestamp behavior expected by later specs.
 - Keep route handlers thin even for health checks.
+- Create ADRs for durable scaffold choices introduced by this spec, at minimum package manager choice, backend module layout, and local/container database configuration strategy.
 - Do not add auth, users, organizations, projects, tasks, Redis, Celery, or frontend code in this spec.

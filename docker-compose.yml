@@ -1,0 +1,32 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-opdesk}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-opdesk_dev_password}
+      POSTGRES_DB: ${POSTGRES_DB:-opdesk}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  backend:
+    build:
+      context: ./backend
+    environment:
+      APP_ENV: ${APP_ENV:-local}
+      DEBUG: ${DEBUG:-true}
+      DATABASE_URL: ${DATABASE_URL:-postgresql+psycopg://opdesk:opdesk_dev_password@postgres:5432/opdesk}
+    ports:
+      - "8000:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+volumes:
+  postgres_data:

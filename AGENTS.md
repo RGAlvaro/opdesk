@@ -121,6 +121,7 @@ Rules:
 - Update `.env.example` when adding config.
 - Update README/docs only when setup, usage, deployment, or public API behavior changes.
 - Update `docs/implementation-log.md` with spec ID, branch/commit, files changed summary, validation run, and known gaps before review.
+- After every implementation commit, review-fix commit, or validation rerun that changes the state of a spec, update `docs/implementation-log.md` before ending the turn or requesting review.
 - Add or update ADRs only when implementation requires a durable technical decision not already captured by specs.
 
 Required output:
@@ -154,6 +155,7 @@ Blocking conditions:
 - Secrets committed.
 - Docker/local setup broken for touched services.
 - Missing implementation-log update for completed implementation work.
+- Implementation log points to a stale branch, commit, validation result, review decision, or known-gap state.
 - Missing ADR for a durable cross-cutting decision introduced by the implementation.
 
 Required output:
