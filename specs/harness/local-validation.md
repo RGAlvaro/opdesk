@@ -2,7 +2,7 @@
 
 Status: Ready  
 Owner: Review agent  
-Last updated: 2026-06-07
+Last updated: 2026-06-10
 
 This file defines validation commands for local development and review. Feature specs may require a subset or add feature-specific checks.
 
@@ -71,10 +71,12 @@ Use after Compose exists:
 ```bash
 docker compose up -d --build
 curl -f http://localhost:8000/health
-curl -f http://localhost:5173
+curl -f http://127.0.0.1:8080
 ```
 
-If frontend is served through a reverse proxy instead of Vite in local mode, update the URL.
+If Adminer uses a non-default `ADMINER_PORT`, replace `8080` with that local port.
+
+After a frontend exists, add the frontend URL to smoke checks. If frontend is served through a reverse proxy instead of Vite in local mode, document that URL here.
 
 ## Minimum Review Evidence
 

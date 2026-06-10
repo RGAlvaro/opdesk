@@ -4,7 +4,7 @@ OpsDesk is a spec-driven B2B SaaS portfolio project for operational work managem
 
 ## Current Scope
 
-The current implementation target is `SPEC-010`: backend scaffold, local PostgreSQL, Alembic, health checks, Docker Compose, and validation harness.
+The current implementation covers `SPEC-010` and `SPEC-011`: backend scaffold, local PostgreSQL, Alembic, health checks, Docker Compose, validation harness, and a local-only database admin panel.
 
 ## Local Setup
 
@@ -32,6 +32,30 @@ Check backend health:
 ```bash
 curl -f http://localhost:8000/health
 ```
+
+## Local Database Admin
+
+The local Compose stack includes Adminer for direct PostgreSQL inspection during development and review. It is local tooling only and is not part of the production deployment.
+
+Open Adminer after the stack is running:
+
+```text
+http://127.0.0.1:8080
+```
+
+Use these login values:
+
+| Field | Value |
+|---|---|
+| System | `PostgreSQL` |
+| Server | `postgres` |
+| Username | `opdesk` or `POSTGRES_USER` from `.env` |
+| Password | `opdesk_dev_password` or `POSTGRES_PASSWORD` from `.env` |
+| Database | `opdesk` or `POSTGRES_DB` from `.env` |
+
+If port `8080` is unavailable, set `ADMINER_PORT` in `.env` and restart the stack.
+
+Direct database edits through Adminer bypass application validation and authorization. Use them only for local inspection/debugging, and reset local data through Docker/database reset commands when manual edits invalidate test assumptions.
 
 ## Validation
 

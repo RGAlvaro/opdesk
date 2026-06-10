@@ -35,6 +35,55 @@ Known gaps:
 
 ## Entries
 
+### 2026-06-10 — SPEC-011 — Local database admin implemented
+
+Role: Ingeniero de software
+Branch: spec-011-local-database-admin
+Commit/PR: Pending
+Status: Implemented
+
+Summary:
+- Added local-only Adminer service to Docker Compose with localhost host binding and default PostgreSQL server wiring.
+- Documented Adminer URL, login values, local-only scope, and manual-edit caveat in README.
+- Added `ADMINER_PORT` to `.env.example` and Adminer HTTP check to local smoke validation.
+
+Validation:
+- command: `make lint`: PASS
+- command: `make format-check`: PASS
+- command: `make test-backend`: PASS — 4 passed, 1 DB test deselected
+- command: `rg -n "adminer|ADMINER" docker-compose.yml .env.example Makefile README.md specs/harness/local-validation.md specs/features/011-local-database-admin.md docs/decisions/ADR-004-local-database-admin-tool.md docs/implementation-log.md`: PASS — local Adminer wiring and docs present.
+- command: `test -f docker-compose.prod.yml && rg -n "adminer|ADMINER" docker-compose.prod.yml || true`: PASS — no production Compose file exists yet, so Adminer is not present in production config.
+- command: `docker compose config`: PASS — Adminer is configured on `127.0.0.1:8080` and depends on healthy PostgreSQL.
+- command: `make smoke`: PASS — backend health returned `{"status":"ok"}` and Adminer returned the login page.
+- command: `docker compose ps`: PASS — `adminer`, `backend`, and healthy `postgres` services are running.
+
+Review:
+- decision: N/A
+
+Known gaps:
+- None.
+
+### 2026-06-10 — SPEC-011 — Local database admin spec
+
+Role: Arquitecto de specs
+Branch: main
+Commit/PR: Pending
+Status: Ready
+
+Summary:
+- Added `SPEC-011` for a local-only Adminer panel to inspect the Docker Compose PostgreSQL database.
+- Updated the spec index and implementation order.
+- Added ADR-004 to record the Adminer-over-pgAdmin local tooling decision and production exclusion.
+
+Validation:
+- command: NOT RUN — spec/documentation-only change.
+
+Review:
+- decision: N/A
+
+Known gaps:
+- `SPEC-011` implementation still pending.
+
 ### 2026-06-09 — SPEC-010 — Backend scaffold implemented
 
 Role: Ingeniero de software

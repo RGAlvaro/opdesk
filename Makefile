@@ -26,6 +26,7 @@ migrations-check:
 smoke:
 	docker compose up -d --build
 	curl --fail --retry 10 --retry-delay 1 --retry-all-errors http://localhost:8000/health
+	curl --fail --retry 10 --retry-delay 1 --retry-all-errors http://127.0.0.1:$${ADMINER_PORT:-8080}
 
 compose-up:
 	docker compose up -d --build
