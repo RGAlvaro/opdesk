@@ -39,7 +39,7 @@ Known gaps:
 
 Role: Ingeniero de software
 Branch: spec-011-local-database-admin
-Commit/PR: Pending
+Commit/PR: `d240330`, PR https://github.com/RGAlvaro/opdesk/pull/2
 Status: Implemented
 
 Summary:
