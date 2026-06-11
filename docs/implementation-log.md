@@ -35,6 +35,30 @@ Known gaps:
 
 ## Entries
 
+### 2026-06-11 — SPEC-011 — Review approved
+
+Role: Review agent
+Branch: spec-011-local-database-admin
+Commit/PR: `269149c`, PR https://github.com/RGAlvaro/opdesk/pull/2
+Status: Reviewed
+
+Summary:
+- Reviewed `SPEC-011` implementation after the Adminer port override fix.
+- Verified local-only Adminer wiring, docs, ADR, harness updates, and implementation log evidence.
+
+Validation:
+- command: `make lint`: PASS
+- command: `make format-check`: PASS
+- command: `make test-backend`: PASS — 4 passed, 1 DB test deselected
+- command: `docker compose config`: PASS — Adminer binds to localhost and uses the configured port.
+- command: `make smoke`: PASS — verified both `.env` override path on `8081` during fix validation and default `8080` after removing temporary `.env`.
+
+Review:
+- decision: APPROVED
+
+Known gaps:
+- None.
+
 ### 2026-06-11 — SPEC-011 — Adminer port override review fix
 
 Role: Ingeniero de software
