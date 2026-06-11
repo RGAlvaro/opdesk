@@ -35,6 +35,34 @@ Known gaps:
 
 ## Entries
 
+### 2026-06-11 — SPEC-011 — Adminer port override review fix
+
+Role: Ingeniero de software
+Branch: spec-011-local-database-admin
+Commit/PR: Pending, PR https://github.com/RGAlvaro/opdesk/pull/2
+Status: Implemented
+
+Summary:
+- Updated `Makefile` so Make includes `.env` when present and exports its variables to recipes.
+- Added a default `ADMINER_PORT ?= 8080` and made `make smoke` curl `$(ADMINER_PORT)`, aligning smoke checks with Docker Compose `.env` resolution.
+
+Validation:
+- command: `make -n smoke` without `.env`: PASS — Adminer curl resolves to `http://127.0.0.1:8080`.
+- command: temporary `.env` with `ADMINER_PORT=8081` plus `make -n smoke`: PASS — Adminer curl resolves to `http://127.0.0.1:8081`.
+- command: temporary `.env` with `ADMINER_PORT=8081` plus `docker compose config`: PASS — Adminer publishes `127.0.0.1:8081`.
+- command: temporary `.env` with `ADMINER_PORT=8081` plus `make smoke`: PASS — backend health returned `{"status":"ok"}` and Adminer returned the login page on port `8081`.
+- command: `make smoke` after removing temporary `.env`: PASS — backend health returned `{"status":"ok"}` and Adminer returned the login page on default port `8080`.
+- command: `make lint`: PASS
+- command: `make format-check`: PASS
+- command: `make test-backend`: PASS — 4 passed, 1 DB test deselected
+- command: `docker compose ps`: PASS — `adminer`, `backend`, and healthy `postgres` services are running.
+
+Review:
+- decision: N/A
+
+Known gaps:
+- None.
+
 ### 2026-06-10 — SPEC-011 — Local database admin implemented
 
 Role: Ingeniero de software

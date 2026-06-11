@@ -1,3 +1,10 @@
+ifneq (,$(wildcard .env))
+include .env
+export
+endif
+
+ADMINER_PORT ?= 8080
+
 .PHONY: verify test test-backend test-backend-db lint format-check typecheck migrations-check smoke compose-up compose-down
 
 verify: lint format-check test-backend migrations-check
@@ -26,7 +33,7 @@ migrations-check:
 smoke:
 	docker compose up -d --build
 	curl --fail --retry 10 --retry-delay 1 --retry-all-errors http://localhost:8000/health
-	curl --fail --retry 10 --retry-delay 1 --retry-all-errors http://127.0.0.1:$${ADMINER_PORT:-8080}
+	curl --fail --retry 10 --retry-delay 1 --retry-all-errors http://127.0.0.1:$(ADMINER_PORT)
 
 compose-up:
 	docker compose up -d --build
