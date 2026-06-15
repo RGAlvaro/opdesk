@@ -1,8 +1,8 @@
 # SPEC-101 — Authentication and Users
 
-Status: Ready  
+Status: Implemented  
 Owner: Arquitecto de specs  
-Last updated: 2026-06-08
+Last updated: 2026-06-15
 
 ## Problem
 
@@ -28,6 +28,7 @@ Users need secure access to OpsDesk before organizations, projects, tasks, and p
 ## Dependencies
 
 - Requires `SPEC-010` backend scaffold, PostgreSQL service, SQLAlchemy session setup, and Alembic baseline.
+- `SPEC-011` local database admin may be used for local inspection during development/review, but it is not a functional dependency and must not replace API tests or migrations.
 
 ## Actors And Permissions
 
@@ -50,6 +51,8 @@ Users need secure access to OpsDesk before organizations, projects, tasks, and p
 - BR-9: Browser auth uses httpOnly cookies as defined in `specs/001-api-conventions.md`.
 - BR-10: The first registered user becomes `is_superuser=true`; later users default to `false`. If this behavior changes, a separate admin bootstrap spec is required.
 - BR-11: Invalid credential responses must be generic and must not reveal whether the email exists.
+- BR-12: Direct local database edits through Adminer or other database tools must not be used to satisfy auth behavior. Manual DB inspection is allowed for debugging only.
+- BR-13: First-user bootstrap tests must control database state explicitly so local manual rows or previous development data cannot change expected `is_superuser` behavior.
 
 ## Data Model Impact
 
@@ -67,6 +70,29 @@ Create `users` table:
 | updated_at | timestamp | UTC |
 
 Migration required.
+
+## Configuration Contract
+
+`.env.example` must add safe local placeholders for auth configuration introduced by this spec.
+
+Required variables:
+
+| Variable | Purpose | Example |
+|---|---|---|
+| `AUTH_SECRET_KEY` | Signing key for auth tokens | `local_dev_change_me_min_32_chars` |
+| `ACCESS_TOKEN_EXPIRE_MINUTES` | Access token lifetime | `15` |
+| `REFRESH_TOKEN_EXPIRE_DAYS` | Refresh token lifetime | `7` |
+| `ACCESS_TOKEN_COOKIE_NAME` | Browser cookie name for access token | `access_token` |
+| `REFRESH_TOKEN_COOKIE_NAME` | Browser cookie name for refresh token | `refresh_token` |
+| `AUTH_COOKIE_SECURE` | Whether auth cookies require HTTPS | `false` locally |
+| `AUTH_COOKIE_SAMESITE` | SameSite policy for auth cookies | `lax` |
+
+Rules:
+
+- Production must override `AUTH_SECRET_KEY` with a strong secret and must not reuse local placeholders.
+- `AUTH_COOKIE_SECURE=false` is allowed only for local development.
+- Cookie expiry values must match `specs/001-api-conventions.md` unless that convention is updated first.
+- Auth settings must be loaded through the existing settings pattern from `SPEC-010`.
 
 ## API Contract
 
@@ -238,6 +264,15 @@ Backend tests:
 - Unit or integration test password hashing/verification.
 - API tests for register success, duplicate email, weak password, first-user superuser, login success, login failure, inactive login, refresh success/failure, logout cookie clearing, `/api/v1/users/me` unauthenticated/authenticated, profile update.
 - Migration check for `users` table.
+- Test setup must isolate or reset user table state for first-user superuser assertions.
+
+API test clarification:
+
+- API tests may run through an in-process ASGI client, such as FastAPI `TestClient` or HTTPX `ASGITransport`, or through the local Docker backend using HTTP requests.
+- In-process ASGI API tests should use `uvloop` as defined in `specs/harness/local-validation.md` when synchronous endpoints or dependencies otherwise hang under the default `asyncio` event loop.
+- API tests must exercise the public HTTP endpoints, not only route functions or services called directly.
+- API tests must validate status codes, documented error shape where practical, and cookie behavior for login, refresh, and logout.
+- If an in-process ASGI client is unavailable or unreliable in the local environment, the Docker/local-backend HTTP path is acceptable only when it is automated and covers the same acceptance criteria.
 
 Frontend tests after UI exists:
 
@@ -251,8 +286,13 @@ Required commands once available:
 ```bash
 make test-backend
 make lint
+make format-check
+make typecheck
 make migrations-check
+make smoke
 ```
+
+`make smoke` includes local Docker services from `SPEC-010` and `SPEC-011`. Adminer availability may be checked as part of smoke validation, but auth acceptance criteria still require API tests.
 
 ## Observability And Failure Cases
 
@@ -265,3 +305,4 @@ make migrations-check
 - Prefer dependency-injected settings for cookie names, token secret, expiry values, and secure cookie mode.
 - Use `Secure=false` only in local development.
 - Do not add password reset in this spec.
+- Adminer from `SPEC-011` can help inspect local `users` rows during debugging, but implementation and review must validate behavior through APIs, tests, and migrations.

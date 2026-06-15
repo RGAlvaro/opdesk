@@ -27,7 +27,7 @@ Feature specs should use `specs/_templates/feature-spec-template.md`.
 | `SPEC-001` | Ready | Cross-feature API conventions |
 | `SPEC-010` | Ready | Backend scaffold and local PostgreSQL database |
 | `SPEC-011` | Implemented | Local database administration panel |
-| `SPEC-101` | Ready | Authentication and users |
+| `SPEC-101` | Implemented | Authentication and users |
 | `SPEC-102` | Ready | Organizations and RBAC |
 | `SPEC-103` | Ready | Projects and tasks |
 | `SPEC-201` | Draft | Background jobs and notifications |

@@ -2,7 +2,7 @@
 
 Status: Ready  
 Owner: Review agent  
-Last updated: 2026-06-10
+Last updated: 2026-06-15
 
 This file defines validation commands for local development and review. Feature specs may require a subset or add feature-specific checks.
 
@@ -49,6 +49,35 @@ poetry run alembic check
 ```
 
 If Poetry is not chosen during scaffold, replace this section immediately with exact commands.
+
+## Backend API Test Client Guidance
+
+Backend API tests must exercise public HTTP endpoints when a feature spec requires API coverage. Direct calls to route functions or services may supplement API tests, but they do not replace endpoint-level validation.
+
+Preferred in-process API clients:
+
+- FastAPI `TestClient`.
+- HTTPX `ASGITransport`.
+
+When in-process ASGI tests use synchronous FastAPI endpoints or sync dependencies, configure the test event loop with `uvloop` if the default `asyncio` loop is unreliable in the local environment.
+
+Examples:
+
+```python
+from fastapi.testclient import TestClient
+
+client = TestClient(app, backend_options={"use_uvloop": True})
+```
+
+```python
+import asyncio
+
+import uvloop
+
+asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
+```
+
+If an in-process ASGI client cannot be made reliable, an automated Docker/local-backend HTTP test path is acceptable when it covers the same acceptance criteria, status codes, error shapes, and cookie behavior required by the active spec.
 
 ## Initial Frontend Direct Commands
 

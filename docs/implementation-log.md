@@ -35,6 +35,184 @@ Known gaps:
 
 ## Entries
 
+### 2026-06-15 — SPEC-101 — Review approved after uvloop API tests
+
+Role: Review agent
+Branch: spec-011-local-database-admin
+Commit/PR: Pending
+Status: Reviewed
+
+Summary:
+- Reviewed SPEC-101 endpoint-level API test changes after Docker was available.
+- Verified the auth API tests now exercise public HTTP endpoints with FastAPI `TestClient` and `uvloop`.
+- Verified logout now returns a real `204` response through the HTTP layer.
+- Verified migrations, Docker smoke checks, DB test, lint, formatting, typecheck, and backend tests.
+
+Validation:
+- command: `make smoke`: PASS — Compose built/started backend, PostgreSQL, and Adminer; backend `/health` and Adminer HTTP checks passed.
+- command: `make verify`: PASS — lint, format-check, backend tests, Alembic upgrade, and Alembic check passed.
+- command: `make typecheck`: PASS — no issues in 22 source files.
+- command: `make test-backend-db`: PASS — 1 passed, 35 deselected.
+- command: `docker compose exec -T postgres pg_isready -U opdesk -d opdesk`: PASS — PostgreSQL accepting connections.
+
+Review:
+- decision: APPROVED
+
+Known gaps:
+- None for the SPEC-101 backend/API test scope. Frontend auth screens remain pending until frontend scaffold exists.
+
+### 2026-06-15 — SPEC-101 — Endpoint-level auth API tests with uvloop
+
+Role: Ingeniero de software
+Branch: spec-011-local-database-admin
+Commit/PR: Pending
+Status: Implemented
+
+Summary:
+- Added endpoint-level SPEC-101 API tests using FastAPI `TestClient` with `backend_options={"use_uvloop": True}`.
+- Added test dependency overrides for isolated SQLite DB sessions and auth settings.
+- Covered register success, duplicate email, weak password, first-user superuser, later-user non-superuser, login success/failure/inactive user, refresh success/failure, logout cookie clearing, `/api/v1/users/me` unauthenticated/authenticated, profile update, and invalid profile through public HTTP endpoints.
+- Fixed `POST /api/v1/auth/logout` to return an actual `204` status when returning the injected FastAPI `Response`.
+
+Validation:
+- command: `cd backend && poetry run pytest tests/test_auth_and_users.py`: PASS — 31 passed
+- command: `make test-backend`: PASS — 35 passed, 1 DB test deselected
+- command: `make lint`: PASS
+- command: `make format-check`: PASS
+- command: `make typecheck`: PASS — no issues in 22 source files
+- command: `make verify`: FAIL/ENV — lint, format, and backend tests passed, then `migrations-check` failed because PostgreSQL/Docker was unavailable from this WSL session.
+- command: `docker compose ps`: FAIL/ENV — Docker CLI not available in this WSL distro.
+
+Review:
+- decision: N/A
+
+Known gaps:
+- Docker-backed migration, DB, smoke, and full verify checks remain unverified in this session until Docker is available from WSL again.
+
+### 2026-06-15 — SPEC-101 — uvloop added to API test harness specs
+
+Role: Arquitecto de specs
+Branch: spec-011-local-database-admin
+Commit/PR: Pending
+Status: Ready
+
+Summary:
+- Reviewed API and validation specs after the ASGI client investigation.
+- Added `uvloop` guidance to `specs/harness/local-validation.md` for in-process backend API tests using FastAPI `TestClient` or HTTPX `ASGITransport`.
+- Updated `SPEC-101` to prefer `uvloop` for in-process ASGI tests when synchronous endpoints or dependencies hang under the default `asyncio` event loop.
+
+Validation:
+- command: NOT RUN — spec/documentation-only change.
+
+Review:
+- decision: N/A
+
+Known gaps:
+- Implementation still needs to update SPEC-101 API tests to use endpoint-level HTTP coverage.
+
+### 2026-06-15 — SPEC-101 — ASGI investigation readability update
+
+Role: Ingeniero de software
+Branch: spec-011-local-database-admin
+Commit/PR: Pending
+Status: Implemented
+
+Summary:
+- Rewrote `docs/spec-101-asgi-client-investigation.md` command examples as readable multiline shell heredocs.
+- Preserved the investigation results and recommendation to use `uvloop` for in-process API tests, with Docker/local HTTP as fallback.
+
+Validation:
+- command: NOT RUN — documentation-only readability change.
+
+Review:
+- decision: N/A
+
+Known gaps:
+- SPEC-101 still needs automated API tests that exercise public HTTP endpoints.
+
+### 2026-06-15 — SPEC-101 — API test clarification and ASGI client investigation
+
+Role: Arquitecto de specs / Ingeniero de software
+Branch: spec-011-local-database-admin
+Commit/PR: Pending
+Status: Implemented
+
+Summary:
+- Clarified in `SPEC-101` that API tests may use in-process ASGI clients or local Docker HTTP, but must exercise public HTTP endpoints and cookie/error behavior.
+- Investigated why FastAPI `TestClient` and HTTPX `ASGITransport` hang in the local environment.
+- Added `docs/spec-101-asgi-client-investigation.md` with reproduction steps, command evidence, likely causes, and recommended solutions.
+- Found that the hang reproduces below FastAPI in AnyIO/asyncio thread wakeups, and that `uvloop` resolves the minimal reproductions.
+
+Validation:
+- command: minimal FastAPI `TestClient` without `uvloop`: FAIL/REPRODUCED — request hangs until timeout.
+- command: minimal HTTPX `ASGITransport` with async endpoint: PASS.
+- command: minimal HTTPX `ASGITransport` with sync endpoint: FAIL/REPRODUCED — request hangs until timeout.
+- command: isolated `anyio.to_thread.run_sync`: FAIL/REPRODUCED — hangs until timeout.
+- command: Python `threading` and `ThreadPoolExecutor`: PASS — native threads work.
+- command: `asyncio.call_soon_threadsafe` with default event loop: FAIL/REPRODUCED — worker runs but loop does not wake without another timer.
+- command: `asyncio.call_soon_threadsafe`, `anyio.to_thread.run_sync`, FastAPI `TestClient`, and HTTPX `ASGITransport` with `uvloop`: PASS.
+
+Review:
+- decision: N/A
+
+Known gaps:
+- SPEC-101 still needs automated API tests that exercise public HTTP endpoints. Recommended next step is FastAPI `TestClient(app, backend_options={"use_uvloop": True})`, with Docker/local HTTP as fallback.
+
+### 2026-06-11 — SPEC-101 — Backend auth and users implemented
+
+Role: Ingeniero de software
+Branch: spec-011-local-database-admin
+Commit/PR: Pending
+Status: Implemented
+
+Summary:
+- Implemented backend auth/user API endpoints for registration, login, refresh, logout, current user, and profile update.
+- Added `users` SQLAlchemy model, repository/service layers, Pydantic schemas, API error shape, auth dependencies, Argon2 password hashing, and signed JWT cookies.
+- Added Alembic migration `0002` for `users`.
+- Added auth settings and safe local placeholders to `.env.example`.
+- Added backend tests for password policy/hash, register/login/refresh/logout, current user, profile update, inactive user handling, duplicate email, and first-user superuser behavior.
+- Updated README and spec index to reflect implemented backend auth scope.
+
+Validation:
+- command: `make lint`: PASS
+- command: `make format-check`: PASS
+- command: `make test-backend`: PASS — 21 passed, 1 DB test deselected
+- command: `make typecheck`: PASS — no issues in 22 source files
+- command: `make migrations-check`: PASS — migration `0002` applied and Alembic check found no new upgrade operations
+- command: `make test-backend-db`: PASS — 1 passed, 21 deselected
+- command: `make smoke`: PASS — backend and Adminer responded after Docker rebuild
+- command: `make verify`: PASS
+- command: direct `curl` register/login against Docker backend: PASS — registration returned safe user payload and login set httpOnly `access_token`/`refresh_token` cookies.
+
+Review:
+- decision: N/A
+
+Known gaps:
+- Frontend auth screens remain pending because the frontend scaffold does not exist yet.
+- In-process HTTP client tests using FastAPI `TestClient`/HTTPX ASGI transport hang in this environment, so backend tests exercise route functions directly and Docker `curl` smoke covers real HTTP register/login.
+
+### 2026-06-11 — SPEC-101 — Auth spec refresh after scaffold/admin tooling
+
+Role: Arquitecto de specs
+Branch: spec-011-local-database-admin
+Commit/PR: Pending
+Status: Ready
+
+Summary:
+- Reviewed `SPEC-101` after `SPEC-010` scaffold and `SPEC-011` local DB admin work.
+- Clarified that Adminer is inspection-only and not a functional dependency for auth behavior.
+- Added auth configuration contract for token/cookie settings and updated harness expectations to current Make targets.
+- Added test-state guidance for first-user superuser bootstrap.
+
+Validation:
+- command: NOT RUN — spec/documentation-only change.
+
+Review:
+- decision: N/A
+
+Known gaps:
+- `SPEC-101` implementation still pending.
+
 ### 2026-06-11 — SPEC-011 — Review approved
 
 Role: Review agent

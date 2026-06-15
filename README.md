@@ -4,7 +4,7 @@ OpsDesk is a spec-driven B2B SaaS portfolio project for operational work managem
 
 ## Current Scope
 
-The current implementation covers `SPEC-010` and `SPEC-011`: backend scaffold, local PostgreSQL, Alembic, health checks, Docker Compose, validation harness, and a local-only database admin panel.
+The current implementation covers `SPEC-010`, `SPEC-011`, and backend `SPEC-101`: backend scaffold, local PostgreSQL, Alembic, health checks, Docker Compose, validation harness, a local-only database admin panel, and authentication/user API endpoints.
 
 ## Local Setup
 
