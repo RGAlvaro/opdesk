@@ -1,0 +1,551 @@
+from collections.abc import Generator
+from http.cookies import SimpleCookie
+from typing import Any
+
+import pytest
+from argon2 import PasswordHasher
+from fastapi import Response
+from fastapi.testclient import TestClient
+from sqlalchemy import create_engine
+from sqlalchemy.orm import Session, sessionmaker
+from sqlalchemy.pool import StaticPool
+
+import app.services.security as security_service
+from app.api.auth import login, logout, refresh, register
+from app.api.deps import get_current_user
+from app.api.errors import APIError
+from app.api.users import read_me, update_me
+from app.core.config import Settings, get_settings
+from app.db.base import Base
+from app.db.session import get_db
+from app.main import app
+from app.models.user import User
+from app.schemas.users import LoginRequest, RegisterRequest, UserUpdateRequest
+from app.services.security import hash_password, verify_password
+from app.services.users import normalize_email, validate_password_policy
+
+
+class RequestStub:
+    def __init__(self, cookies: dict[str, str] | None = None) -> None:
+        self.cookies = cookies or {}
+
+
+def assert_api_error(exc: APIError, status_code: int, code: str) -> None:
+    assert exc.status_code == status_code
+    assert exc.code == code
+
+
+def extract_cookie(response: Response, cookie_name: str) -> str:
+    cookie = SimpleCookie()
+    for header, value in response.raw_headers:
+        if header == b"set-cookie":
+            cookie.load(value.decode())
+    morsel = cookie[cookie_name]
+    return morsel.value
+
+
+@pytest.fixture(autouse=True)
+def fast_password_hasher(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(
+        security_service,
+        "password_hasher",
+        PasswordHasher(time_cost=1, memory_cost=512, parallelism=1),
+    )
+
+
+@pytest.fixture
+def db_session() -> Generator[Session, None, None]:
+    engine = create_engine(
+        "sqlite+pysqlite:///:memory:",
+        connect_args={"check_same_thread": False},
+        poolclass=StaticPool,
+    )
+    Base.metadata.create_all(engine)
+    session_factory = sessionmaker(bind=engine, autoflush=False, autocommit=False)
+    session = session_factory()
+    try:
+        yield session
+    finally:
+        session.close()
+        Base.metadata.drop_all(engine)
+        engine.dispose()
+
+
+@pytest.fixture
+def settings() -> Settings:
+    return Settings(
+        auth_secret_key="test_secret_key_minimum_32_chars",
+        auth_cookie_secure=False,
+    )
+
+
+@pytest.fixture
+def api_client(settings: Settings) -> Generator[tuple[TestClient, Session], None, None]:
+    engine = create_engine(
+        "sqlite+pysqlite:///:memory:",
+        connect_args={"check_same_thread": False},
+        poolclass=StaticPool,
+    )
+    Base.metadata.create_all(engine)
+    session_factory = sessionmaker(bind=engine, autoflush=False, autocommit=False)
+    session = session_factory()
+
+    def override_get_db() -> Generator[Session, None, None]:
+        yield session
+
+    def override_get_settings() -> Settings:
+        return settings
+
+    app.dependency_overrides[get_db] = override_get_db
+    app.dependency_overrides[get_settings] = override_get_settings
+
+    try:
+        with TestClient(app, backend_options={"use_uvloop": True}) as client:
+            yield client, session
+    finally:
+        app.dependency_overrides.clear()
+        session.close()
+        Base.metadata.drop_all(engine)
+        engine.dispose()
+
+
+def register_payload(
+    email: str = "User@Example.com",
+    password: str = "Example1234",
+    full_name: str = "User Name",
+) -> RegisterRequest:
+    return RegisterRequest(email=email, password=password, full_name=full_name)
+
+
+def register_user(db_session: Session, payload: RegisterRequest | None = None) -> Any:
+    return register(payload or register_payload(), db_session)
+
+
+def login_user(db_session: Session, settings: Settings) -> tuple[Any, Response]:
+    response = Response()
+    result = login(
+        LoginRequest(email="user@example.com", password="Example1234"),
+        response,
+        db_session,
+        settings,
+    )
+    return result, response
+
+
+def api_register_payload(
+    email: str = "User@Example.com",
+    password: str = "Example1234",
+    full_name: str = "User Name",
+) -> dict[str, str]:
+    return {
+        "email": email,
+        "password": password,
+        "full_name": full_name,
+    }
+
+
+def api_login_payload(
+    email: str = "user@example.com",
+    password: str = "Example1234",
+) -> dict[str, str]:
+    return {
+        "email": email,
+        "password": password,
+    }
+
+
+def assert_error_response(response: Any, status_code: int, code: str) -> None:
+    assert response.status_code == status_code
+    body = response.json()
+    assert body["error"]["code"] == code
+    assert isinstance(body["error"]["message"], str)
+    assert body["error"]["details"] == {}
+
+
+def api_register_user(client: TestClient, payload: dict[str, str] | None = None) -> Any:
+    response = client.post("/api/v1/auth/register", json=payload or api_register_payload())
+    assert response.status_code == 201
+    return response
+
+
+def test_normalize_email_lowercases_and_trims() -> None:
+    assert normalize_email("  USER@Example.COM ") == "user@example.com"
+
+
+def test_password_policy_rejects_weak_password() -> None:
+    with pytest.raises(APIError) as exc_info:
+        validate_password_policy("short1")
+
+    assert_api_error(exc_info.value, 400, "weak_password")
+
+
+def test_password_hashing_and_verification() -> None:
+    password_hash = hash_password("Example1234")
+
+    assert password_hash != "Example1234"
+    assert verify_password("Example1234", password_hash)
+    assert not verify_password("Wrong1234", password_hash)
+
+
+def test_register_creates_first_superuser_and_excludes_sensitive_fields(
+    db_session: Session,
+) -> None:
+    user = register_user(db_session)
+    data = user.model_dump()
+
+    assert data["email"] == "user@example.com"
+    assert data["full_name"] == "User Name"
+    assert data["is_active"] is True
+    assert data["is_superuser"] is True
+    assert "password_hash" not in data
+    assert "access_token" not in data
+
+
+def test_api_register_creates_first_superuser_and_excludes_sensitive_fields(
+    api_client: tuple[TestClient, Session],
+) -> None:
+    client, _ = api_client
+
+    response = client.post("/api/v1/auth/register", json=api_register_payload())
+
+    assert response.status_code == 201
+    data = response.json()
+    assert data["email"] == "user@example.com"
+    assert data["full_name"] == "User Name"
+    assert data["is_active"] is True
+    assert data["is_superuser"] is True
+    assert "password_hash" not in data
+    assert "access_token" not in data
+    assert "refresh_token" not in data
+
+
+def test_register_duplicate_email_is_case_insensitive(db_session: Session) -> None:
+    register_user(db_session, register_payload(email="user@example.com"))
+
+    with pytest.raises(APIError) as exc_info:
+        register_user(db_session, register_payload(email="USER@example.com"))
+
+    assert_api_error(exc_info.value, 409, "email_already_registered")
+
+
+def test_api_register_duplicate_email_is_case_insensitive(
+    api_client: tuple[TestClient, Session],
+) -> None:
+    client, _ = api_client
+    api_register_user(client, api_register_payload(email="user@example.com"))
+
+    response = client.post(
+        "/api/v1/auth/register",
+        json=api_register_payload(email="USER@example.com"),
+    )
+
+    assert_error_response(response, 409, "email_already_registered")
+
+
+def test_register_rejects_weak_password(db_session: Session) -> None:
+    with pytest.raises(APIError) as exc_info:
+        register_user(db_session, register_payload(password="weak"))
+
+    assert_api_error(exc_info.value, 400, "weak_password")
+
+
+def test_api_register_rejects_weak_password(api_client: tuple[TestClient, Session]) -> None:
+    client, _ = api_client
+
+    response = client.post(
+        "/api/v1/auth/register",
+        json=api_register_payload(password="weak"),
+    )
+
+    assert_error_response(response, 400, "weak_password")
+
+
+def test_later_registered_users_are_not_superusers(db_session: Session) -> None:
+    first = register_user(db_session, register_payload(email="one@example.com"))
+    second = register_user(db_session, register_payload(email="two@example.com"))
+
+    assert first.is_superuser is True
+    assert second.is_superuser is False
+
+
+def test_api_later_registered_users_are_not_superusers(
+    api_client: tuple[TestClient, Session],
+) -> None:
+    client, _ = api_client
+
+    first = api_register_user(client, api_register_payload(email="one@example.com"))
+    second = api_register_user(client, api_register_payload(email="two@example.com"))
+
+    assert first.json()["is_superuser"] is True
+    assert second.json()["is_superuser"] is False
+
+
+def test_login_sets_auth_cookies_and_returns_safe_user(
+    db_session: Session, settings: Settings
+) -> None:
+    register_user(db_session)
+
+    result, response = login_user(db_session, settings)
+
+    assert result.user.email == "user@example.com"
+    assert not hasattr(result.user, "password_hash")
+    access_token = extract_cookie(response, "access_token")
+    refresh_token = extract_cookie(response, "refresh_token")
+    assert access_token
+    assert refresh_token
+    set_cookie = ",".join(
+        value.decode() for header, value in response.raw_headers if header == b"set-cookie"
+    )
+    assert "HttpOnly" in set_cookie
+
+
+def test_api_login_sets_auth_cookies_and_returns_safe_user(
+    api_client: tuple[TestClient, Session],
+) -> None:
+    client, _ = api_client
+    api_register_user(client)
+
+    response = client.post("/api/v1/auth/login", json=api_login_payload())
+
+    assert response.status_code == 200
+    assert response.json()["user"]["email"] == "user@example.com"
+    assert "password_hash" not in response.json()["user"]
+    assert "access_token" in response.cookies
+    assert "refresh_token" in response.cookies
+    set_cookie = ",".join(response.headers.get_list("set-cookie"))
+    assert "HttpOnly" in set_cookie
+    assert "SameSite=lax" in set_cookie
+
+
+def test_login_invalid_credentials_returns_generic_error(
+    db_session: Session, settings: Settings
+) -> None:
+    register_user(db_session)
+
+    with pytest.raises(APIError) as exc_info:
+        login(
+            LoginRequest(email="missing@example.com", password="Wrong1234"),
+            Response(),
+            db_session,
+            settings,
+        )
+
+    assert_api_error(exc_info.value, 401, "invalid_credentials")
+
+
+def test_api_login_invalid_credentials_returns_generic_error(
+    api_client: tuple[TestClient, Session],
+) -> None:
+    client, _ = api_client
+    api_register_user(client)
+
+    response = client.post(
+        "/api/v1/auth/login",
+        json=api_login_payload(email="missing@example.com", password="Wrong1234"),
+    )
+    wrong_password_response = client.post(
+        "/api/v1/auth/login",
+        json=api_login_payload(email="user@example.com", password="Wrong1234"),
+    )
+
+    assert_error_response(response, 401, "invalid_credentials")
+    assert_error_response(wrong_password_response, 401, "invalid_credentials")
+    assert response.json()["error"]["message"] == wrong_password_response.json()["error"]["message"]
+
+
+def test_inactive_user_cannot_login(db_session: Session, settings: Settings) -> None:
+    user = User(
+        email="inactive@example.com",
+        password_hash=hash_password("Example1234"),
+        full_name="Inactive User",
+        is_active=False,
+    )
+    db_session.add(user)
+    db_session.commit()
+
+    with pytest.raises(APIError) as exc_info:
+        login(
+            LoginRequest(email="inactive@example.com", password="Example1234"),
+            Response(),
+            db_session,
+            settings,
+        )
+
+    assert_api_error(exc_info.value, 403, "inactive_user")
+
+
+def test_api_inactive_user_cannot_login(api_client: tuple[TestClient, Session]) -> None:
+    client, session = api_client
+    user = User(
+        email="inactive@example.com",
+        password_hash=hash_password("Example1234"),
+        full_name="Inactive User",
+        is_active=False,
+    )
+    session.add(user)
+    session.commit()
+
+    response = client.post(
+        "/api/v1/auth/login",
+        json=api_login_payload(email="inactive@example.com", password="Example1234"),
+    )
+
+    assert_error_response(response, 403, "inactive_user")
+
+
+def test_refresh_with_valid_cookie_sets_new_access_cookie(
+    db_session: Session, settings: Settings
+) -> None:
+    register_user(db_session)
+    _, login_response = login_user(db_session, settings)
+    refresh_token = extract_cookie(login_response, "refresh_token")
+
+    response = Response()
+    result = refresh(RequestStub({"refresh_token": refresh_token}), response, db_session, settings)
+
+    assert result.status == "ok"
+    assert extract_cookie(response, "access_token")
+
+
+def test_api_refresh_with_valid_cookie_sets_new_access_cookie(
+    api_client: tuple[TestClient, Session],
+) -> None:
+    client, _ = api_client
+    api_register_user(client)
+    client.post("/api/v1/auth/login", json=api_login_payload())
+
+    response = client.post("/api/v1/auth/refresh")
+
+    assert response.status_code == 200
+    assert response.json() == {"status": "ok"}
+    assert "access_token" in response.cookies
+
+
+def test_refresh_without_cookie_fails(db_session: Session, settings: Settings) -> None:
+    with pytest.raises(APIError) as exc_info:
+        refresh(RequestStub(), Response(), db_session, settings)
+
+    assert_api_error(exc_info.value, 401, "invalid_refresh_token")
+
+
+def test_api_refresh_without_cookie_fails(api_client: tuple[TestClient, Session]) -> None:
+    client, _ = api_client
+
+    response = client.post("/api/v1/auth/refresh")
+
+    assert_error_response(response, 401, "invalid_refresh_token")
+
+
+def test_logout_clears_auth_cookies(settings: Settings) -> None:
+    response = logout(Response(), settings)
+
+    set_cookie = ",".join(
+        value.decode() for header, value in response.raw_headers if header == b"set-cookie"
+    )
+    assert "access_token=" in set_cookie
+    assert "refresh_token=" in set_cookie
+    assert "Max-Age=0" in set_cookie
+
+
+def test_api_logout_clears_auth_cookies(api_client: tuple[TestClient, Session]) -> None:
+    client, _ = api_client
+    api_register_user(client)
+    client.post("/api/v1/auth/login", json=api_login_payload())
+
+    response = client.post("/api/v1/auth/logout")
+
+    assert response.status_code == 204
+    set_cookie = ",".join(response.headers.get_list("set-cookie"))
+    assert "access_token=" in set_cookie
+    assert "refresh_token=" in set_cookie
+    assert "Max-Age=0" in set_cookie
+
+
+def test_users_me_requires_authentication(db_session: Session, settings: Settings) -> None:
+    with pytest.raises(APIError) as exc_info:
+        get_current_user(RequestStub(), db_session, settings)
+
+    assert_api_error(exc_info.value, 401, "not_authenticated")
+
+
+def test_api_users_me_requires_authentication(api_client: tuple[TestClient, Session]) -> None:
+    client, _ = api_client
+
+    response = client.get("/api/v1/users/me")
+
+    assert_error_response(response, 401, "not_authenticated")
+
+
+def test_users_me_returns_current_user(db_session: Session, settings: Settings) -> None:
+    register_user(db_session)
+    _, login_response = login_user(db_session, settings)
+    access_token = extract_cookie(login_response, "access_token")
+
+    current_user = get_current_user(
+        RequestStub({"access_token": access_token}), db_session, settings
+    )
+    result = read_me(current_user)
+
+    assert result.email == "user@example.com"
+
+
+def test_api_users_me_returns_current_user(api_client: tuple[TestClient, Session]) -> None:
+    client, _ = api_client
+    api_register_user(client)
+    client.post("/api/v1/auth/login", json=api_login_payload())
+
+    response = client.get("/api/v1/users/me")
+
+    assert response.status_code == 200
+    assert response.json()["email"] == "user@example.com"
+    assert "password_hash" not in response.json()
+
+
+def test_users_me_updates_only_current_profile(db_session: Session, settings: Settings) -> None:
+    register_user(db_session)
+    _, login_response = login_user(db_session, settings)
+    access_token = extract_cookie(login_response, "access_token")
+    current_user = get_current_user(
+        RequestStub({"access_token": access_token}), db_session, settings
+    )
+
+    result = update_me(UserUpdateRequest(full_name="  Updated   Name  "), current_user, db_session)
+
+    assert result.full_name == "Updated Name"
+
+
+def test_api_users_me_updates_only_current_profile(
+    api_client: tuple[TestClient, Session],
+) -> None:
+    client, _ = api_client
+    api_register_user(client)
+    client.post("/api/v1/auth/login", json=api_login_payload())
+
+    response = client.patch("/api/v1/users/me", json={"full_name": "  Updated   Name  "})
+
+    assert response.status_code == 200
+    assert response.json()["full_name"] == "Updated Name"
+
+
+def test_users_me_rejects_invalid_profile(db_session: Session, settings: Settings) -> None:
+    register_user(db_session)
+    _, login_response = login_user(db_session, settings)
+    access_token = extract_cookie(login_response, "access_token")
+    current_user = get_current_user(
+        RequestStub({"access_token": access_token}), db_session, settings
+    )
+
+    with pytest.raises(APIError) as exc_info:
+        update_me(UserUpdateRequest(full_name=""), current_user, db_session)
+
+    assert_api_error(exc_info.value, 400, "invalid_profile")
+
+
+def test_api_users_me_rejects_invalid_profile(api_client: tuple[TestClient, Session]) -> None:
+    client, _ = api_client
+    api_register_user(client)
+    client.post("/api/v1/auth/login", json=api_login_payload())
+
+    response = client.patch("/api/v1/users/me", json={"full_name": ""})
+
+    assert_error_response(response, 400, "invalid_profile")
