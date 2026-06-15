@@ -86,7 +86,7 @@ Create or update an ADR when a decision is hard to infer from code alone, likely
 
 ### Arquitecto de specs
 
-Creates and refines specs. Do not implement product code in this role.
+Harness engineering expert. Creates and refines specs. Do not implement product code in this role.
 
 Memory responsibilities:
 
