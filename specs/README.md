@@ -21,21 +21,50 @@ Feature specs should use `specs/_templates/feature-spec-template.md`.
 
 ## Spec Index
 
-| Spec | Status | Purpose |
-|---|---|---|
-| `SPEC-000` | Ready | Product vision and MVP boundary |
-| `SPEC-001` | Ready | Cross-feature API conventions |
-| `SPEC-010` | Ready | Backend scaffold and local PostgreSQL database |
-| `SPEC-011` | Implemented | Local database administration panel |
-| `SPEC-101` | Implemented | Authentication and users |
-| `SPEC-102` | Ready | Organizations and RBAC |
-| `SPEC-103` | Ready | Projects and tasks |
-| `SPEC-201` | Draft | Background jobs and notifications |
-| `SPEC-301` | Ready | Production deployment and operations |
+Use this index for routing. Use `docs/project-state.md` for the compact current operational state, including active branch, latest validation baseline, and known gaps.
+
+| Spec | Status | Purpose | Depends on | Primary surfaces |
+|---|---|---|---|---|
+| `SPEC-000` | Ready | Product vision and MVP boundary | None | `specs/000-product-vision.md` |
+| `SPEC-001` | Ready | Cross-feature API conventions | `SPEC-000` | `specs/001-api-conventions.md`, API tests |
+| `SPEC-010` | Implemented | Backend scaffold and local PostgreSQL database | `SPEC-000`, `SPEC-001` | `backend/`, `docker-compose.yml`, `Makefile`, `.env.example` |
+| `SPEC-011` | Implemented | Local database administration panel | `SPEC-010` | `docker-compose.yml`, `.env.example`, `README.md`, harness docs |
+| `SPEC-101` | Implemented | Authentication and users | `SPEC-010`, `SPEC-001` | `backend/app`, `backend/tests`, Alembic migrations, `.env.example` |
+| `SPEC-104` | Implemented | Frontend app shell and auth UI | `SPEC-101` | `frontend/`, `Makefile`, `docker-compose.yml`, `.env.example`, `README.md` |
+| `SPEC-102` | Ready | Organizations and RBAC | `SPEC-101` | Backend models, migration, APIs, services, tests |
+| `SPEC-103` | Ready | Projects and tasks | `SPEC-102` | Backend models, migration, APIs, services, tests |
+| `SPEC-201` | Draft | Background jobs and notifications | `SPEC-103` | Redis/Celery worker, notification models, tests |
+| `SPEC-301` | Ready | Production deployment and operations | Starts after `SPEC-010`; evolves with services | Production Compose, Caddy, deployment docs, backup/restore docs |
 
 Implementation order should usually follow spec dependencies:
 
 ```text
-SPEC-010 -> SPEC-011 -> SPEC-101 -> SPEC-102 -> SPEC-103 -> SPEC-201
+SPEC-010 -> SPEC-011 -> SPEC-101 -> SPEC-104 -> SPEC-102 -> SPEC-103 -> SPEC-201
 SPEC-301 starts after SPEC-010 and should evolve as backend, frontend, Redis, and worker services exist.
 ```
+
+## Agent Routing
+
+- Start with `docs/project-state.md` to identify active work, current gaps, and the latest validation baseline.
+- Read the active feature spec before touching implementation or tests.
+- Read `SPEC-001` for any API endpoint, error, auth, pagination, or tenant-isolation work.
+- Read `specs/harness/local-validation.md` before changing Make targets, Docker services, tests, migrations, or validation docs.
+- Read related ADRs in `docs/decisions/` before changing package management, module layout, database topology, deployment topology, auth token strategy, or other durable cross-cutting decisions.
+- Use `docs/implementation-log.md` for history and evidence, not as the first source for current state.
+
+## Touch-To-Spec Routing
+
+Use this table to decide which feature spec to open before editing.
+
+| If touching... | Read spec |
+|---|---|
+| Product boundaries, MVP scope, recruiter/demo goals | `SPEC-000` |
+| API paths, error shape, cookies, pagination, status codes, tenant-isolation conventions | `SPEC-001` |
+| Backend scaffold, settings, health endpoint, PostgreSQL, Alembic baseline, Make targets, local database env vars | `SPEC-010` |
+| Adminer, local DB inspection, Adminer port, local database admin smoke checks | `SPEC-011` |
+| Users, password hashing/policy, auth cookies/JWTs, `/api/v1/auth/*`, `/api/v1/users/me` | `SPEC-101` |
+| React app shell, login/signup/profile UI, frontend session bootstrap, Vite proxy, frontend auth tests | `SPEC-104` |
+| Organizations, memberships, roles, RBAC, tenant isolation helpers, `/api/v1/organizations*` | `SPEC-102` |
+| Projects, tasks, assignment, status/priority rules, task filters, archive behavior | `SPEC-103` |
+| Redis, Celery, workers, background jobs, task assignment notifications | `SPEC-201` |
+| Production Compose, Caddy, public deployment, backup/restore, production smoke checks | `SPEC-301` |

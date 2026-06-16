@@ -2,7 +2,30 @@
 
 Status: Implemented  
 Owner: Arquitecto de specs  
-Last updated: 2026-06-15
+Last updated: 2026-06-16
+
+## Scope And Required Context
+
+This spec governs:
+
+- User model, password handling, auth services, auth cookies/JWTs, `/api/v1/auth/*`, `/api/v1/users/me`, auth tests, or auth-related `.env.example` settings.
+
+Required context:
+
+- `AGENTS.md`
+- `docs/project-state.md`
+- `specs/README.md`
+- `specs/001-api-conventions.md`
+- `specs/harness/local-validation.md`
+- `docs/decisions/ADR-001-python-package-manager.md`
+- `docs/decisions/ADR-002-backend-module-layout.md`
+
+Memory updates:
+
+- `docs/project-state.md` if auth state, validation baseline, or known gaps change
+- `docs/implementation-log.md` for meaningful implementation, review, or validation events
+- `specs/README.md` if status, dependencies, order, or primary surfaces change
+- ADRs if auth token storage, cookie strategy, or user bootstrap policy changes
 
 ## Problem
 

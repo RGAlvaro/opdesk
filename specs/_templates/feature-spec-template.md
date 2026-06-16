@@ -4,6 +4,28 @@ Status: Draft | Ready | Implemented | Deprecated
 Owner: Arquitecto de specs  
 Last updated: YYYY-MM-DD
 
+## Scope And Required Context
+
+This spec governs:
+
+- Path or subsystem:
+
+Required context:
+
+- `AGENTS.md`
+- `docs/project-state.md`
+- `specs/README.md`
+- `specs/001-api-conventions.md` when API behavior is involved
+- `specs/harness/local-validation.md` when validation, tests, Docker, migrations, or Make targets change
+- Relevant ADRs:
+
+Memory updates:
+
+- `docs/project-state.md` when current state, next work, known gaps, or validation baseline changes
+- `docs/implementation-log.md` for meaningful spec-prep, implementation, review, or merge events
+- `specs/README.md` when status, dependencies, order, or primary surfaces change
+- ADRs when durable cross-cutting decisions are introduced or changed
+
 ## Problem
 
 Describe the user or system problem. Avoid implementation details here.

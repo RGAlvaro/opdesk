@@ -4,7 +4,7 @@ OpsDesk is a spec-driven B2B SaaS portfolio project for operational work managem
 
 ## Current Scope
 
-The current implementation covers `SPEC-010`, `SPEC-011`, and backend `SPEC-101`: backend scaffold, local PostgreSQL, Alembic, health checks, Docker Compose, validation harness, a local-only database admin panel, and authentication/user API endpoints.
+The current implementation covers `SPEC-010`, `SPEC-011`, backend `SPEC-101`, and `SPEC-104`: backend scaffold, local PostgreSQL, Alembic, health checks, Docker Compose, validation harness, a local-only database admin panel, authentication/user API endpoints, and the initial React auth/profile frontend.
 
 ## Local Setup
 
@@ -21,6 +21,13 @@ cd backend
 poetry install
 ```
 
+Install frontend dependencies:
+
+```bash
+cd frontend
+npm install
+```
+
 Start the local container stack:
 
 ```bash
@@ -32,6 +39,14 @@ Check backend health:
 ```bash
 curl -f http://localhost:8000/health
 ```
+
+Open the frontend after the stack is running:
+
+```text
+http://127.0.0.1:5173
+```
+
+If port `5173` is unavailable, set `FRONTEND_PORT` in `.env` and restart the stack.
 
 ## Local Database Admin
 
@@ -64,7 +79,9 @@ Use Make targets from the repository root:
 ```bash
 make lint
 make format-check
+make test-frontend
 make test-backend
+make typecheck
 make migrations-check
 make smoke
 ```

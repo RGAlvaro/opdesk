@@ -2,7 +2,30 @@
 
 Status: Ready  
 Owner: Arquitecto de specs  
-Last updated: 2026-06-08
+Last updated: 2026-06-16
+
+## Scope And Required Context
+
+This spec governs:
+
+- Project/task models, task assignment, task status/priority rules, project archive behavior, `/api/v1/projects*`, `/api/v1/tasks*`, task filters, migrations, or project/task permission tests.
+
+Required context:
+
+- `AGENTS.md`
+- `docs/project-state.md`
+- `specs/README.md`
+- `specs/001-api-conventions.md`
+- `specs/harness/local-validation.md`
+- `specs/features/102-organizations-and-rbac.md`
+- `docs/decisions/ADR-002-backend-module-layout.md`
+
+Memory updates:
+
+- `docs/project-state.md` if project/task state, validation baseline, next work, or known gaps change
+- `docs/implementation-log.md` for meaningful implementation, review, or validation events
+- `specs/README.md` if status, dependencies, order, or primary surfaces change
+- ADRs if workflow state, assignment policy, or task-history strategy becomes a durable cross-cutting decision
 
 ## Problem
 

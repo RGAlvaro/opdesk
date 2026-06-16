@@ -2,7 +2,29 @@
 
 Status: Ready  
 Owner: Arquitecto de specs  
-Last updated: 2026-06-08
+Last updated: 2026-06-16
+
+## Scope And Required Context
+
+This spec governs:
+
+- Organization models, memberships, RBAC policies, tenant isolation helpers, `/api/v1/organizations*`, membership APIs, organization migrations, or organization permission tests.
+
+Required context:
+
+- `AGENTS.md`
+- `docs/project-state.md`
+- `specs/README.md`
+- `specs/001-api-conventions.md`
+- `specs/harness/local-validation.md`
+- `docs/decisions/ADR-002-backend-module-layout.md`
+
+Memory updates:
+
+- `docs/project-state.md` if organization/RBAC state, validation baseline, next work, or known gaps change
+- `docs/implementation-log.md` for meaningful implementation, review, or validation events
+- `specs/README.md` if status, dependencies, order, or primary surfaces change
+- ADRs if tenant isolation, RBAC structure, or membership policy becomes a durable cross-cutting decision
 
 ## Problem
 

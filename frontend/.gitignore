@@ -1,0 +1,6 @@
+dist/
+node_modules/
+*.tsbuildinfo
+*.d.ts
+*.js
+!*.config.js
