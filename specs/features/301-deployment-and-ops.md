@@ -2,7 +2,30 @@
 
 Status: Ready  
 Owner: Arquitecto de specs  
-Last updated: 2026-06-08
+Last updated: 2026-06-16
+
+## Scope And Required Context
+
+This spec governs:
+
+- Production Compose, Caddy, public deployment docs, production environment variables, production smoke checks, backup/restore procedures, frontend production serving, Redis/worker production wiring, or CI deployment checks.
+
+Required context:
+
+- `AGENTS.md`
+- `docs/project-state.md`
+- `specs/README.md`
+- `specs/harness/local-validation.md`
+- `specs/features/010-backend-scaffold-and-local-database.md`
+- Current implemented service specs, such as `SPEC-101`, `SPEC-104`, and later `SPEC-102`, `SPEC-103`, or `SPEC-201`
+- Relevant ADRs for database, deployment, auth cookies, frontend build/serving, Redis, and worker topology
+
+Memory updates:
+
+- `docs/project-state.md` if deployment readiness, validation baseline, next work, or known gaps change
+- `docs/implementation-log.md` for meaningful spec-prep, implementation, review, or validation events
+- `specs/README.md` if status, dependencies, order, or primary surfaces change
+- ADRs if deployment topology, backup strategy, service exposure, or production runtime strategy changes
 
 ## Problem
 

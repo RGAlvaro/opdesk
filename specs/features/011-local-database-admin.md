@@ -2,7 +2,29 @@
 
 Status: Implemented  
 Owner: Arquitecto de specs  
-Last updated: 2026-06-10
+Last updated: 2026-06-16
+
+## Scope And Required Context
+
+This spec governs:
+
+- Local Adminer service, local database inspection docs, Adminer port configuration, Docker Compose local tooling, or smoke checks for the DB admin panel.
+
+Required context:
+
+- `AGENTS.md`
+- `docs/project-state.md`
+- `specs/README.md`
+- `specs/harness/local-validation.md`
+- `docs/decisions/ADR-003-local-container-database-configuration.md`
+- `docs/decisions/ADR-004-local-database-admin-tool.md`
+
+Memory updates:
+
+- `docs/project-state.md` if local tooling state, validation baseline, or known gaps change
+- `docs/implementation-log.md` for meaningful implementation, review, or validation events
+- `specs/README.md` if status, dependencies, order, or primary surfaces change
+- ADRs if local database tooling or exposure rules change
 
 ## Problem
 

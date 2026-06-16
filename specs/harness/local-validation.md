@@ -85,7 +85,9 @@ Use these until Make targets exist:
 
 ```bash
 cd frontend
+npm install
 npm run lint
+npm run format:check
 npm run typecheck
 npm run test
 npm run build
@@ -101,11 +103,11 @@ Use after Compose exists:
 docker compose up -d --build
 curl -f http://localhost:8000/health
 curl -f http://127.0.0.1:8080
+curl -f http://127.0.0.1:5173
 ```
 
 If Adminer uses a non-default `ADMINER_PORT`, replace `8080` with that local port.
-
-After a frontend exists, add the frontend URL to smoke checks. If frontend is served through a reverse proxy instead of Vite in local mode, document that URL here.
+If the frontend is served through a reverse proxy instead of Vite in local mode, document that URL here.
 
 ## Minimum Review Evidence
 

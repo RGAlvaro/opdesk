@@ -2,7 +2,31 @@
 
 Status: Implemented  
 Owner: Arquitecto de specs  
-Last updated: 2026-06-10
+Last updated: 2026-06-16
+
+## Scope And Required Context
+
+This spec governs:
+
+- Backend scaffold, settings, health endpoint, database session setup, Alembic baseline, Docker Compose PostgreSQL, Make harness, or `.env.example` database settings.
+
+Required context:
+
+- `AGENTS.md`
+- `docs/project-state.md`
+- `specs/README.md`
+- `specs/001-api-conventions.md` for health/API behavior
+- `specs/harness/local-validation.md`
+- `docs/decisions/ADR-001-python-package-manager.md`
+- `docs/decisions/ADR-002-backend-module-layout.md`
+- `docs/decisions/ADR-003-local-container-database-configuration.md`
+
+Memory updates:
+
+- `docs/project-state.md` if scaffold state, validation baseline, or known gaps change
+- `docs/implementation-log.md` for meaningful implementation, review, or validation events
+- `specs/README.md` if status, dependencies, order, or primary surfaces change
+- ADRs if package management, module layout, or database topology changes
 
 ## Problem
 

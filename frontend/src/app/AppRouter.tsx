@@ -1,0 +1,53 @@
+import { Navigate, Route, Routes } from "react-router-dom";
+
+import { LoginPage } from "../features/auth/LoginPage";
+import { SignupPage } from "../features/auth/SignupPage";
+import { ProtectedRoute } from "../features/auth/ProtectedRoute";
+import { PublicOnlyRoute } from "../features/auth/PublicOnlyRoute";
+import { ProfilePage } from "../features/profile/ProfilePage";
+import { AppShell } from "./AppShell";
+import { DashboardPage } from "./DashboardPage";
+import { LandingPage } from "./LandingPage";
+
+export function AppRouter() {
+  return (
+    <Routes>
+      <Route
+        path="/"
+        element={
+          <PublicOnlyRoute>
+            <LandingPage />
+          </PublicOnlyRoute>
+        }
+      />
+      <Route
+        path="/login"
+        element={
+          <PublicOnlyRoute>
+            <LoginPage />
+          </PublicOnlyRoute>
+        }
+      />
+      <Route
+        path="/signup"
+        element={
+          <PublicOnlyRoute>
+            <SignupPage />
+          </PublicOnlyRoute>
+        }
+      />
+      <Route
+        path="/app"
+        element={
+          <ProtectedRoute>
+            <AppShell />
+          </ProtectedRoute>
+        }
+      >
+        <Route index element={<DashboardPage />} />
+        <Route path="profile" element={<ProfilePage />} />
+      </Route>
+      <Route path="*" element={<Navigate to="/" replace />} />
+    </Routes>
+  );
+}

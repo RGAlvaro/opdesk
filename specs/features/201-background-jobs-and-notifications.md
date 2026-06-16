@@ -2,7 +2,29 @@
 
 Status: Draft  
 Owner: Arquitecto de specs  
-Last updated: 2026-06-08
+Last updated: 2026-06-16
+
+## Scope And Required Context
+
+This spec governs:
+
+- Redis, Celery, worker services, background job enqueueing, notification delivery, task assignment notification hooks, worker tests, or worker/Redis Docker Compose wiring.
+
+Required context:
+
+- `AGENTS.md`
+- `docs/project-state.md`
+- `specs/README.md`
+- `specs/harness/local-validation.md`
+- `specs/features/103-projects-and-tasks.md`
+- `specs/features/301-deployment-and-ops.md` when production worker/Redis behavior is involved
+
+Memory updates:
+
+- `docs/project-state.md` if background-job readiness, validation baseline, next work, or known gaps change
+- `docs/implementation-log.md` for meaningful spec-prep, implementation, review, or validation events
+- `specs/README.md` if status, dependencies, order, or primary surfaces change
+- ADRs if broker, retry, notification persistence, or email adapter strategy is chosen
 
 ## Problem
 

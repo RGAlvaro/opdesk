@@ -35,6 +35,180 @@ Known gaps:
 
 ## Entries
 
+### 2026-06-16 — SPEC-104 — Final review approved
+
+Role: Review agent
+Branch: spec-104-frontend-auth-shell
+Commit/PR: Pending
+Status: Reviewed
+
+Summary:
+- Reviewed the profile `401` review fix for `SPEC-104`.
+- Verified `PATCH /api/v1/users/me` now clears session state and redirects to `/login` on `401 not_authenticated`.
+- Verified test coverage for profile update losing authentication.
+- Verified project memory reflects the fixed state and validation baseline.
+
+Validation:
+- command: `cd frontend && npm run lint`: PASS
+- command: `cd frontend && npm run test`: PASS — 12 passed.
+- command: `cd frontend && npm run typecheck`: PASS
+- command: `cd frontend && npm run build`: PASS
+- command: `make test`: PASS — backend 35 passed, 1 DB test deselected; frontend 12 passed.
+- command: `git diff --check`: PASS
+- command: `make smoke`: PASS outside sandbox — recorded in the review-fix entry.
+- command: `make verify`: PASS outside sandbox — recorded in the review-fix entry.
+
+Review:
+- decision: APPROVED
+
+Known gaps:
+- No E2E browser tests yet; `SPEC-104` recommends adding Playwright later after the frontend/local server harness stabilizes.
+
+### 2026-06-16 — SPEC-104 — Profile 401 review fix
+
+Role: Ingeniero de software
+Branch: spec-104-frontend-auth-shell
+Commit/PR: Pending
+Status: Implemented
+
+Summary:
+- Fixed `PATCH /api/v1/users/me` profile update handling so `401 not_authenticated` clears the session query state and redirects to `/login`.
+- Added frontend route test coverage for profile update losing authentication.
+- Updated project memory to reflect the review fix and current validation baseline.
+
+Validation:
+- command: `cd frontend && npm run lint`: PASS
+- command: `cd frontend && npm run format:check`: PASS
+- command: `cd frontend && npm run typecheck`: PASS
+- command: `cd frontend && npm run test`: PASS — 12 passed.
+- command: `cd frontend && npm run build`: PASS
+- command: `make lint`: PASS
+- command: `make format-check`: PASS
+- command: `make typecheck`: PASS
+- command: `make test`: PASS — backend 35 passed, 1 DB test deselected; frontend 12 passed.
+- command: `make smoke`: PASS outside sandbox — Docker Compose built/started backend, PostgreSQL, Adminer, and frontend; `/health`, Adminer, and `http://127.0.0.1:5173` responded.
+- command: `make verify`: PASS outside sandbox — lint, format, typecheck, tests, Alembic upgrade, and Alembic check passed.
+
+Review:
+- decision: N/A
+
+Known gaps:
+- No E2E browser tests yet; `SPEC-104` recommends adding Playwright later after the frontend/local server harness stabilizes.
+
+### 2026-06-16 — SPEC-104 — Review changes requested
+
+Role: Review agent
+Branch: spec-104-frontend-auth-shell
+Commit/PR: Pending
+Status: Reviewed
+
+Summary:
+- Reviewed `SPEC-104` frontend app shell/auth UI implementation against the spec, API conventions, project memory, and current diff.
+- Verified the frontend app shell, public/auth routes, auth/profile forms, API client credential handling, future navigation unavailable state, Make/Compose integration, and memory updates.
+- Found one required fix: profile update `401 not_authenticated` responses currently render an error instead of clearing session state and redirecting to `/login`, which conflicts with `SPEC-104` profile and failure-case requirements.
+
+Validation:
+- command: `cd frontend && npm run lint`: PASS
+- command: `cd frontend && npm run format:check`: PASS
+- command: `cd frontend && npm run typecheck`: PASS
+- command: `cd frontend && npm run test`: PASS — 11 passed.
+- command: `make lint`: PASS
+- command: `make format-check`: PASS
+- command: `make typecheck`: PASS
+- command: `make test`: PASS — backend 35 passed, 1 DB test deselected; frontend 11 passed.
+- command: `make smoke`: PASS — Docker Compose built/started backend, PostgreSQL, Adminer, and frontend; `/health`, Adminer, and `http://127.0.0.1:5173` responded.
+- command: `make migrations-check`: PASS outside sandbox — sandboxed process could not connect to local `localhost:5432`.
+- command: `make verify`: PASS outside sandbox — lint, format, typecheck, tests, Alembic upgrade, and Alembic check passed.
+
+Review:
+- decision: CHANGES_REQUESTED
+
+Known gaps:
+- Add/fix profile-call `401` handling and test coverage before push.
+
+### 2026-06-16 — Repository memory — Agent operational state and routing
+
+Role: Arquitecto de specs
+Branch: spec-104-frontend-auth-shell
+Commit/PR: Pending
+Status: Ready
+
+Summary:
+- Added `docs/project-state.md` as the compact current-state dashboard for active work, implemented specs, next likely work, known gaps, validation baseline, code map, and reading order.
+- Expanded `specs/README.md` into a richer routing index with dependencies, primary implementation surfaces, and a central touch-to-spec routing table.
+- Updated `docs/agent-workflow.md` so agents start from `docs/project-state.md` and follow the current implementation order.
+- Added `Scope And Required Context` sections to the feature spec template and existing feature specs.
+- Updated `AGENTS.md` to make `docs/project-state.md` part of required project memory.
+- Added `ADR-005` to capture the durable decision to split current operational memory from historical implementation evidence.
+
+Validation:
+- command: NOT RUN — documentation/process-only change.
+
+Review:
+- decision: N/A
+
+Known gaps:
+- `SPEC-104` implementation remains locally implemented with uncommitted changes and still needs review/commit.
+
+### 2026-06-15 — SPEC-104 — Frontend auth shell implemented
+
+Role: Ingeniero de software
+Branch: spec-104-frontend-auth-shell
+Commit/PR: Pending
+Status: Implemented
+
+Summary:
+- Created the initial React TypeScript frontend under `frontend/` with Vite, React Router, TanStack Query, React Hook Form, Zod, Tailwind CSS, Vitest, and Testing Library.
+- Implemented the public landing page, login, signup, authenticated app shell, protected/public route guards, logout, and profile view/update flows against the `SPEC-101` API contract.
+- Added disabled/unavailable future navigation for organizations, projects, and tasks without fake backend data or unsupported CRUD.
+- Integrated the frontend into Docker Compose, `.env.example`, README setup, local validation docs, and Make targets.
+- Updated frontend dev dependencies to Vite `8.0.16`, Vitest `4.1.9`, and `@vitejs/plugin-react` `6.0.2`; `npm audit` reports 0 vulnerabilities.
+
+Validation:
+- command: `cd frontend && npm run lint`: PASS
+- command: `cd frontend && npm run format:check`: PASS
+- command: `cd frontend && npm run typecheck`: PASS
+- command: `cd frontend && npm run test`: PASS — 11 passed.
+- command: `cd frontend && npm run build`: PASS
+- command: `cd frontend && npm audit --omit=dev`: PASS — 0 vulnerabilities.
+- command: `cd frontend && npm audit`: PASS — 0 vulnerabilities after Vite/Vitest update.
+- command: `make lint`: PASS
+- command: `make format-check`: PASS
+- command: `make typecheck`: PASS
+- command: `make test`: PASS — backend 35 passed, 1 DB test deselected; frontend 11 passed.
+- command: `make smoke`: PASS — Docker Compose built/started backend, PostgreSQL, Adminer, and frontend; `/health`, Adminer, and `http://127.0.0.1:5173` responded.
+- command: `make verify`: PASS — required running outside the sandbox because the sandboxed process could not connect to local `localhost:5432`; lint, format, typecheck, tests, Alembic upgrade, and Alembic check passed.
+
+Review:
+- decision: N/A
+
+Known gaps:
+- No E2E browser tests yet; SPEC-104 recommends adding Playwright later after the frontend/local server harness stabilizes.
+- Organization, project, and task UI remains intentionally unavailable until their frontend specs are active.
+
+### 2026-06-15 — SPEC-104 — Frontend app shell and auth UI spec
+
+Role: Arquitecto de specs
+Branch: main
+Commit/PR: Pending
+Status: Ready
+
+Summary:
+- Reviewed current specs and completed backend `SPEC-101` work.
+- Added `SPEC-104` for the initial React frontend, public landing page, login/signup flows, authenticated app shell, logout, and profile management.
+- Reserved navigation/product structure for future organizations, projects, and tasks without allowing fake data or unsupported CRUD before `SPEC-102`/`SPEC-103` frontend work.
+- Updated the spec index and dependency order so frontend auth shell follows backend auth and precedes future product UI expansion.
+
+Validation:
+- command: NOT RUN — spec/documentation-only change.
+
+Review:
+- decision: N/A
+
+Known gaps:
+- Frontend implementation pending.
+- A frontend package-manager ADR may be needed during implementation if the project chooses anything other than npm.
+
 ### 2026-06-15 — SPEC-101 — Review approved after uvloop API tests
 
 Role: Review agent

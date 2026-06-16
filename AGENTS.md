@@ -33,6 +33,7 @@ The repository should evolve only as needed by active specs:
 ├── frontend/
 ├── specs/
 └── docs/
+    ├── project-state.md
     ├── implementation-log.md
     └── decisions/
 ```
@@ -47,7 +48,7 @@ Do not create the full structure blindly.
 4. If requested behavior is not covered by the active spec, update the spec first.
 5. Tests and harness commands are part of the feature contract.
 6. A feature is not complete just because the app runs locally.
-7. Durable project memory belongs in committed files: specs, tests, migrations, docs, `docs/implementation-log.md`, and `docs/decisions/`.
+7. Durable project memory belongs in committed files: specs, tests, migrations, docs, `docs/project-state.md`, `docs/implementation-log.md`, and `docs/decisions/`.
 
 ## Workflow
 
@@ -64,18 +65,20 @@ Before editing code, provide a short plan naming likely files and risks. Keep im
 Use these files to preserve context across sessions, branches, and future agents:
 
 - `specs/`: source of truth for intended behavior.
+- `docs/project-state.md`: compact current operational state for active work, implemented specs, next likely work, latest validation baseline, and known gaps.
 - `docs/implementation-log.md`: chronological record of spec work, commits, validation evidence, review decisions, and known gaps.
 - `docs/decisions/`: architecture decision records for durable technical choices that affect future implementation.
 - Git history and PRs: immutable evidence of merged work and review.
 - Tests and migrations: executable memory of implemented behavior and data shape.
 
-Before starting a non-trivial implementation or review, check `docs/implementation-log.md` and relevant ADRs in `docs/decisions/` in addition to required specs.
+Before starting a non-trivial implementation or review, check `docs/project-state.md`, recent relevant `docs/implementation-log.md` entries, and relevant ADRs in `docs/decisions/` in addition to required specs.
 
 Create or update an ADR when a decision is hard to infer from code alone, likely to be revisited, or affects multiple specs. Examples: package manager choice, backend module layout, migration strategy, auth token storage, deployment topology, background job broker, frontend state architecture.
 
 ## Required Reading Before Code Edits
 
 - `AGENTS.md`
+- `docs/project-state.md`
 - `specs/README.md`
 - `specs/000-product-vision.md`
 - `specs/001-api-conventions.md`
@@ -92,6 +95,7 @@ Memory responsibilities:
 
 - Add or update ADRs for architecture-level choices made while preparing specs.
 - Record spec readiness changes and open questions in `docs/implementation-log.md` when they affect implementation order.
+- Keep `docs/project-state.md` aligned when spec readiness, next likely work, current state, validation baseline, or known gaps change.
 - Keep `specs/README.md` aligned with new specs, statuses, and dependency order.
 
 Required output:
@@ -120,6 +124,7 @@ Rules:
 - Add or update required tests.
 - Update `.env.example` when adding config.
 - Update README/docs only when setup, usage, deployment, or public API behavior changes.
+- Update `docs/project-state.md` when current state, validation baseline, next likely work, or known gaps change.
 - Update `docs/implementation-log.md` with spec ID, branch/commit, files changed summary, validation run, and known gaps before review.
 - After every implementation commit, review-fix commit, or validation rerun that changes the state of a spec, update `docs/implementation-log.md` before ending the turn or requesting review.
 - Add or update ADRs only when implementation requires a durable technical decision not already captured by specs.
@@ -155,6 +160,7 @@ Blocking conditions:
 - Secrets committed.
 - Docker/local setup broken for touched services.
 - Missing implementation-log update for completed implementation work.
+- Missing project-state update when current state, validation baseline, next likely work, or known gaps changed.
 - Implementation log points to a stale branch, commit, validation result, review decision, or known-gap state.
 - Missing ADR for a durable cross-cutting decision introduced by the implementation.
 
@@ -180,6 +186,7 @@ Validation evidence:
 Memory responsibilities:
 
 - Verify `docs/implementation-log.md` reflects the implementation and validation evidence.
+- Verify `docs/project-state.md` reflects the current branch/spec state, known gaps, and latest validation baseline.
 - Verify any new durable architecture decision is captured in `docs/decisions/`.
 - Do not approve implementation if the project memory is materially stale for the active spec.
 
