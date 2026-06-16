@@ -35,6 +35,28 @@ Known gaps:
 
 ## Entries
 
+### 2026-06-16 — SPEC-104 — Merged locally to main
+
+Role: Ingeniero de software
+Branch: main
+Commit/PR: `5d019bd`, merge commit pending push
+Status: Merged
+
+Summary:
+- Committed `SPEC-104` implementation as `5d019bd`.
+- Pushed branch `spec-104-frontend-auth-shell` to origin.
+- Merged `spec-104-frontend-auth-shell` into local `main`.
+- Updated project state so future agents start from `main` and treat `SPEC-102` as the next likely implementation target.
+
+Validation:
+- command: NOT RUN after merge — merge was clean; pre-merge `make smoke` and `make verify` passed and are recorded below.
+
+Review:
+- decision: APPROVED
+
+Known gaps:
+- `main` push and feature-branch deletion still pending in this publishing step.
+
 ### 2026-06-16 — SPEC-104 — Final review approved
 
 Role: Review agent
