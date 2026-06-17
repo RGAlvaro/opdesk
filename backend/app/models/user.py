@@ -1,3 +1,5 @@
+"""SQLAlchemy user model for authentication and profile data."""
+
 import uuid
 from datetime import datetime
 
@@ -9,6 +11,8 @@ from app.db.base import Base
 
 
 class User(Base):
+    """Persisted account record with credentials, status flags, and timestamps."""
+
     __tablename__ = "users"
 
     id: Mapped[uuid.UUID] = mapped_column(Uuid, primary_key=True, default=uuid.uuid4)

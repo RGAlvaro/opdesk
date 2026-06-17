@@ -1,9 +1,12 @@
+// Route guard for public pages that authenticated users should skip.
+
 import { ReactNode } from "react";
 import { Navigate } from "react-router-dom";
 
 import { ApiError } from "../../shared/api";
 import { useSession } from "./session";
 
+/** Redirect signed-in users away from public auth and landing routes. */
 export function PublicOnlyRoute({ children }: { children: ReactNode }) {
   const session = useSession();
 

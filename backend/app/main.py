@@ -1,3 +1,5 @@
+"""Create and configure the FastAPI application used by every runtime entry point."""
+
 from fastapi import FastAPI
 
 from app.api.auth import router as auth_router
@@ -7,6 +9,7 @@ from app.api.users import router as users_router
 
 
 def create_app() -> FastAPI:
+    """Build the API app with shared error handling and versioned routers."""
     app = FastAPI(title="OpsDesk API")
     app.add_exception_handler(APIError, api_error_handler)
     app.include_router(auth_router)

@@ -1,16 +1,16 @@
 # Project State
 
-Last updated: 2026-06-16
+Last updated: 2026-06-17
 
 This file is the compact operational state for agents. Use it to orient quickly before reading detailed specs, ADRs, implementation history, or code.
 
 ## Current Work
 
 - Active branch: `main`
-- Active spec: `SPEC-102` organizations and RBAC is the next likely implementation target
-- Current state: `SPEC-104` is implemented, reviewed, merged locally to `main`, and ready after pushing `main`
+- Active spec: `SPEC-002` human-readable code comments is implemented and review approved
+- Current state: `SPEC-002` added human-readable comments to existing backend/frontend source code, established the future comment convention, and passed review
 - Documentation checkpoint: agent operational memory was restructured on 2026-06-16 with this file, central touch-to-spec routing, per-spec scope/context blocks, and `ADR-005`
-- Recent validation recorded in `docs/implementation-log.md`: frontend checks, `make test`, `make smoke`, and `make verify` passed for `SPEC-104`
+- Recent validation recorded in `docs/implementation-log.md`: `SPEC-002` passed `make smoke` and full `make verify` after Docker/PostgreSQL became available
 
 ## Implemented Specs
 
@@ -19,6 +19,7 @@ This file is the compact operational state for agents. Use it to orient quickly 
 | `SPEC-010` | Backend scaffold, local PostgreSQL, Alembic, Make harness | `backend/`, `docker-compose.yml`, `Makefile`, `.env.example` | Implemented and approved through later validation |
 | `SPEC-011` | Local Adminer database inspection | `docker-compose.yml`, `.env.example`, `README.md`, harness docs | Implemented and review approved |
 | `SPEC-101` | Backend auth and users | `backend/app`, `backend/tests`, Alembic migration `0002`, `.env.example` | Implemented and review approved after endpoint-level API tests |
+| `SPEC-002` | Human-readable code comments and initial comment pass | Existing backend/frontend source files, future source changes | Implemented and review approved |
 | `SPEC-104` | React app shell and auth/profile UI | `frontend/`, `Makefile`, `docker-compose.yml`, `.env.example`, `README.md` | Implemented, reviewed, and merged locally to `main` |
 
 ## Ready Specs Not Yet Implemented
@@ -37,7 +38,7 @@ This file is the compact operational state for agents. Use it to orient quickly 
 
 ## Next Likely Work
 
-1. Push `main` with merged `SPEC-104` changes and close the feature branch.
+1. Push `main` with merged `SPEC-104` and `SPEC-002` changes.
 2. Implement `SPEC-102` backend organizations and RBAC.
 3. Implement `SPEC-103` backend projects and tasks.
 4. Revisit frontend product UI specs after backend organization/project/task APIs exist.
@@ -52,9 +53,9 @@ This file is the compact operational state for agents. Use it to orient quickly 
 
 ## Validation Baseline
 
-- Latest recorded full local verification: `make verify` PASS for `SPEC-104` on 2026-06-16 after profile `401` review fix, run outside the sandbox because sandboxed processes could not connect to local PostgreSQL.
-- Latest recorded smoke check: `make smoke` PASS for backend, PostgreSQL, Adminer, and frontend on 2026-06-16 after profile `401` review fix.
-- Latest final review: `SPEC-104` APPROVED on 2026-06-16.
+- Latest recorded full local verification: `make verify` PASS for `SPEC-002` on 2026-06-17, run outside the sandbox because sandboxed processes could not connect to Docker PostgreSQL.
+- Latest recorded smoke check: `make smoke` PASS for `SPEC-002` on 2026-06-17 after Docker was available.
+- Latest final review: `SPEC-002` APPROVED on 2026-06-17.
 - Use `specs/harness/local-validation.md` for current command meanings and expected coverage.
 
 ## Code Map
@@ -90,3 +91,4 @@ For implementation or review:
 ## Related Decisions
 
 - `docs/decisions/ADR-005-agent-operational-memory.md`
+- `docs/decisions/ADR-006-human-readable-code-comments.md`

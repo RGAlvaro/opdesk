@@ -1,3 +1,5 @@
+"""Current-user profile endpoints."""
+
 from typing import Annotated
 
 from fastapi import APIRouter, Depends
@@ -14,6 +16,7 @@ router = APIRouter(prefix="/api/v1/users", tags=["users"])
 
 @router.get("/me", response_model=UserRead)
 def read_me(current_user: Annotated[User, Depends(get_current_user)]) -> UserRead:
+    """Return the authenticated user's public profile."""
     return UserRead.model_validate(current_user)
 
 
@@ -23,5 +26,6 @@ def update_me(
     current_user: Annotated[User, Depends(get_current_user)],
     db: Annotated[Session, Depends(get_db)],
 ) -> UserRead:
+    """Update mutable fields on the authenticated user's own profile."""
     user = UserService(db).update_profile(current_user, payload.full_name)
     return UserRead.model_validate(user)

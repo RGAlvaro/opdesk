@@ -1,3 +1,5 @@
+// Placeholder dashboard that anchors the authenticated workspace shell.
+
 import { Building2, FolderKanban, ListChecks } from "lucide-react";
 
 const upcoming = [
@@ -20,6 +22,7 @@ const upcoming = [
   },
 ];
 
+/** Show current shell status and reserved space for upcoming modules. */
 export function DashboardPage() {
   return (
     <section className="space-y-6">

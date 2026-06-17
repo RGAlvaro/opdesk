@@ -1,3 +1,5 @@
+// Frontend route and auth-flow tests for SPEC-104.
+
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
@@ -17,6 +19,7 @@ const user = {
   updated_at: "2026-06-15T10:00:00Z",
 };
 
+/** Build a JSON fetch response for mocked backend calls. */
 function jsonResponse(body: unknown, status = 200) {
   return new Response(JSON.stringify(body), {
     status,
@@ -24,10 +27,12 @@ function jsonResponse(body: unknown, status = 200) {
   });
 }
 
+/** Build an empty fetch response for endpoints like logout. */
 function emptyResponse(status = 204) {
   return new Response(null, { status });
 }
 
+/** Build a backend-shaped API error response for UI assertions. */
 function apiError(code: string, message: string, status: number) {
   return jsonResponse(
     {
@@ -41,6 +46,7 @@ function apiError(code: string, message: string, status: number) {
   );
 }
 
+/** Render the router under test with isolated query and memory-router state. */
 function renderRoute(initialPath: string) {
   const queryClient = new QueryClient({
     defaultOptions: {
@@ -49,6 +55,7 @@ function renderRoute(initialPath: string) {
     },
   });
 
+  /** Provide test-only routing and query context around the app router. */
   function Wrapper({ children }: { children: ReactNode }) {
     return (
       <QueryClientProvider client={queryClient}>
@@ -60,6 +67,7 @@ function renderRoute(initialPath: string) {
   return render(<AppRouter />, { wrapper: Wrapper });
 }
 
+/** Queue deterministic fetch responses for a test case. */
 function mockFetch(...responses: Response[]) {
   const fetchMock = vi.fn();
   responses.forEach((response) => fetchMock.mockResolvedValueOnce(response));

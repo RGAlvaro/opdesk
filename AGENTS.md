@@ -49,6 +49,7 @@ Do not create the full structure blindly.
 5. Tests and harness commands are part of the feature contract.
 6. A feature is not complete just because the app runs locally.
 7. Durable project memory belongs in committed files: specs, tests, migrations, docs, `docs/project-state.md`, `docs/implementation-log.md`, and `docs/decisions/`.
+8. Human-facing code comments help readers understand the repository, but they are not source of truth for behavior. Agents must rely on specs, tests, migrations, and ADRs rather than treating comments as required reading or contract authority.
 
 ## Workflow
 
@@ -191,6 +192,14 @@ Memory responsibilities:
 - Do not approve implementation if the project memory is materially stale for the active spec.
 
 ## Coding Rules
+
+Human-readable code documentation:
+
+- New source code files must start with a short file-level comment or docstring explaining the file's responsibility in human terms.
+- New functions, classes, hooks, components, services, repositories, schemas, models, fixtures, and test helpers must include one or two concise explanatory lines for human readers.
+- These comments should describe purpose, ownership, important constraints, or non-obvious behavior. They should not duplicate the code mechanically.
+- Code comments are maintained as reader support for the owner and recruiters. They do not replace specs, tests, migrations, ADRs, or API contracts.
+- Agents may use comments as orientation hints, but should not read every comment as part of mandatory context and must resolve conflicts in favor of specs and executable tests.
 
 Backend:
 

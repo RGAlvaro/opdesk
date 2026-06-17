@@ -1,3 +1,5 @@
+// Signup form page for creating the initial user profile.
+
 import { zodResolver } from "@hookform/resolvers/zod";
 import { UserPlus } from "lucide-react";
 import { useForm } from "react-hook-form";
@@ -22,6 +24,7 @@ const signupSchema = z.object({
 
 type SignupForm = z.infer<typeof signupSchema>;
 
+/** Render account creation with client-side password/profile validation. */
 export function SignupPage() {
   const signup = useSignup();
   const navigate = useNavigate();
@@ -34,6 +37,7 @@ export function SignupPage() {
     },
   });
 
+  /** Create the account, authenticate it, and enter the app shell. */
   async function onSubmit(values: SignupForm) {
     try {
       await signup.mutateAsync({

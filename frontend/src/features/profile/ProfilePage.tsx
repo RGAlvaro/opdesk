@@ -1,3 +1,5 @@
+// Profile page for viewing and updating the authenticated user's own details.
+
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Save } from "lucide-react";
@@ -16,6 +18,7 @@ const profileSchema = z.object({
 
 type ProfileForm = z.infer<typeof profileSchema>;
 
+/** Render the current user's profile summary and editable full-name form. */
 export function ProfilePage() {
   const session = useSession();
   const queryClient = useQueryClient();
@@ -51,6 +54,7 @@ export function ProfilePage() {
     },
   });
 
+  /** Persist profile edits through the current-user API endpoint. */
   async function onSubmit(values: ProfileForm) {
     try {
       await updateProfile.mutateAsync(values);

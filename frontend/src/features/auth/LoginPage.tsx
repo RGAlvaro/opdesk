@@ -1,3 +1,5 @@
+// Login form page for existing users.
+
 import { zodResolver } from "@hookform/resolvers/zod";
 import { LogIn } from "lucide-react";
 import { useForm } from "react-hook-form";
@@ -15,6 +17,7 @@ const loginSchema = z.object({
 
 type LoginForm = z.infer<typeof loginSchema>;
 
+/** Render credential login with client validation and safe API errors. */
 export function LoginPage() {
   const login = useLogin();
   const navigate = useNavigate();
@@ -26,6 +29,7 @@ export function LoginPage() {
     },
   });
 
+  /** Submit credentials and move authenticated users into the app shell. */
   async function onSubmit(values: LoginForm) {
     try {
       await login.mutateAsync(values);

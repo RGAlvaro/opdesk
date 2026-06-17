@@ -1,3 +1,5 @@
+// Central route table for public auth pages and the protected app shell.
+
 import { Navigate, Route, Routes } from "react-router-dom";
 
 import { LoginPage } from "../features/auth/LoginPage";
@@ -9,6 +11,7 @@ import { AppShell } from "./AppShell";
 import { DashboardPage } from "./DashboardPage";
 import { LandingPage } from "./LandingPage";
 
+/** Map URLs to route guards, public pages, and authenticated app content. */
 export function AppRouter() {
   return (
     <Routes>

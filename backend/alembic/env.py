@@ -1,3 +1,5 @@
+"""Alembic environment wiring for OpsDesk database migrations."""
+
 from logging.config import fileConfig
 
 from sqlalchemy import engine_from_config, pool
@@ -16,10 +18,12 @@ target_metadata = Base.metadata
 
 
 def get_url() -> str:
+    """Use the same configured database URL as the application runtime."""
     return get_settings().database_url
 
 
 def run_migrations_offline() -> None:
+    """Run migrations without opening a database connection."""
     context.configure(
         url=get_url(),
         target_metadata=target_metadata,
@@ -32,6 +36,7 @@ def run_migrations_offline() -> None:
 
 
 def run_migrations_online() -> None:
+    """Run migrations through a real database connection and metadata target."""
     configuration = config.get_section(config.config_ini_section, {})
     configuration["sqlalchemy.url"] = get_url()
     connectable = engine_from_config(

@@ -1,3 +1,5 @@
+"""Environment-backed settings for backend configuration."""
+
 from functools import lru_cache
 from typing import Literal
 
@@ -6,6 +8,8 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
+    """Typed configuration values loaded from environment variables or .env."""
+
     app_env: str = Field(default="local")
     debug: bool = Field(default=False)
     database_url: str = Field(
@@ -28,4 +32,5 @@ class Settings(BaseSettings):
 
 @lru_cache
 def get_settings() -> Settings:
+    """Return a cached settings object for dependency injection and startup code."""
     return Settings()

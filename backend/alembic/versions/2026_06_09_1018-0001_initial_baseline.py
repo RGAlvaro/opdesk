@@ -14,8 +14,10 @@ depends_on: str | Sequence[str] | None = None
 
 
 def upgrade() -> None:
+    """Leave the baseline revision empty so later migrations own real schema."""
     pass
 
 
 def downgrade() -> None:
+    """Reverse the empty baseline revision without changing database objects."""
     pass

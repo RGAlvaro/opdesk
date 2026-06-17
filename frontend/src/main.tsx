@@ -1,3 +1,5 @@
+// Browser entry point that mounts the React application into the Vite root.
+
 import React from "react";
 import ReactDOM from "react-dom/client";
 

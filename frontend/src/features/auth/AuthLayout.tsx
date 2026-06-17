@@ -1,6 +1,9 @@
+// Shared visual frame for login and signup pages.
+
 import { ReactNode } from "react";
 import { Link } from "react-router-dom";
 
+/** Render consistent public auth page structure around form content. */
 export function AuthLayout({
   title,
   subtitle,

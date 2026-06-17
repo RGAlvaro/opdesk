@@ -1,9 +1,12 @@
+// Route guard for pages that require an authenticated backend session.
+
 import { ReactNode } from "react";
 import { Navigate, useLocation } from "react-router-dom";
 
 import { ApiError } from "../../shared/api";
 import { useSession } from "./session";
 
+/** Resolve session state before allowing access to protected children. */
 export function ProtectedRoute({ children }: { children: ReactNode }) {
   const location = useLocation();
   const session = useSession();

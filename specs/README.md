@@ -27,6 +27,7 @@ Use this index for routing. Use `docs/project-state.md` for the compact current 
 |---|---|---|---|---|
 | `SPEC-000` | Ready | Product vision and MVP boundary | None | `specs/000-product-vision.md` |
 | `SPEC-001` | Ready | Cross-feature API conventions | `SPEC-000` | `specs/001-api-conventions.md`, API tests |
+| `SPEC-002` | Implemented | Human-readable code comments convention and initial comment pass | `SPEC-000` | `AGENTS.md`, source code files, `docs/decisions/ADR-006-human-readable-code-comments.md` |
 | `SPEC-010` | Implemented | Backend scaffold and local PostgreSQL database | `SPEC-000`, `SPEC-001` | `backend/`, `docker-compose.yml`, `Makefile`, `.env.example` |
 | `SPEC-011` | Implemented | Local database administration panel | `SPEC-010` | `docker-compose.yml`, `.env.example`, `README.md`, harness docs |
 | `SPEC-101` | Implemented | Authentication and users | `SPEC-010`, `SPEC-001` | `backend/app`, `backend/tests`, Alembic migrations, `.env.example` |
@@ -39,7 +40,7 @@ Use this index for routing. Use `docs/project-state.md` for the compact current 
 Implementation order should usually follow spec dependencies:
 
 ```text
-SPEC-010 -> SPEC-011 -> SPEC-101 -> SPEC-104 -> SPEC-102 -> SPEC-103 -> SPEC-201
+SPEC-010 -> SPEC-011 -> SPEC-101 -> SPEC-104 -> SPEC-002 -> SPEC-102 -> SPEC-103 -> SPEC-201
 SPEC-301 starts after SPEC-010 and should evolve as backend, frontend, Redis, and worker services exist.
 ```
 
@@ -60,6 +61,7 @@ Use this table to decide which feature spec to open before editing.
 |---|---|
 | Product boundaries, MVP scope, recruiter/demo goals | `SPEC-000` |
 | API paths, error shape, cookies, pagination, status codes, tenant-isolation conventions | `SPEC-001` |
+| File-level comments, function/class comments, or repository-wide code readability comments | `SPEC-002` |
 | Backend scaffold, settings, health endpoint, PostgreSQL, Alembic baseline, Make targets, local database env vars | `SPEC-010` |
 | Adminer, local DB inspection, Adminer port, local database admin smoke checks | `SPEC-011` |
 | Users, password hashing/policy, auth cookies/JWTs, `/api/v1/auth/*`, `/api/v1/users/me` | `SPEC-101` |

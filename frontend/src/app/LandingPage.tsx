@@ -1,6 +1,9 @@
+// Public entry page that routes visitors toward authentication.
+
 import { ArrowRight, LogIn } from "lucide-react";
 import { Link } from "react-router-dom";
 
+/** Present OpsDesk's current public call to action and roadmap preview. */
 export function LandingPage() {
   return (
     <main className="min-h-screen bg-surface text-ink">

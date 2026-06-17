@@ -1,3 +1,5 @@
+"""Authentication endpoints for registration, login, token refresh, and logout."""
+
 import uuid
 from datetime import timedelta
 from typing import Annotated
@@ -17,6 +19,7 @@ router = APIRouter(prefix="/api/v1/auth", tags=["auth"])
 
 
 def set_auth_cookies(response: Response, user_id: uuid.UUID, settings: Settings) -> None:
+    """Issue browser cookies for a freshly authenticated user session."""
     access_token = create_token(
         user_id=user_id,
         token_type="access",
@@ -49,6 +52,7 @@ def set_auth_cookies(response: Response, user_id: uuid.UUID, settings: Settings)
 
 @router.post("/register", response_model=UserRead, status_code=201)
 def register(payload: RegisterRequest, db: Annotated[Session, Depends(get_db)]) -> UserRead:
+    """Create a user account and return the safe public profile."""
     user = UserService(db).register_user(payload.email, payload.password, payload.full_name)
     return UserRead.model_validate(user)
 
@@ -60,6 +64,7 @@ def login(
     db: Annotated[Session, Depends(get_db)],
     settings: Annotated[Settings, Depends(get_settings)],
 ) -> LoginResponse:
+    """Authenticate credentials, set auth cookies, and return the logged-in user."""
     user = UserService(db).authenticate_user(payload.email, payload.password)
     set_auth_cookies(response, user.id, settings)
     return LoginResponse(user=UserRead.model_validate(user))
@@ -72,6 +77,7 @@ def refresh(
     db: Annotated[Session, Depends(get_db)],
     settings: Annotated[Settings, Depends(get_settings)],
 ) -> StatusResponse:
+    """Validate the refresh cookie and replace the short-lived access cookie."""
     refresh_token = request.cookies.get(settings.refresh_token_cookie_name)
     if refresh_token is None:
         raise APIError(401, "invalid_refresh_token", "Refresh token is invalid.")
@@ -103,6 +109,7 @@ def refresh(
 
 @router.post("/logout", status_code=204)
 def logout(response: Response, settings: Annotated[Settings, Depends(get_settings)]) -> Response:
+    """Clear auth cookies so the browser session is no longer authenticated."""
     response.delete_cookie(settings.access_token_cookie_name)
     response.delete_cookie(settings.refresh_token_cookie_name)
     response.status_code = 204

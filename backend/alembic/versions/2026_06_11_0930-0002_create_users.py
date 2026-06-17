@@ -18,6 +18,7 @@ depends_on: str | Sequence[str] | None = None
 
 
 def upgrade() -> None:
+    """Create the users table and unique email index for auth/profile features."""
     op.create_table(
         "users",
         sa.Column("id", sa.Uuid(), nullable=False),
@@ -38,5 +39,6 @@ def upgrade() -> None:
 
 
 def downgrade() -> None:
+    """Drop user auth/profile storage created by this revision."""
     op.drop_index(op.f("ix_users_email"), table_name="users")
     op.drop_table("users")

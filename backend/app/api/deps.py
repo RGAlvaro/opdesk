@@ -1,3 +1,5 @@
+"""Reusable FastAPI dependencies for authenticated API routes."""
+
 from typing import Annotated
 
 from fastapi import Depends, Request
@@ -16,6 +18,7 @@ def get_current_user(
     db: Annotated[Session, Depends(get_db)],
     settings: Annotated[Settings, Depends(get_settings)],
 ) -> User:
+    """Resolve the active user from the access-token cookie or raise a 401 error."""
     access_token = request.cookies.get(settings.access_token_cookie_name)
     if access_token is None:
         raise APIError(401, "not_authenticated", "Authentication is required.")

@@ -1,3 +1,5 @@
+/* Global Tailwind entry and base browser styles for the frontend shell. */
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;

@@ -1,3 +1,5 @@
+"""Backend auth and current-user API coverage for SPEC-101."""
+
 from collections.abc import Generator
 from http.cookies import SimpleCookie
 from typing import Any
@@ -26,16 +28,21 @@ from app.services.users import normalize_email, validate_password_policy
 
 
 class RequestStub:
+    """Minimal request double that carries cookies into dependency tests."""
+
     def __init__(self, cookies: dict[str, str] | None = None) -> None:
+        """Store cookie values with an empty default for unauthenticated cases."""
         self.cookies = cookies or {}
 
 
 def assert_api_error(exc: APIError, status_code: int, code: str) -> None:
+    """Assert the stable fields on an application APIError."""
     assert exc.status_code == status_code
     assert exc.code == code
 
 
 def extract_cookie(response: Response, cookie_name: str) -> str:
+    """Read one cookie value from FastAPI response headers."""
     cookie = SimpleCookie()
     for header, value in response.raw_headers:
         if header == b"set-cookie":
@@ -46,6 +53,7 @@ def extract_cookie(response: Response, cookie_name: str) -> str:
 
 @pytest.fixture(autouse=True)
 def fast_password_hasher(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Speed up password hashing so auth tests stay focused on behavior."""
     monkeypatch.setattr(
         security_service,
         "password_hasher",
@@ -55,6 +63,7 @@ def fast_password_hasher(monkeypatch: pytest.MonkeyPatch) -> None:
 
 @pytest.fixture
 def db_session() -> Generator[Session, None, None]:
+    """Provide an isolated in-memory database session for service-level tests."""
     engine = create_engine(
         "sqlite+pysqlite:///:memory:",
         connect_args={"check_same_thread": False},
@@ -73,6 +82,7 @@ def db_session() -> Generator[Session, None, None]:
 
 @pytest.fixture
 def settings() -> Settings:
+    """Return deterministic auth settings for token and cookie assertions."""
     return Settings(
         auth_secret_key="test_secret_key_minimum_32_chars",
         auth_cookie_secure=False,
@@ -81,6 +91,7 @@ def settings() -> Settings:
 
 @pytest.fixture
 def api_client(settings: Settings) -> Generator[tuple[TestClient, Session], None, None]:
+    """Run the FastAPI app against an isolated in-memory database."""
     engine = create_engine(
         "sqlite+pysqlite:///:memory:",
         connect_args={"check_same_thread": False},
@@ -91,9 +102,11 @@ def api_client(settings: Settings) -> Generator[tuple[TestClient, Session], None
     session = session_factory()
 
     def override_get_db() -> Generator[Session, None, None]:
+        """Inject the test database session into API routes."""
         yield session
 
     def override_get_settings() -> Settings:
+        """Inject deterministic settings into API routes."""
         return settings
 
     app.dependency_overrides[get_db] = override_get_db
@@ -114,14 +127,17 @@ def register_payload(
     password: str = "Example1234",
     full_name: str = "User Name",
 ) -> RegisterRequest:
+    """Build a service-level registration payload with useful defaults."""
     return RegisterRequest(email=email, password=password, full_name=full_name)
 
 
 def register_user(db_session: Session, payload: RegisterRequest | None = None) -> Any:
+    """Register a user through the route function for direct behavior tests."""
     return register(payload or register_payload(), db_session)
 
 
 def login_user(db_session: Session, settings: Settings) -> tuple[Any, Response]:
+    """Log in the default user through the route function and keep cookies."""
     response = Response()
     result = login(
         LoginRequest(email="user@example.com", password="Example1234"),
@@ -137,6 +153,7 @@ def api_register_payload(
     password: str = "Example1234",
     full_name: str = "User Name",
 ) -> dict[str, str]:
+    """Build a JSON registration payload with useful API defaults."""
     return {
         "email": email,
         "password": password,
@@ -148,6 +165,7 @@ def api_login_payload(
     email: str = "user@example.com",
     password: str = "Example1234",
 ) -> dict[str, str]:
+    """Build a JSON login payload with useful API defaults."""
     return {
         "email": email,
         "password": password,
@@ -155,6 +173,7 @@ def api_login_payload(
 
 
 def assert_error_response(response: Any, status_code: int, code: str) -> None:
+    """Assert the API error response envelope and expected status code."""
     assert response.status_code == status_code
     body = response.json()
     assert body["error"]["code"] == code
@@ -163,16 +182,19 @@ def assert_error_response(response: Any, status_code: int, code: str) -> None:
 
 
 def api_register_user(client: TestClient, payload: dict[str, str] | None = None) -> Any:
+    """Register a user through HTTP and assert the creation succeeded."""
     response = client.post("/api/v1/auth/register", json=payload or api_register_payload())
     assert response.status_code == 201
     return response
 
 
 def test_normalize_email_lowercases_and_trims() -> None:
+    """Email normalization removes spacing and case variance."""
     assert normalize_email("  USER@Example.COM ") == "user@example.com"
 
 
 def test_password_policy_rejects_weak_password() -> None:
+    """Weak passwords are rejected with the documented API error."""
     with pytest.raises(APIError) as exc_info:
         validate_password_policy("short1")
 
@@ -180,6 +202,7 @@ def test_password_policy_rejects_weak_password() -> None:
 
 
 def test_password_hashing_and_verification() -> None:
+    """Password hashing stores non-plaintext hashes and verifies candidates."""
     password_hash = hash_password("Example1234")
 
     assert password_hash != "Example1234"
@@ -190,6 +213,7 @@ def test_password_hashing_and_verification() -> None:
 def test_register_creates_first_superuser_and_excludes_sensitive_fields(
     db_session: Session,
 ) -> None:
+    """The first service-level registration becomes superuser and hides secrets."""
     user = register_user(db_session)
     data = user.model_dump()
 
@@ -204,6 +228,7 @@ def test_register_creates_first_superuser_and_excludes_sensitive_fields(
 def test_api_register_creates_first_superuser_and_excludes_sensitive_fields(
     api_client: tuple[TestClient, Session],
 ) -> None:
+    """The first API registration becomes superuser and hides secrets."""
     client, _ = api_client
 
     response = client.post("/api/v1/auth/register", json=api_register_payload())
@@ -220,6 +245,7 @@ def test_api_register_creates_first_superuser_and_excludes_sensitive_fields(
 
 
 def test_register_duplicate_email_is_case_insensitive(db_session: Session) -> None:
+    """Duplicate registration checks normalized email addresses."""
     register_user(db_session, register_payload(email="user@example.com"))
 
     with pytest.raises(APIError) as exc_info:
@@ -231,6 +257,7 @@ def test_register_duplicate_email_is_case_insensitive(db_session: Session) -> No
 def test_api_register_duplicate_email_is_case_insensitive(
     api_client: tuple[TestClient, Session],
 ) -> None:
+    """The API rejects duplicate email addresses regardless of case."""
     client, _ = api_client
     api_register_user(client, api_register_payload(email="user@example.com"))
 
@@ -243,6 +270,7 @@ def test_api_register_duplicate_email_is_case_insensitive(
 
 
 def test_register_rejects_weak_password(db_session: Session) -> None:
+    """Service-level registration applies the password policy."""
     with pytest.raises(APIError) as exc_info:
         register_user(db_session, register_payload(password="weak"))
 
@@ -250,6 +278,7 @@ def test_register_rejects_weak_password(db_session: Session) -> None:
 
 
 def test_api_register_rejects_weak_password(api_client: tuple[TestClient, Session]) -> None:
+    """The registration API returns the documented weak-password error."""
     client, _ = api_client
 
     response = client.post(
@@ -261,6 +290,7 @@ def test_api_register_rejects_weak_password(api_client: tuple[TestClient, Sessio
 
 
 def test_later_registered_users_are_not_superusers(db_session: Session) -> None:
+    """Only the first registered user receives bootstrap superuser status."""
     first = register_user(db_session, register_payload(email="one@example.com"))
     second = register_user(db_session, register_payload(email="two@example.com"))
 
@@ -271,6 +301,7 @@ def test_later_registered_users_are_not_superusers(db_session: Session) -> None:
 def test_api_later_registered_users_are_not_superusers(
     api_client: tuple[TestClient, Session],
 ) -> None:
+    """The API keeps bootstrap superuser status limited to the first account."""
     client, _ = api_client
 
     first = api_register_user(client, api_register_payload(email="one@example.com"))
@@ -283,6 +314,7 @@ def test_api_later_registered_users_are_not_superusers(
 def test_login_sets_auth_cookies_and_returns_safe_user(
     db_session: Session, settings: Settings
 ) -> None:
+    """Service-level login returns a safe user and sets httpOnly cookies."""
     register_user(db_session)
 
     result, response = login_user(db_session, settings)
@@ -302,6 +334,7 @@ def test_login_sets_auth_cookies_and_returns_safe_user(
 def test_api_login_sets_auth_cookies_and_returns_safe_user(
     api_client: tuple[TestClient, Session],
 ) -> None:
+    """The login API returns a safe user and browser auth cookies."""
     client, _ = api_client
     api_register_user(client)
 
@@ -320,6 +353,7 @@ def test_api_login_sets_auth_cookies_and_returns_safe_user(
 def test_login_invalid_credentials_returns_generic_error(
     db_session: Session, settings: Settings
 ) -> None:
+    """Invalid service-level login attempts use a generic credentials error."""
     register_user(db_session)
 
     with pytest.raises(APIError) as exc_info:
@@ -336,6 +370,7 @@ def test_login_invalid_credentials_returns_generic_error(
 def test_api_login_invalid_credentials_returns_generic_error(
     api_client: tuple[TestClient, Session],
 ) -> None:
+    """The login API does not reveal whether email or password failed."""
     client, _ = api_client
     api_register_user(client)
 
@@ -354,6 +389,7 @@ def test_api_login_invalid_credentials_returns_generic_error(
 
 
 def test_inactive_user_cannot_login(db_session: Session, settings: Settings) -> None:
+    """Inactive users are blocked after credential verification succeeds."""
     user = User(
         email="inactive@example.com",
         password_hash=hash_password("Example1234"),
@@ -375,6 +411,7 @@ def test_inactive_user_cannot_login(db_session: Session, settings: Settings) -> 
 
 
 def test_api_inactive_user_cannot_login(api_client: tuple[TestClient, Session]) -> None:
+    """The login API returns the inactive-user error for disabled accounts."""
     client, session = api_client
     user = User(
         email="inactive@example.com",
@@ -396,6 +433,7 @@ def test_api_inactive_user_cannot_login(api_client: tuple[TestClient, Session]) 
 def test_refresh_with_valid_cookie_sets_new_access_cookie(
     db_session: Session, settings: Settings
 ) -> None:
+    """A valid refresh cookie produces a new access cookie."""
     register_user(db_session)
     _, login_response = login_user(db_session, settings)
     refresh_token = extract_cookie(login_response, "refresh_token")
@@ -410,6 +448,7 @@ def test_refresh_with_valid_cookie_sets_new_access_cookie(
 def test_api_refresh_with_valid_cookie_sets_new_access_cookie(
     api_client: tuple[TestClient, Session],
 ) -> None:
+    """The refresh API renews access cookies for valid sessions."""
     client, _ = api_client
     api_register_user(client)
     client.post("/api/v1/auth/login", json=api_login_payload())
@@ -422,6 +461,7 @@ def test_api_refresh_with_valid_cookie_sets_new_access_cookie(
 
 
 def test_refresh_without_cookie_fails(db_session: Session, settings: Settings) -> None:
+    """Missing refresh cookies fail with the documented auth error."""
     with pytest.raises(APIError) as exc_info:
         refresh(RequestStub(), Response(), db_session, settings)
 
@@ -429,6 +469,7 @@ def test_refresh_without_cookie_fails(db_session: Session, settings: Settings) -
 
 
 def test_api_refresh_without_cookie_fails(api_client: tuple[TestClient, Session]) -> None:
+    """The refresh API rejects unauthenticated refresh requests."""
     client, _ = api_client
 
     response = client.post("/api/v1/auth/refresh")
@@ -437,6 +478,7 @@ def test_api_refresh_without_cookie_fails(api_client: tuple[TestClient, Session]
 
 
 def test_logout_clears_auth_cookies(settings: Settings) -> None:
+    """Service-level logout expires both auth cookies."""
     response = logout(Response(), settings)
 
     set_cookie = ",".join(
@@ -448,6 +490,7 @@ def test_logout_clears_auth_cookies(settings: Settings) -> None:
 
 
 def test_api_logout_clears_auth_cookies(api_client: tuple[TestClient, Session]) -> None:
+    """The logout API expires both auth cookies with a 204 response."""
     client, _ = api_client
     api_register_user(client)
     client.post("/api/v1/auth/login", json=api_login_payload())
@@ -462,6 +505,7 @@ def test_api_logout_clears_auth_cookies(api_client: tuple[TestClient, Session]) 
 
 
 def test_users_me_requires_authentication(db_session: Session, settings: Settings) -> None:
+    """Current-user dependency rejects requests without auth cookies."""
     with pytest.raises(APIError) as exc_info:
         get_current_user(RequestStub(), db_session, settings)
 
@@ -469,6 +513,7 @@ def test_users_me_requires_authentication(db_session: Session, settings: Setting
 
 
 def test_api_users_me_requires_authentication(api_client: tuple[TestClient, Session]) -> None:
+    """The current-user API requires authentication."""
     client, _ = api_client
 
     response = client.get("/api/v1/users/me")
@@ -477,6 +522,7 @@ def test_api_users_me_requires_authentication(api_client: tuple[TestClient, Sess
 
 
 def test_users_me_returns_current_user(db_session: Session, settings: Settings) -> None:
+    """Current-user route function returns the authenticated user's profile."""
     register_user(db_session)
     _, login_response = login_user(db_session, settings)
     access_token = extract_cookie(login_response, "access_token")
@@ -490,6 +536,7 @@ def test_users_me_returns_current_user(db_session: Session, settings: Settings) 
 
 
 def test_api_users_me_returns_current_user(api_client: tuple[TestClient, Session]) -> None:
+    """The current-user API returns the safe authenticated profile."""
     client, _ = api_client
     api_register_user(client)
     client.post("/api/v1/auth/login", json=api_login_payload())
@@ -502,6 +549,7 @@ def test_api_users_me_returns_current_user(api_client: tuple[TestClient, Session
 
 
 def test_users_me_updates_only_current_profile(db_session: Session, settings: Settings) -> None:
+    """Profile update normalizes and persists the current user's name."""
     register_user(db_session)
     _, login_response = login_user(db_session, settings)
     access_token = extract_cookie(login_response, "access_token")
@@ -517,6 +565,7 @@ def test_users_me_updates_only_current_profile(db_session: Session, settings: Se
 def test_api_users_me_updates_only_current_profile(
     api_client: tuple[TestClient, Session],
 ) -> None:
+    """The profile API updates only the authenticated user's mutable fields."""
     client, _ = api_client
     api_register_user(client)
     client.post("/api/v1/auth/login", json=api_login_payload())
@@ -528,6 +577,7 @@ def test_api_users_me_updates_only_current_profile(
 
 
 def test_users_me_rejects_invalid_profile(db_session: Session, settings: Settings) -> None:
+    """Service-level profile update rejects invalid names."""
     register_user(db_session)
     _, login_response = login_user(db_session, settings)
     access_token = extract_cookie(login_response, "access_token")
@@ -542,6 +592,7 @@ def test_users_me_rejects_invalid_profile(db_session: Session, settings: Setting
 
 
 def test_api_users_me_rejects_invalid_profile(api_client: tuple[TestClient, Session]) -> None:
+    """The profile API returns the documented invalid-profile error."""
     client, _ = api_client
     api_register_user(client)
     client.post("/api/v1/auth/login", json=api_login_payload())

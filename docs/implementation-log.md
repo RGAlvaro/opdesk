@@ -35,6 +35,79 @@ Known gaps:
 
 ## Entries
 
+### 2026-06-17 — SPEC-002 — Review approved
+
+Role: Review agent
+Branch: main
+Commit/PR: Pending
+Status: Reviewed
+
+Summary:
+- Reviewed `SPEC-002` implementation against the human-readable comment convention and source-of-truth caveat.
+- Verified file-level comments/docstrings exist on source files under `backend/` and `frontend/` that are in scope.
+- Verified representative function/class/component/hook/helper comments are concise and behavior-preserving.
+- Updated project state to reflect successful Docker-backed validation and approval.
+
+Validation:
+- command: `make smoke`: PASS — Docker Compose built/started PostgreSQL, backend, Adminer, and frontend; health/Adminer/frontend checks succeeded.
+- command: `make verify`: PASS outside sandbox — lint, format, typecheck, backend tests, frontend tests, `alembic upgrade head`, and `alembic check` passed.
+- command: `git diff --check`: PASS
+
+Review:
+- decision: APPROVED
+
+Known gaps:
+- None for `SPEC-002`.
+
+### 2026-06-17 — SPEC-002 — Human-readable code comments implemented
+
+Role: Ingeniero de software
+Branch: main
+Commit/PR: Pending
+Status: Implemented
+
+Summary:
+- Added file-level comments/docstrings to existing backend, frontend, test, migration, and frontend configuration source files.
+- Added concise explanatory comments/docstrings to backend functions/classes, test helpers/fixtures/cases, frontend components/hooks/helpers/types, and migration functions.
+- Updated project memory and spec index so `SPEC-002` is implemented and awaiting review.
+
+Validation:
+- command: `make lint`: PASS
+- command: `make format-check`: PASS
+- command: `make test`: PASS — backend 35 passed, 1 DB test deselected; frontend 12 passed.
+- command: `make typecheck`: PASS
+- command: `make verify`: FAIL — lint, format, typecheck, backend tests, and frontend tests passed; Alembic migration check failed because local PostgreSQL was not accepting connections.
+- command: `make verify` outside sandbox: FAIL — same non-Docker checks passed; Alembic failed with connection refused to `127.0.0.1:5432`.
+- command: `make smoke`: FAIL — Docker is not installed in this WSL distro, so PostgreSQL/local services could not be started.
+- command: `git diff --check`: PASS
+
+Review:
+- decision: APPROVED on 2026-06-17
+
+Known gaps:
+- Resolved by the review entry above.
+
+### 2026-06-17 — SPEC-002 — Human-readable code comments spec
+
+Role: Arquitecto de specs
+Branch: main
+Commit/PR: Pending
+Status: Ready
+
+Summary:
+- Added `SPEC-002` for repository-wide human-readable file/function/class comments and the initial existing-code comment pass.
+- Updated `AGENTS.md` to make the convention mandatory for future source code while clarifying comments are reader support, not source-of-truth material for agents.
+- Added `ADR-006` to record the durable decision and updated spec routing/project state so `SPEC-002` is the next implementation target.
+
+Validation:
+- command: NOT RUN — spec/documentation-only change.
+
+Review:
+- decision: N/A
+
+Known gaps:
+- Resolved by the implementation entry above.
+
 ### 2026-06-16 — SPEC-104 — Merged locally to main
 
 Role: Ingeniero de software

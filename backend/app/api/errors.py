@@ -1,3 +1,5 @@
+"""Application-specific API errors and their JSON response adapter."""
+
 from typing import Any
 
 from fastapi import Request
@@ -5,6 +7,8 @@ from fastapi.responses import JSONResponse
 
 
 class APIError(Exception):
+    """Represent an API error that follows the repository-wide error contract."""
+
     def __init__(
         self,
         status_code: int,
@@ -19,6 +23,7 @@ class APIError(Exception):
 
 
 async def api_error_handler(_request: Request, exc: Exception) -> JSONResponse:
+    """Convert APIError exceptions into the stable JSON error envelope."""
     if not isinstance(exc, APIError):
         raise exc
     return JSONResponse(

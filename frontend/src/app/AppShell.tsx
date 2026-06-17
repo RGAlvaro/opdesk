@@ -1,3 +1,5 @@
+// Authenticated application shell with navigation, user chrome, and nested pages.
+
 import { LogOut, UserRound } from "lucide-react";
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
 
@@ -5,11 +7,13 @@ import { useLogout, useSession } from "../features/auth/session";
 
 const disabledNavItems = ["Organizations", "Projects", "Tasks"];
 
+/** Render the protected layout and route outlet for signed-in users. */
 export function AppShell() {
   const { data: user } = useSession();
   const logout = useLogout();
   const navigate = useNavigate();
 
+  /** End the session and return the browser to the public entry page. */
   async function handleLogout() {
     try {
       await logout.mutateAsync();
