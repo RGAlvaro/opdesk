@@ -38,11 +38,10 @@ This file is the compact operational state for agents. Use it to orient quickly 
 
 ## Next Likely Work
 
-1. Push `main` with merged `SPEC-104` and `SPEC-002` changes.
-2. Implement `SPEC-102` backend organizations and RBAC.
-3. Implement `SPEC-103` backend projects and tasks.
-4. Revisit frontend product UI specs after backend organization/project/task APIs exist.
-5. Expand `SPEC-301` as frontend, backend, database, Redis, and worker services become real.
+1. Implement `SPEC-102` backend organizations and RBAC.
+2. Implement `SPEC-103` backend projects and tasks.
+3. Revisit frontend product UI specs after backend organization/project/task APIs exist.
+4. Expand `SPEC-301` as frontend, backend, database, Redis, and worker services become real.
 
 ## Known Gaps
 

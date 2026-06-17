@@ -39,7 +39,7 @@ Known gaps:
 
 Role: Review agent
 Branch: main
-Commit/PR: Pending
+Commit/PR: `86a1332`
 Status: Reviewed
 
 Summary:
@@ -63,7 +63,7 @@ Known gaps:
 
 Role: Ingeniero de software
 Branch: main
-Commit/PR: Pending
+Commit/PR: `86a1332`
 Status: Implemented
 
 Summary:
@@ -91,7 +91,7 @@ Known gaps:
 
 Role: Arquitecto de specs
 Branch: main
-Commit/PR: Pending
+Commit/PR: `86a1332`
 Status: Ready
 
 Summary:
