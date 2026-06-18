@@ -39,7 +39,7 @@ Known gaps:
 
 Role: Ingeniero de software and Review agent
 Branch: codex/spec-102-organizations-rbac
-Commit/PR: This implementation commit; draft PR pending
+Commit/PR: `7d404fd` / draft PR `#3`
 Status: Reviewed
 
 Summary:
