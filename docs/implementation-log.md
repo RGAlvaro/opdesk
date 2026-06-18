@@ -35,6 +35,188 @@ Known gaps:
 
 ## Entries
 
+### 2026-06-18 — SPEC-102 — AC-15 review fix approved
+
+Role: Ingeniero de software and Review agent
+Branch: codex/spec-102-organizations-rbac
+Commit/PR: This implementation commit; draft PR pending
+Status: Reviewed
+
+Summary:
+- Added the missing endpoint assertion that an organization `member` receives `403 insufficient_role` when attempting permanent organization deletion.
+- Re-reviewed AC-15 alongside the existing admin `403`, non-member `404`, owner deletion, user retention, membership cascade, and slug-reuse assertions.
+- Updated project memory to mark `SPEC-102` implemented and review approved.
+
+Validation:
+- command: `make test-backend`: PASS — 53 passed, 2 DB tests deselected.
+- command: `make smoke`: PASS — PostgreSQL, backend, Adminer, and frontend built, started, and responded.
+- command: `make verify`: PASS outside sandbox — lint, format, backend/frontend type checks and tests, migration `0004`, and Alembic drift checks passed.
+- command: `make test-backend-db`: PASS outside sandbox — 2 PostgreSQL tests passed, including concurrent ownership transfer.
+
+Review:
+- decision: APPROVED
+
+Known gaps:
+- None for `SPEC-102`; invitations remain explicitly outside its scope.
+
+### 2026-06-18 — SPEC-102 — Single-owner revision changes requested
+
+Role: Review agent
+Branch: main
+Commit/PR: Pending
+Status: Reviewed
+
+Summary:
+- Reviewed the revised single-owner model, migration `0004`, generic role restrictions, ownership transfer, permanent deletion, tenant isolation, audit behavior, tests, and project memory against `SPEC-102`, `SPEC-001`, and `ADR-007`.
+- Confirmed the implementation preserves one owner, serializes concurrent transfers/deletion, revalidates ownership after locking, rolls back failed transfers, retains users on deletion, and reuses deleted slugs.
+- Found one acceptance-test gap: AC-15 requires both admin and member deletion attempts to return `403`, but the deletion test covers admin and non-member only.
+
+Validation:
+- command: `make test-backend`: PASS — 53 passed, 2 DB tests deselected.
+- command: `make lint`: PASS.
+- command: `make format-check`: PASS.
+- command: `make typecheck`: PASS — backend and frontend checks passed.
+- command: `make smoke test-backend-db migrations-check`: PASS — services responded, 2 PostgreSQL tests passed, migration `0004` was current, and Alembic found no new operations.
+- command: `git diff --check`: PASS before this memory update.
+
+Review:
+- decision: CHANGES_REQUESTED
+
+Known gaps:
+- Add endpoint-level coverage asserting a `member` receives `403 insufficient_role` from `DELETE /api/v1/organizations/{organization_id}`, then rerun the affected tests and request re-review.
+
+### 2026-06-18 — SPEC-102 — Single-owner revision implemented
+
+Role: Ingeniero de software
+Branch: main
+Commit/PR: Pending
+Status: Implemented
+
+Summary:
+- Added migration `0004` and matching SQLAlchemy metadata for a unique partial owner index per organization.
+- Restricted generic membership role/removal operations from assigning, demoting, or removing the owner role.
+- Added atomic ownership transfer with organization-row locking, post-lock owner revalidation, ordered demotion flush, rollback on persistence failure, and audit logging.
+- Added owner-only permanent organization deletion with serialized locking, membership cleanup, retained user accounts, slug reuse, and audit logging.
+- Expanded endpoint coverage and added a PostgreSQL concurrency test forcing two transfers to authorize before competing for the same organization lock.
+
+Validation:
+- command: `make verify`: PASS — lint, format, strict backend/frontend types, 53 backend tests, 12 frontend tests, `alembic upgrade head`, and `alembic check` passed.
+- command: `make smoke`: PASS — PostgreSQL, backend, Adminer, and frontend built, started, and responded.
+- command: `make test-backend-db`: PASS — 2 PostgreSQL tests passed, including concurrent ownership transfer.
+- command: `make migrations-check`: PASS — migration `0004` applied and Alembic detected no new upgrade operations.
+- command: `git diff --check`: PASS before this memory update.
+
+Review:
+- decision: N/A — revised implementation awaits review.
+
+Known gaps:
+- No implementation gaps identified; review approval remains pending.
+
+### 2026-06-18 — SPEC-102 — Single-owner policy and organization deletion spec refresh
+
+Role: Arquitecto de specs
+Branch: main
+Commit/PR: Pending
+Status: Ready
+
+Summary:
+- Replaced multiple-owner/last-owner policy with exactly one owner per organization.
+- Added a dedicated atomic ownership-transfer contract that promotes an existing member and demotes the previous owner to admin.
+- Prevented generic membership role/removal endpoints from assigning, demoting, or removing the owner role.
+- Added owner-only permanent organization deletion with membership cleanup, retained user accounts, and slug reuse.
+- Added migration, PostgreSQL concurrency, audit, error, and acceptance requirements, and aligned `ADR-007` with the revised policy.
+
+Validation:
+- command: `git diff --check`: PASS.
+- command: implementation harness NOT RUN — spec/ADR/project-memory-only change; implementation validation is required after code alignment.
+
+Review:
+- decision: N/A
+
+Known gaps:
+- Existing organization code, migration, and tests implement the superseded multiple-owner policy and must be updated before `SPEC-102` can return to review.
+
+### 2026-06-18 — SPEC-102 — Review blocked by owner-removal policy gap
+
+Role: Review agent
+Branch: main
+Commit/PR: Pending
+Status: Blocked
+
+Summary:
+- Reviewed the complete implementation against `SPEC-102`, `SPEC-001`, `ADR-007`, migration `0003`, tests, and project memory.
+- Found conflicting source-of-truth rules for deleting owners: the permissions table and endpoint description allow removing only non-owner members, while BR-10 and the documented `last_owner_required` delete error imply that a non-final owner may be removed.
+- Confirmed the implementation permits deleting an owner whenever another owner remains, but no acceptance test covers that policy choice.
+
+Validation:
+- command: `make test-backend`: PASS — 47 passed, 1 DB test deselected.
+- command: `make lint`: PASS.
+- command: `make format-check`: PASS.
+- command: `make typecheck`: PASS — backend and frontend checks passed.
+- command: `make smoke migrations-check`: PASS — services responded, migration `0003` was current, and Alembic detected no new upgrade operations.
+- command: `git diff --check`: PASS before this memory update.
+
+Review:
+- decision: BLOCKED_BY_SPEC_GAP
+
+Known gaps:
+- An Arquitecto de specs must decide whether deleting a non-final owner is allowed and document the expected status/error when it is not. Implementation and endpoint tests must then match that decision before re-review.
+
+### 2026-06-18 — SPEC-102 — Review approved
+
+Role: Review agent
+Branch: main
+Commit/PR: Pending
+Status: Reviewed
+
+Summary:
+- Reviewed models, migration, repository scoping, service authorization, HTTP contracts, acceptance tests, project memory, and `ADR-007` against `SPEC-102` and `SPEC-001`.
+- Confirmed all ten acceptance criteria have endpoint-level coverage and tenant access consistently returns `404` for non-members versus `403` for underprivileged members.
+- Moved the final user lookup for role-change responses out of the route and behind the existing user repository boundary.
+
+Validation:
+- command: `make smoke`: PASS — PostgreSQL, backend, Adminer, and frontend built, started, and responded.
+- command: `make verify`: PASS — lint, format, strict backend/frontend types, 47 backend tests, 12 frontend tests, live `alembic upgrade head`, and `alembic check` passed.
+- command: `poetry run pytest tests/test_organizations_api.py -q`: PASS — 12 passed after the review adjustment.
+- command: `poetry run ruff check . && poetry run ruff format --check .`: PASS.
+- command: `poetry run mypy app`: PASS — no issues in 27 source files.
+- command: `git diff --check`: PASS after removing modified Markdown trailing whitespace.
+
+Review:
+- decision: APPROVED
+
+Known gaps:
+- None for `SPEC-102`; invitations remain explicitly outside its scope.
+
+### 2026-06-18 — SPEC-102 — Organizations and RBAC implemented
+
+Role: Ingeniero de software
+Branch: main
+Commit/PR: Pending
+Status: Implemented
+
+Summary:
+- Added organization and membership models with owner/admin/member roles, migration `0003`, uniqueness constraints, and tenant lookup indexes.
+- Added organization schemas, tenant-scoped repository queries, service-owned isolation/RBAC policy, final-owner locking, role-change audit logging, and all specified organization/member routes.
+- Added 12 endpoint-level tests covering creation, owner membership, slug behavior, tenant isolation, pagination, role permissions, final-owner protection, updates, safe member listing, and membership-only deletion.
+- Added `ADR-007` to preserve the tenant isolation and RBAC enforcement pattern for `SPEC-103`.
+
+Validation:
+- command: `make test-backend`: PASS — 47 passed, 1 DB test deselected.
+- command: `make typecheck`: PASS — backend strict mypy and frontend TypeScript checks passed.
+- command: `poetry run alembic upgrade head --sql`: PASS — PostgreSQL DDL generated through migration `0003`.
+- command: `make smoke`: PASS — PostgreSQL, backend, Adminer, and frontend started and responded.
+- command: `make migrations-check`: PASS — migration `0003` applied to live PostgreSQL and Alembic detected no new upgrade operations.
+- command: `make lint`: PASS after fixing one test import-order issue found by the initial run.
+- command: `make format-check`: PASS after formatting migration `0003` following the initial run.
+- command: `make verify`: PASS — all backend/frontend checks and live migration validation passed.
+
+Review:
+- decision: APPROVED on 2026-06-18.
+
+Known gaps:
+- None for `SPEC-102`; invitations remain explicitly outside its scope.
+
 ### 2026-06-17 — SPEC-002 — Review approved
 
 Role: Review agent

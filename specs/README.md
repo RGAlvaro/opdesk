@@ -32,7 +32,7 @@ Use this index for routing. Use `docs/project-state.md` for the compact current 
 | `SPEC-011` | Implemented | Local database administration panel | `SPEC-010` | `docker-compose.yml`, `.env.example`, `README.md`, harness docs |
 | `SPEC-101` | Implemented | Authentication and users | `SPEC-010`, `SPEC-001` | `backend/app`, `backend/tests`, Alembic migrations, `.env.example` |
 | `SPEC-104` | Implemented | Frontend app shell and auth UI | `SPEC-101` | `frontend/`, `Makefile`, `docker-compose.yml`, `.env.example`, `README.md` |
-| `SPEC-102` | Ready | Organizations and RBAC | `SPEC-101` | Backend models, migration, APIs, services, tests |
+| `SPEC-102` | Implemented | Organizations and RBAC | `SPEC-101` | Backend models, migration, APIs, services, tests |
 | `SPEC-103` | Ready | Projects and tasks | `SPEC-102` | Backend models, migration, APIs, services, tests |
 | `SPEC-201` | Draft | Background jobs and notifications | `SPEC-103` | Redis/Celery worker, notification models, tests |
 | `SPEC-301` | Ready | Production deployment and operations | Starts after `SPEC-010`; evolves with services | Production Compose, Caddy, deployment docs, backup/restore docs |

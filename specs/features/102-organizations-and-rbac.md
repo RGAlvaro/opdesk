@@ -1,8 +1,8 @@
 # SPEC-102 — Organizations and RBAC
 
-Status: Ready  
+Status: Implemented
 Owner: Arquitecto de specs  
-Last updated: 2026-06-16
+Last updated: 2026-06-18
 
 ## Scope And Required Context
 
@@ -33,8 +33,10 @@ Users must work inside organizations/workspaces, and every tenant-scoped resourc
 ## Goals
 
 - Allow authenticated users to create organizations.
-- Create owner membership for the creator.
+- Create the single owner membership for the creator.
 - Support roles: `owner`, `admin`, `member`.
+- Allow the current owner to transfer ownership atomically to another member.
+- Allow the current owner to permanently delete the organization.
 - Enforce tenant isolation on organization-scoped resources.
 - Establish reusable permission checks for later specs.
 
@@ -49,6 +51,7 @@ Users must work inside organizations/workspaces, and every tenant-scoped resourc
 - Enterprise departments.
 - External guest users.
 - Invitations. Invitations belong to a later feature.
+- Organization restore or soft-delete recovery.
 - SSO.
 
 ## Actors And Permissions
@@ -56,25 +59,30 @@ Users must work inside organizations/workspaces, and every tenant-scoped resourc
 | Actor | Permission |
 |---|---|
 | Authenticated user | Create organization |
-| Owner | Read/update organization, list members, change member roles, remove non-owner members |
+| Owner | Read/update/delete organization, list members, change non-owner member roles, remove non-owner members, transfer ownership |
 | Admin | Read organization, list members, manage projects/tasks |
 | Member | Read organization and participate in visible tasks |
 | Non-member | No access to organization data |
 
 ## Business Rules
 
-- BR-1: Every organization must have at least one owner.
-- BR-2: The creator automatically becomes owner.
+- BR-1: Every organization must have exactly one owner at the end of each committed transaction.
+- BR-2: The creator automatically becomes the initial owner.
 - BR-3: Organization slug is unique, lowercase, URL-safe, and generated from name unless supplied.
 - BR-4: Public organization URLs use UUID `organization_id`; slug is display/search metadata.
 - BR-5: A user can belong to multiple organizations.
 - BR-6: Tenant-scoped queries must always filter by organization ID.
 - BR-7: Non-members receive `404` for organization-owned resources.
 - BR-8: Members receive `403` when they are in the organization but lack the required role.
-- BR-9: Members cannot escalate their own role.
-- BR-10: The last owner cannot be removed or demoted.
+- BR-9: Members cannot escalate their own role, and the generic membership role endpoint cannot assign or remove the `owner` role.
+- BR-10: Ownership changes only through the dedicated ownership-transfer endpoint.
 - BR-11: Organization name and slug updates are owner-only.
 - BR-12: Removing a member deletes their membership only; it does not delete the user account.
+- BR-13: Ownership transfer requires an existing non-owner membership in the same organization, promotes that membership to `owner`, and demotes the previous owner to `admin` atomically.
+- BR-14: The current owner cannot remove their membership, leave the organization, or demote themselves without transferring ownership first.
+- BR-15: Organization deletion is owner-only, permanent, and removes the organization plus all memberships without deleting user accounts.
+- BR-16: Future organization-owned records, including projects and tasks, must define deletion behavior consistent with permanent organization deletion before they are implemented.
+- BR-17: A deleted organization's slug becomes available for reuse.
 
 ## Data Model Impact
 
@@ -103,10 +111,11 @@ Indexes:
 
 - unique `organizations.slug`
 - unique `(user_id, organization_id)`
+- unique partial index on `organization_memberships.organization_id` where `role = 'owner'`, enforcing at most one owner per organization
 - index `(organization_id, role)`
 - index `(user_id)`
 
-Migration required.
+Migration required. The service transaction establishes the initial owner during organization creation and preserves exactly one owner during transfer; the partial unique index prevents a committed or concurrent second owner. Because PostgreSQL partial unique indexes are not deferrable, transfer must demote and flush the previous owner before promoting the target, while keeping both writes inside one transaction.
 
 ## API Contract
 
@@ -177,6 +186,19 @@ Errors:
 | 404 | `organization_not_found` | Missing or non-member |
 | 409 | `organization_slug_taken` | Slug already exists |
 
+### `DELETE /api/v1/organizations/{organization_id}`
+
+Owner only. Permanently deletes the organization and all organization memberships. User accounts are retained. Future organization-owned resources must be deleted according to their governing specs.
+
+Response `204`: organization deleted with no response body.
+
+Errors:
+
+| Status | Code | Condition |
+|---:|---|---|
+| 403 | `insufficient_role` | Admin/member attempts organization deletion |
+| 404 | `organization_not_found` | Missing organization or non-member |
+
 ### `GET /api/v1/organizations/{organization_id}/members`
 
 Owner/admin only.
@@ -192,7 +214,7 @@ Errors:
 
 ### `PATCH /api/v1/organizations/{organization_id}/members/{user_id}`
 
-Owner only.
+Owner only. This endpoint changes only `admin` and `member` roles. It cannot assign `owner` or modify the current owner's role.
 
 Request:
 
@@ -210,11 +232,11 @@ Errors:
 |---:|---|---|
 | 403 | `insufficient_role` | Non-owner attempts role change |
 | 404 | `membership_not_found` | User is not a member of the organization |
-| 409 | `last_owner_required` | Would remove/demote final owner |
+| 409 | `ownership_transfer_required` | Request attempts to assign `owner` or modify the current owner's role |
 
 ### `DELETE /api/v1/organizations/{organization_id}/members/{user_id}`
 
-Owner only. Removes a non-owner member from the organization.
+Owner only. Removes a non-owner member from the organization. The owner membership cannot be removed through this endpoint.
 
 Response `204`: membership removed.
 
@@ -224,7 +246,32 @@ Errors:
 |---:|---|---|
 | 403 | `insufficient_role` | Non-owner attempts member removal |
 | 404 | `membership_not_found` | User is not a member of the organization |
-| 409 | `last_owner_required` | Would remove final owner |
+| 409 | `ownership_transfer_required` | Request attempts to remove the current owner |
+
+### `POST /api/v1/organizations/{organization_id}/transfer-ownership`
+
+Current owner only. Transfers ownership to an existing member in the same organization.
+
+Request:
+
+```json
+{
+  "new_owner_user_id": "uuid"
+}
+```
+
+The operation must lock the organization row with `SELECT ... FOR UPDATE`, then reload and revalidate the current owner and target membership. Within the same transaction it demotes and flushes the previous owner to `admin`, promotes the target member to `owner`, and commits both changes atomically. Concurrent ownership transfer and organization deletion operations must serialize on the same organization-row lock.
+
+Response `204`: ownership transferred with no response body.
+
+Errors:
+
+| Status | Code | Condition |
+|---:|---|---|
+| 403 | `insufficient_role` | Admin/member attempts ownership transfer |
+| 404 | `organization_not_found` | Missing organization or non-member actor |
+| 404 | `membership_not_found` | Target user is not a member of the organization |
+| 409 | `ownership_transfer_not_required` | Target user is already the current owner |
 
 ## Acceptance Criteria
 
@@ -234,10 +281,16 @@ Errors:
 - AC-4: Given a non-member, when they request organization details by UUID, then the API returns `404`.
 - AC-5: Given a member, when they request organizations list, then only organizations where they are a member are returned.
 - AC-6: Given a member without owner role, when they attempt role management, then the API returns `403`.
-- AC-7: Given an owner, when they attempt to demote/remove the last owner, then the API returns `409`.
+- AC-7: Given the current owner, when the generic role or member-removal endpoint attempts to alter the owner membership, then the API returns `409 ownership_transfer_required`.
 - AC-8: Given an owner, when they update organization name or slug with valid data, then the organization is updated.
 - AC-9: Given an owner, when they remove a non-owner member, then that membership is deleted and the user account remains.
 - AC-10: Given an admin, when they list members, then the API returns memberships with safe user fields.
+- AC-11: Given the current owner and another existing member, when ownership is transferred, then the target becomes the only owner and the previous owner becomes admin in one transaction.
+- AC-12: Given an admin, member, or non-member, when they attempt ownership transfer, then the API returns `403` for known members or `404` for non-members.
+- AC-13: Given a target who is not an organization member, when the owner attempts ownership transfer, then the API returns `404 membership_not_found` and ownership is unchanged.
+- AC-14: Given the current owner, when they delete the organization, then the organization and memberships are permanently deleted, user accounts remain, and the slug can be reused.
+- AC-15: Given an admin/member or non-member, when they attempt organization deletion, then the API returns `403` for known members or `404` for non-members.
+- AC-16: Given concurrent ownership-transfer attempts, when transactions complete, then at most one succeeds for the original owner state and exactly one owner remains.
 
 ## Harness Requirements
 
@@ -248,9 +301,14 @@ Backend tests:
 - Slug generation and duplicate slug conflict.
 - Tenant isolation negative tests.
 - Permission tests for owner/admin/member/non-member.
-- Last-owner protection.
+- Exactly-one-owner persistence constraint.
+- Generic role/removal rejection for the owner membership.
+- Successful ownership transfer and previous-owner demotion.
+- Transfer rejection for non-members, non-owners, and the current owner target.
+- Concurrent transfer protection against PostgreSQL.
 - Organization update tests.
 - Member removal tests.
+- Owner-only permanent organization deletion, membership cleanup, retained users, and slug reuse.
 - Migration check.
 
 Required commands once available:
@@ -263,6 +321,8 @@ make lint
 
 ## Observability And Failure Cases
 
-- Log membership role changes with actor ID and organization ID.
+- Log membership role changes, ownership transfers, and organization deletion with actor ID and organization ID.
 - Do not log sensitive user data.
 - Tenant access denials should be testable and consistent with API conventions.
+- Ownership transfer must roll back both role changes if either update fails.
+- Ownership transfer and deletion must revalidate the actor's owner role after acquiring the organization-row lock.
