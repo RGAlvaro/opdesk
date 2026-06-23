@@ -35,6 +35,28 @@ Known gaps:
 
 ## Entries
 
+### 2026-06-23 — SPEC-103 — Integrated locally
+
+Role: Ingeniero de software
+Branch: main
+Commit/PR: `d897f6c`
+Status: Merged
+
+Summary:
+- Committed the review-approved `SPEC-103` backend projects/tasks implementation and harness updates to local `main`.
+- Included migration `0005`, project/task API surfaces, endpoint tests, project memory, and the sandbox-friendly validation targets.
+
+Validation:
+- command: `make verify-no-db`: PASS — lint, format, backend/frontend type checks, backend tests, and frontend tests passed before commit.
+- command: `make migrations-check-compose`: NOT RUN in final integration session — Docker CLI is not available in this WSL environment; prior `SPEC-103` migration validation passed outside sandbox and is recorded below.
+- command: `git diff --cached --check`: PASS before commit.
+
+Review:
+- decision: APPROVED on 2026-06-23
+
+Known gaps:
+- Commit is local only; push/PR publication remains pending.
+
 ### 2026-06-23 — SPEC-103 — Harness sandbox targets added
 
 Role: Ingeniero de software
