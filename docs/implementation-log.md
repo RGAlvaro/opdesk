@@ -35,6 +35,113 @@ Known gaps:
 
 ## Entries
 
+### 2026-06-23 — SPEC-103 — Harness sandbox targets added
+
+Role: Ingeniero de software
+Branch: main
+Commit/PR: Pending
+Status: Implemented
+
+Summary:
+- Added `make verify-no-db` for lint, format, type checks, and non-DB tests without Docker/PostgreSQL access.
+- Kept `make verify` as the complete check by delegating to `verify-no-db` plus `migrations-check`.
+- Added `make migrations-check-compose` to run Alembic upgrade/check from inside the backend container through Compose networking.
+- Updated local validation docs to explain sandbox permission constraints for host PostgreSQL ports and Docker socket access.
+
+Validation:
+- command: `make verify-no-db`: PASS — lint, format, backend/frontend type checks, backend tests, and frontend tests passed.
+- command: `make migrations-check-compose`: FAIL in sandbox — Docker socket access was denied before elevation.
+- command: `make migrations-check-compose`: PASS outside sandbox — Alembic upgrade/check passed inside the backend container.
+- command: `git diff --check`: PASS.
+
+Review:
+- decision: N/A — harness documentation/target refinement after `SPEC-103` review approval.
+
+Known gaps:
+- None.
+
+### 2026-06-23 — SPEC-103 — Review approved
+
+Role: Review agent
+Branch: main
+Commit/PR: Pending
+Status: Reviewed
+
+Summary:
+- Reviewed `SPEC-103` implementation against the feature spec, `SPEC-001`, `ADR-002`, `ADR-007`, project memory, migration `0005`, routes, services, repositories, schemas, and endpoint tests.
+- Confirmed tenant-aware project/task lookups hide non-member resources with `404`, known members without action permission receive `403`, task assignees are organization members, archived projects reject new tasks, and `completed_at` follows `done` transitions.
+- Verified project memory reflects `SPEC-103` implementation and validation evidence.
+
+Validation:
+- command: `make test-backend`: PASS — 65 passed, 2 DB tests deselected.
+- command: `make lint`: PASS — backend Ruff and frontend ESLint passed.
+- command: `git diff --check`: PASS.
+- command: prior `make verify`: PASS outside sandbox — lint, format, backend/frontend type checks, backend/frontend tests, migration upgrade, and Alembic check passed.
+- command: prior `make smoke`: PASS — PostgreSQL, backend, Adminer, and frontend built, started, and responded.
+
+Review:
+- decision: APPROVED
+
+Known gaps:
+- None for `SPEC-103`; frontend organization/project/task UI remains future spec work.
+
+### 2026-06-23 — SPEC-103 — Projects and tasks implemented
+
+Role: Ingeniero de software
+Branch: main
+Commit/PR: Pending
+Status: Implemented
+
+Summary:
+- Added project/task SQLAlchemy models, public enums, migration `0005`, schemas, repositories, services, and FastAPI routers.
+- Registered project/task routes and implemented tenant-aware lookups that hide cross-tenant resources with `404` while returning `403` for known members without action permission.
+- Enforced same-organization assignees, member self-assignment limits, owner/admin reassignment, archived-project task rejection, task filters, and `completed_at` transitions.
+- Added endpoint-level tests for the `SPEC-103` acceptance criteria and updated project memory for review handoff.
+- Fixed the initial PostgreSQL enum migration issue by creating enum types explicitly and reusing them with `create_type=False`.
+
+Validation:
+- command: `cd backend && poetry run ruff check .`: PASS.
+- command: `cd backend && poetry run ruff format --check .`: PASS after formatting the new migration.
+- command: `cd backend && poetry run pytest -m "not db"`: PASS — 65 passed, 2 DB tests deselected.
+- command: `make typecheck`: PASS — backend mypy and frontend TypeScript checks passed.
+- command: `make migrations-check`: PASS outside sandbox — migration `0005` applied and Alembic found no new upgrade operations.
+- command: `docker compose exec backend poetry run alembic upgrade head`: PASS outside sandbox after rebuilding backend image with the corrected migration.
+- command: `docker compose exec backend poetry run alembic check`: PASS outside sandbox — no new upgrade operations detected.
+- command: `make verify`: PASS outside sandbox — lint, format, backend/frontend type checks, backend/frontend tests, migration upgrade, and Alembic check passed.
+- command: `make smoke`: PASS — PostgreSQL, backend, Adminer, and frontend built, started, and responded.
+- command: `git diff --check`: PASS before this memory update.
+
+Review:
+- decision: N/A — implementation awaits review.
+
+Known gaps:
+- `SPEC-103` review approval remains pending.
+- Frontend organization/project/task UI remains intentionally outside `SPEC-103`.
+
+### 2026-06-23 — SPEC-103 — Implementation handoff refreshed
+
+Role: Arquitecto de specs
+Branch: main
+Commit/PR: Pending
+Status: Ready
+
+Summary:
+- Reviewed agent-facing repository instructions, `docs/agent-workflow.md`, `docs/project-state.md`, spec index, current validation baseline, and relevant ADRs after the previous Codex session ended.
+- Updated project state to reflect that `main` is current, `SPEC-102` is published and review approved, and `SPEC-103` is the next implementation target.
+- Added a SPEC-103 implementation handoff with likely backend files, first implementation slice, and key tenant/RBAC/archive/status-transition risks.
+
+Validation:
+- command: `git status -sb`: PASS — clean before documentation edits.
+- command: `git log --oneline --decorate -5`: PASS — confirmed HEAD is `da852c0` on `main` with `origin/main`.
+- command: `git diff --check`: PASS — documentation/spec handoff edits have no whitespace errors.
+- command: implementation harness NOT RUN — documentation/spec handoff only; product code was not changed.
+
+Review:
+- decision: N/A
+
+Known gaps:
+- `SPEC-103` still needs implementation and validation by Ingeniero de software.
+
 ### 2026-06-18 — SPEC-102 — AC-15 review fix approved
 
 Role: Ingeniero de software and Review agent

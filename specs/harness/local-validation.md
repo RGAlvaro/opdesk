@@ -2,7 +2,7 @@
 
 Status: Ready  
 Owner: Review agent  
-Last updated: 2026-06-15
+Last updated: 2026-06-23
 
 This file defines validation commands for local development and review. Feature specs may require a subset or add feature-specific checks.
 
@@ -12,6 +12,7 @@ The repository should converge toward:
 
 ```bash
 make verify
+make verify-no-db
 make test
 make test-backend
 make test-frontend
@@ -19,6 +20,7 @@ make lint
 make format-check
 make typecheck
 make migrations-check
+make migrations-check-compose
 make smoke
 ```
 
@@ -27,6 +29,7 @@ Expected meaning:
 | Command | Expected coverage |
 |---|---|
 | `make verify` | Full local verification before PR |
+| `make verify-no-db` | Lint, format, type checks, and non-DB tests without Docker/PostgreSQL access |
 | `make test` | Backend and frontend tests |
 | `make test-backend` | Backend unit/integration/API tests |
 | `make test-frontend` | Frontend unit/component tests |
@@ -34,7 +37,18 @@ Expected meaning:
 | `make format-check` | Formatting checks without modifying files |
 | `make typecheck` | Backend and frontend type checks where configured |
 | `make migrations-check` | Alembic migration consistency |
+| `make migrations-check-compose` | Alembic migration consistency from inside the Docker Compose backend container |
 | `make smoke` | Docker/local service startup and health checks |
+
+`make verify` remains the complete pre-review and pre-PR check. It intentionally depends on
+PostgreSQL migration validation. Use `make verify-no-db` only when the local environment cannot
+reach Docker or PostgreSQL; record that migration validation remains unverified until
+`make migrations-check` or `make migrations-check-compose` passes.
+
+In managed sandbox environments, commands that access host-published PostgreSQL ports or the Docker
+socket may need elevated execution permissions. This is an environment access constraint, not a
+project validation shortcut. When that happens, rerun the same target with the required permissions
+and record both the sandbox failure and the elevated result.
 
 ## Initial Backend Direct Commands
 
@@ -108,6 +122,18 @@ curl -f http://127.0.0.1:5173
 
 If Adminer uses a non-default `ADMINER_PORT`, replace `8080` with that local port.
 If the frontend is served through a reverse proxy instead of Vite in local mode, document that URL here.
+
+## Compose Migration Checks
+
+When PostgreSQL is reachable only from the Docker Compose network, use:
+
+```bash
+make migrations-check-compose
+```
+
+This runs Alembic inside the backend container, where the configured `DATABASE_URL` resolves
+`postgres:5432` through Compose networking. It is equivalent in coverage to `make migrations-check`
+for migration upgrade/drift validation, but it requires Docker Compose access.
 
 ## Minimum Review Evidence
 

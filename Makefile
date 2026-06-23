@@ -6,10 +6,13 @@ endif
 ADMINER_PORT ?= 8080
 FRONTEND_PORT ?= 5173
 
-.PHONY: verify test test-backend test-backend-db lint format-check typecheck migrations-check smoke compose-up compose-down
+.PHONY: verify verify-no-db test test-backend test-backend-db lint format-check typecheck
+.PHONY: migrations-check migrations-check-compose smoke compose-up compose-down
 .PHONY: test-frontend
 
-verify: lint format-check typecheck test migrations-check
+verify: verify-no-db migrations-check
+
+verify-no-db: lint format-check typecheck test
 
 test: test-backend test-frontend
 
@@ -37,6 +40,10 @@ typecheck:
 migrations-check:
 	cd backend && DATABASE_URL=$${LOCAL_DATABASE_URL:-postgresql+psycopg://opdesk:opdesk_dev_password@localhost:5432/opdesk} poetry run alembic upgrade head
 	cd backend && DATABASE_URL=$${LOCAL_DATABASE_URL:-postgresql+psycopg://opdesk:opdesk_dev_password@localhost:5432/opdesk} poetry run alembic check
+
+migrations-check-compose:
+	docker compose exec -T backend poetry run alembic upgrade head
+	docker compose exec -T backend poetry run alembic check
 
 smoke:
 	docker compose up -d --build

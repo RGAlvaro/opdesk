@@ -16,6 +16,16 @@ Act as Arquitecto de specs. Read AGENTS.md, docs/project-state.md, specs/README.
 Act as Ingeniero de software. Read AGENTS.md, docs/project-state.md, specs/README.md, relevant docs/decisions/, specs/001-api-conventions.md when API behavior is involved, specs/harness/local-validation.md, and specs/features/[SPEC_FILE]. Implement only this spec. Before editing, provide a short plan. Add or update required tests and run the relevant harness commands. Update docs/project-state.md and docs/implementation-log.md before review.
 ```
 
+## Current Handoff
+
+As of 2026-06-23, `main` includes the review-approved `SPEC-103` backend projects/tasks diff. The next step is spec architecture for frontend organization/project/task UI or notification events.
+
+Use this prompt for the next spec session:
+
+```text
+Act as Arquitecto de specs. Read AGENTS.md, docs/project-state.md, specs/README.md, docs/implementation-log.md, relevant ADRs, and the backend specs for organizations/projects/tasks. Prepare the next frontend organization/project/task UI spec, or refine SPEC-201 notification events if that is the chosen next step. Do not implement product code.
+```
+
 ## Review
 
 ```text
@@ -29,7 +39,7 @@ Act as Review agent. Read AGENTS.md, docs/project-state.md, specs/README.md, doc
 3. Implement backend auth/users under `SPEC-101`.
 4. Scaffold frontend app shell and auth/profile UI under `SPEC-104`.
 5. Implement backend organizations/RBAC under `SPEC-102`.
-6. Implement backend projects/tasks under `SPEC-103`.
+6. Backend projects/tasks under `SPEC-103` is review approved.
 7. Add frontend organization/project/task flows through new or updated frontend specs after backend APIs exist.
 8. Return to `SPEC-201` for background jobs once task assignment exists.
 9. Expand `SPEC-301` production deployment as services become real.

@@ -1,8 +1,8 @@
 # SPEC-103 — Projects and Tasks
 
-Status: Ready  
+Status: Implemented
 Owner: Arquitecto de specs  
-Last updated: 2026-06-16
+Last updated: 2026-06-23
 
 ## Scope And Required Context
 
@@ -26,6 +26,41 @@ Memory updates:
 - `docs/implementation-log.md` for meaningful implementation, review, or validation events
 - `specs/README.md` if status, dependencies, order, or primary surfaces change
 - ADRs if workflow state, assignment policy, or task-history strategy becomes a durable cross-cutting decision
+
+## Implementation Handoff Notes
+
+Recommended first implementation slice:
+
+1. Add persistence models and Alembic migration for `projects` and `tasks`.
+2. Add schemas that preserve the API contract and avoid exposing internal-only fields.
+3. Add repositories that always scope project and task lookups through organization context.
+4. Add services that own tenant isolation, role checks, assignee validation, archive checks, and `completed_at` status transitions.
+5. Add FastAPI routes as thin transport adapters and register them in the app.
+6. Add endpoint-level backend tests covering every acceptance criterion before review.
+
+Likely files:
+
+- `backend/app/models/project.py`
+- `backend/app/models/task.py`
+- `backend/app/schemas/projects.py`
+- `backend/app/schemas/tasks.py`
+- `backend/app/repositories/projects.py`
+- `backend/app/repositories/tasks.py`
+- `backend/app/services/projects.py`
+- `backend/app/services/tasks.py`
+- `backend/app/api/projects.py`
+- `backend/app/api/tasks.py`
+- `backend/alembic/versions/*0005*.py`
+- `backend/tests/test_projects_tasks_api.py`
+
+Implementation risks to check explicitly:
+
+- A non-member must receive `404`, not `403`, for project/task access.
+- A regular member who belongs to the organization but lacks action permission must receive `403`.
+- Regular members may create unassigned/self-assigned tasks, but cannot assign or reassign tasks to another user.
+- Owner/admin reassignment must still reject users outside the task organization.
+- Archived projects must reject new task creation without blocking task reads.
+- `completed_at` must be set only when entering `done` and cleared when leaving `done`.
 
 ## Problem
 

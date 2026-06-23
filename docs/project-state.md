@@ -1,17 +1,23 @@
 # Project State
 
-Last updated: 2026-06-18
+Last updated: 2026-06-23
 
 This file is the compact operational state for agents. Use it to orient quickly before reading detailed specs, ADRs, implementation history, or code.
 
 ## Current Work
 
-- Active branch: `codex/spec-102-organizations-rbac`
-- Active spec: `SPEC-102` organizations and RBAC revision is implemented and review approved
-- Current state: `SPEC-102` enforces one owner, atomic ownership transfer, owner-only permanent deletion, and tenant-isolated RBAC APIs
+- Active branch: `main`
+- Active spec: `SPEC-103` projects and tasks is implemented and review approved
+- Current state: `SPEC-103` adds backend project/task persistence, API routes, tenant/RBAC services, migration `0005`, and endpoint-level acceptance coverage
 - Documentation checkpoint: agent operational memory was restructured on 2026-06-16 with this file, central touch-to-spec routing, per-spec scope/context blocks, and `ADR-005`
-- Recent validation recorded in `docs/implementation-log.md`: `SPEC-102` passed `make smoke` and full `make verify` with live PostgreSQL migration checks
-- Current `SPEC-102` validation: full `make verify`, live migration `0004`, Docker smoke, and PostgreSQL concurrent-transfer coverage pass
+- Recent validation recorded in `docs/implementation-log.md`: `SPEC-103` passed full `make verify`, `make smoke`, live PostgreSQL migration checks for migration `0005`, and the new `make verify-no-db` harness target
+- Current validation baseline: full `make verify`, live migration `0005`, Alembic drift check, Docker smoke, endpoint-level project/task coverage, and `make verify-no-db` passed for `SPEC-103` on 2026-06-23
+
+## Next Handoff
+
+- Next role: Arquitecto de specs
+- Next likely spec work: prepare frontend organization/project/task UI specs now that backend APIs exist, or refine `SPEC-201` after deciding which task assignment events should produce notifications.
+- Keep `SPEC-301` expanding as deployment surfaces become real.
 
 ## Implemented Specs
 
@@ -23,12 +29,12 @@ This file is the compact operational state for agents. Use it to orient quickly 
 | `SPEC-002` | Human-readable code comments and initial comment pass | Existing backend/frontend source files, future source changes | Implemented and review approved |
 | `SPEC-104` | React app shell and auth/profile UI | `frontend/`, `Makefile`, `docker-compose.yml`, `.env.example`, `README.md` | Implemented, reviewed, and merged locally to `main` |
 | `SPEC-102` | Single-owner organizations, ownership transfer, permanent deletion, and RBAC | Organization backend, migrations `0003`/`0004`, tests, `ADR-007` | Implemented and review approved |
+| `SPEC-103` | Projects and tasks backend | Project/task backend, migration `0005`, endpoint tests | Implemented and review approved |
 
 ## Ready Specs Not Yet Implemented
 
 | Spec | Scope | Depends on | Expected next surfaces |
 |---|---|---|---|
-| `SPEC-103` | Projects and tasks backend | `SPEC-102` | Backend models, migration, task/project services, API routes, tests |
 | `SPEC-301` | Production deployment and operations | `SPEC-010`, then evolving services | Production Compose, Caddy, deployment docs, backup/restore docs |
 
 ## Draft Specs
@@ -39,22 +45,23 @@ This file is the compact operational state for agents. Use it to orient quickly 
 
 ## Next Likely Work
 
-1. Implement `SPEC-103` backend projects and tasks.
-2. Prepare frontend organization/product UI specs after project/task APIs exist.
+1. Prepare frontend organization/project/task UI specs now that `SPEC-103` is approved.
+2. Revisit `SPEC-201` after task assignment notification events are specified.
 3. Expand `SPEC-301` as frontend, backend, database, Redis, and worker services become real.
 
 ## Known Gaps
 
 - `SPEC-104` has no Playwright E2E tests yet; the spec intentionally recommends adding them after the frontend/local server harness stabilizes.
-- Organization, project, and task UI is intentionally unavailable until backend APIs and frontend specs support it.
+- Organization, project, and task UI is intentionally unavailable until frontend specs support it.
 - `SPEC-201` remains Draft.
 - CI and public production deployment are not complete yet.
 
 ## Validation Baseline
 
-- Latest recorded full local verification: `make verify` PASS for `SPEC-102` on 2026-06-18, run with Docker/PostgreSQL access.
-- Latest recorded smoke check: `make smoke` PASS for `SPEC-102` on 2026-06-18.
-- Latest final review: `SPEC-102` APPROVED on 2026-06-18 after adding AC-15 member deletion coverage.
+- Latest recorded full local verification: `make verify` PASS for `SPEC-103` on 2026-06-23, run outside sandbox for PostgreSQL migration access.
+- Latest recorded sandbox-friendly verification: `make verify-no-db` PASS for `SPEC-103` on 2026-06-23.
+- Latest recorded smoke check: `make smoke` PASS for `SPEC-103` on 2026-06-23.
+- Latest final review: `SPEC-103` APPROVED on 2026-06-23 after review against API conventions, tenant/RBAC ADRs, endpoint tests, migration checks, and project memory.
 - Use `specs/harness/local-validation.md` for current command meanings and expected coverage.
 
 ## Code Map

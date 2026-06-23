@@ -6,6 +6,8 @@ from app.api.auth import router as auth_router
 from app.api.errors import APIError, api_error_handler
 from app.api.health import router as health_router
 from app.api.organizations import router as organizations_router
+from app.api.projects import router as projects_router
+from app.api.tasks import router as tasks_router
 from app.api.users import router as users_router
 
 
@@ -16,6 +18,8 @@ def create_app() -> FastAPI:
     app.include_router(auth_router)
     app.include_router(health_router)
     app.include_router(organizations_router)
+    app.include_router(projects_router)
+    app.include_router(tasks_router)
     app.include_router(users_router)
     return app
 
