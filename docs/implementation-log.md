@@ -35,6 +35,32 @@ Known gaps:
 
 ## Entries
 
+### 2026-06-23 — SPEC-103 — Docker validation retried
+
+Role: Ingeniero de software
+Branch: main
+Commit/PR: Pending
+Status: Reviewed
+
+Summary:
+- Re-ran Docker-backed validation after Docker Desktop was started.
+- Confirmed Docker Compose can build/start the stack and Alembic can validate migration `0005` from inside the backend container.
+- Confirmed host-side Alembic access to `localhost:5432` still fails in this WSL environment, so `migrations-check-compose` remains the reliable DB validation path here.
+
+Validation:
+- command: `docker --version`: PASS — Docker CLI responded.
+- command: `make smoke`: PASS — PostgreSQL, backend, Adminer, and frontend built, started, and responded.
+- command: `make migrations-check-compose`: PASS — Alembic upgrade/check passed inside the backend container.
+- command: `make migrations-check`: FAIL — host process could not connect to PostgreSQL at `localhost:5432`.
+- command: `LOCAL_DATABASE_URL=postgresql+psycopg://opdesk:opdesk_dev_password@127.0.0.1:5432/opdesk poetry run alembic current`: FAIL — same host-to-PostgreSQL connection issue.
+- command: `make verify-no-db`: PASS — lint, format, backend/frontend type checks, backend tests, and frontend tests passed.
+
+Review:
+- decision: APPROVED on 2026-06-23
+
+Known gaps:
+- None for `SPEC-103`; host-side PostgreSQL connectivity remains an environment limitation, covered by `migrations-check-compose`.
+
 ### 2026-06-23 — SPEC-103 — Integrated locally
 
 Role: Ingeniero de software
