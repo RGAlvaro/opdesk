@@ -6,6 +6,13 @@ import { LoginPage } from "../features/auth/LoginPage";
 import { SignupPage } from "../features/auth/SignupPage";
 import { ProtectedRoute } from "../features/auth/ProtectedRoute";
 import { PublicOnlyRoute } from "../features/auth/PublicOnlyRoute";
+import {
+  OrganizationDetailPage,
+  OrganizationListPage,
+  OrganizationMembersPage,
+  OrganizationNewPage,
+  OrganizationSettingsPage,
+} from "../features/organizations/OrganizationPages";
 import { ProfilePage } from "../features/profile/ProfilePage";
 import { AppShell } from "./AppShell";
 import { DashboardPage } from "./DashboardPage";
@@ -49,6 +56,20 @@ export function AppRouter() {
       >
         <Route index element={<DashboardPage />} />
         <Route path="profile" element={<ProfilePage />} />
+        <Route path="organizations" element={<OrganizationListPage />} />
+        <Route path="organizations/new" element={<OrganizationNewPage />} />
+        <Route
+          path="organizations/:organizationId"
+          element={<OrganizationDetailPage />}
+        />
+        <Route
+          path="organizations/:organizationId/settings"
+          element={<OrganizationSettingsPage />}
+        />
+        <Route
+          path="organizations/:organizationId/members"
+          element={<OrganizationMembersPage />}
+        />
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>

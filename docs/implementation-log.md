@@ -35,6 +35,144 @@ Known gaps:
 
 ## Entries
 
+### 2026-06-24 — SPEC-105 — Review approved after auth-loss fix
+
+Role: Review agent
+Branch: codex/spec-105-frontend-organizations-ui
+Commit/PR: Pending
+Status: Reviewed
+
+Summary:
+- Re-reviewed the `SPEC-105` organization `401 not_authenticated` fix.
+- Confirmed organization query and mutation auth-loss handling clears cached session state and navigates to `/login`.
+- Confirmed updated frontend tests cover cached-session query `401` and mutation `401` flows.
+- Updated project memory to mark `SPEC-105` review approved and route next work to `SPEC-106`.
+
+Validation:
+- command: `make test-frontend`: PASS — 2 frontend test files, 24 tests passed.
+- command: `make lint`: PASS — backend Ruff and frontend ESLint passed.
+- command: `make format-check`: PASS — backend Ruff format check and frontend Prettier passed.
+- command: `make typecheck`: PASS — backend mypy and frontend TypeScript passed.
+- command: prior `make verify-no-db`: PASS — lint, format, type checks, backend non-DB tests, and frontend tests passed for the review fix.
+- command: prior `make smoke`: PASS — Docker Compose built/started backend, frontend, PostgreSQL, and Adminer; health/Adminer/frontend checks passed for the review fix.
+
+Review:
+- decision: APPROVED
+
+Known gaps:
+- `SPEC-106` project/task UI remains unimplemented.
+
+### 2026-06-24 — SPEC-105 — Review fix implemented
+
+Role: Ingeniero de software
+Branch: codex/spec-105-frontend-organizations-ui
+Commit/PR: Pending
+Status: Implemented
+
+Summary:
+- Added organization auth-loss handling that cancels/removes the cached session query and navigates to `/login` when organization queries or mutations return `401 not_authenticated`.
+- Applied the handling to organization list/detail/member query error branches and create/update/delete/member role/member removal/ownership transfer mutation failures.
+- Added frontend tests for cached-session query `401` and mutation `401` flows to ensure the login route remains visible after session cache is cleared.
+- Updated project memory for re-review handoff.
+
+Validation:
+- command: `cd frontend && npm run test -- OrganizationPages.test.tsx`: PASS — 12 organization tests passed.
+- command: `cd frontend && npm run typecheck`: PASS.
+- command: `cd frontend && npm run lint`: PASS.
+- command: `make test-frontend`: PASS — 2 frontend test files, 24 tests passed.
+- command: `make lint`: PASS — backend Ruff and frontend ESLint passed.
+- command: `make format-check`: PASS — backend Ruff format check and frontend Prettier passed.
+- command: `make typecheck`: PASS — backend mypy and frontend TypeScript passed.
+- command: `make verify-no-db`: PASS — lint, format, type checks, backend non-DB tests, and frontend tests passed.
+- command: `make smoke`: PASS — Docker Compose built/started backend, frontend, PostgreSQL, and Adminer; health/Adminer/frontend checks passed.
+
+Review:
+- decision: N/A — review fix awaits re-review.
+
+Known gaps:
+- `SPEC-105` re-review approval remains pending.
+- `SPEC-106` project/task UI remains unimplemented.
+
+### 2026-06-24 — SPEC-105 — Review changes requested
+
+Role: Review agent
+Branch: codex/spec-105-frontend-organizations-ui
+Commit/PR: Pending
+Status: Reviewed
+
+Summary:
+- Reviewed `SPEC-105` implementation against frontend organization routes, API usage, permission states, error handling, tests, and project memory.
+- Found that organization `401 not_authenticated` handling does not clear cached session state and mutation `401` responses do not redirect to login, contrary to the spec's API usage contract.
+- Updated project memory to reflect review changes requested.
+
+Validation:
+- command: `make test-frontend`: PASS — 2 frontend test files, 22 tests passed.
+- command: `make lint`: PASS — backend Ruff and frontend ESLint passed.
+- command: `make format-check`: PASS — backend Ruff format check and frontend Prettier passed.
+- command: `make typecheck`: PASS — backend mypy and frontend TypeScript passed.
+
+Review:
+- decision: CHANGES_REQUESTED
+
+Known gaps:
+- Fix organization query and mutation `401 not_authenticated` handling so session cache is cleared and the user reaches `/login`.
+
+### 2026-06-24 — SPEC-105 — Frontend organizations UI implemented
+
+Role: Ingeniero de software
+Branch: codex/spec-105-frontend-organizations-ui
+Commit/PR: Pending
+Status: Implemented
+
+Summary:
+- Implemented frontend organization routes for list, create, detail, settings, and members under the authenticated app shell.
+- Added organization API hooks and types for `SPEC-102` endpoints, including create/update/delete, member listing, role changes, member removal, and ownership transfer.
+- Updated app navigation and dashboard entry points so Organizations is active while Projects/Tasks remain unavailable until `SPEC-106`.
+- Added route-level frontend tests for empty/list states, creation errors, role-aware detail/settings/member controls, destructive confirmation, owner member actions, safe `403`/`404` handling, and auth redirects.
+- Updated `SPEC-105` status and project memory for review handoff.
+
+Validation:
+- command: `cd frontend && npm run test`: PASS — 2 files, 22 tests passed.
+- command: `cd frontend && npm run typecheck`: PASS.
+- command: `cd frontend && npm run lint`: PASS.
+- command: `cd frontend && npm run format:check`: PASS.
+- command: `make test-frontend`: PASS — 2 frontend test files, 22 tests passed.
+- command: `make lint`: PASS — backend Ruff and frontend ESLint passed.
+- command: `make format-check`: PASS — backend Ruff format check and frontend Prettier passed.
+- command: `make typecheck`: PASS — backend mypy and frontend TypeScript passed.
+- command: `make smoke`: PASS — Docker Compose built/started backend, frontend, PostgreSQL, and Adminer; health/Adminer/frontend checks passed.
+- command: `make verify-no-db`: PASS — lint, format, type checks, backend non-DB tests, and frontend tests passed.
+
+Review:
+- decision: N/A — implementation awaits review.
+
+Known gaps:
+- `SPEC-105` review approval remains pending.
+- `SPEC-106` project/task UI remains unimplemented.
+
+### 2026-06-24 — SPEC-105/SPEC-106 — Frontend work specs prepared
+
+Role: Arquitecto de specs
+Branch: main
+Commit/PR: Pending
+Status: Ready
+
+Summary:
+- Added `SPEC-105` for frontend organization/workspace UI, including routes, active organization context, owner/admin/member states, member management, API usage, acceptance criteria, and frontend validation requirements.
+- Added `SPEC-106` for frontend projects and tasks UI, including routes, project/task forms, filters, assignment controls, archived-project behavior, API usage, acceptance criteria, and frontend validation requirements.
+- Updated project memory and spec index so the next implementation order is `SPEC-105` then `SPEC-106`, with `SPEC-201` remaining Draft and `SPEC-301` still Ready but lower priority than the core UI.
+
+Validation:
+- command: `git diff --check`: PASS
+- command: implementation harness NOT RUN — spec/documentation changes only; product code was not changed.
+
+Review:
+- decision: N/A
+
+Known gaps:
+- `SPEC-105` and `SPEC-106` are ready but not implemented.
+- `SPEC-201` remains Draft until notification-worthy task events are finalized.
+
 ### 2026-06-23 — SPEC-103 — Docker validation retried
 
 Role: Ingeniero de software

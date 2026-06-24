@@ -34,13 +34,15 @@ Use this index for routing. Use `docs/project-state.md` for the compact current 
 | `SPEC-104` | Implemented | Frontend app shell and auth UI | `SPEC-101` | `frontend/`, `Makefile`, `docker-compose.yml`, `.env.example`, `README.md` |
 | `SPEC-102` | Implemented | Organizations and RBAC | `SPEC-101` | Backend models, migration, APIs, services, tests |
 | `SPEC-103` | Implemented | Projects and tasks | `SPEC-102` | Backend models, migration, APIs, services, tests |
+| `SPEC-105` | Implemented | Frontend organizations UI | `SPEC-102`, `SPEC-104` | Organization routes, forms, member/admin UI, frontend tests |
+| `SPEC-106` | Ready | Frontend projects and tasks UI | `SPEC-103`, `SPEC-105` | Project/task routes, forms, filters, frontend tests |
 | `SPEC-201` | Draft | Background jobs and notifications | `SPEC-103` | Redis/Celery worker, notification models, tests |
 | `SPEC-301` | Ready | Production deployment and operations | Starts after `SPEC-010`; evolves with services | Production Compose, Caddy, deployment docs, backup/restore docs |
 
 Implementation order should usually follow spec dependencies:
 
 ```text
-SPEC-010 -> SPEC-011 -> SPEC-101 -> SPEC-104 -> SPEC-002 -> SPEC-102 -> SPEC-103 -> SPEC-201
+SPEC-010 -> SPEC-011 -> SPEC-101 -> SPEC-104 -> SPEC-002 -> SPEC-102 -> SPEC-103 -> SPEC-105 -> SPEC-106 -> SPEC-201
 SPEC-301 starts after SPEC-010 and should evolve as backend, frontend, Redis, and worker services exist.
 ```
 
@@ -68,5 +70,7 @@ Use this table to decide which feature spec to open before editing.
 | React app shell, login/signup/profile UI, frontend session bootstrap, Vite proxy, frontend auth tests | `SPEC-104` |
 | Organizations, memberships, roles, RBAC, tenant isolation helpers, `/api/v1/organizations*` | `SPEC-102` |
 | Projects, tasks, assignment, status/priority rules, task filters, archive behavior | `SPEC-103` |
+| Frontend organization/workspace routes, organization forms, member/admin UI, active organization context | `SPEC-105` |
+| Frontend project/task routes, project forms, task forms, task filters, assignment UI | `SPEC-106` |
 | Redis, Celery, workers, background jobs, task assignment notifications | `SPEC-201` |
 | Production Compose, Caddy, public deployment, backup/restore, production smoke checks | `SPEC-301` |

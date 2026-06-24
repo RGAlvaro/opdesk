@@ -1,22 +1,22 @@
 # Project State
 
-Last updated: 2026-06-23
+Last updated: 2026-06-24
 
 This file is the compact operational state for agents. Use it to orient quickly before reading detailed specs, ADRs, implementation history, or code.
 
 ## Current Work
 
-- Active branch: `main`
-- Active spec: `SPEC-103` projects and tasks is implemented and review approved
-- Current state: `SPEC-103` adds backend project/task persistence, API routes, tenant/RBAC services, migration `0005`, and endpoint-level acceptance coverage
+- Active branch: `codex/spec-105-frontend-organizations-ui`
+- Active spec: `SPEC-105` frontend organizations UI is implemented and review approved
+- Current state: `SPEC-105` adds frontend organization list/detail/create/settings/member routes, role-aware owner/admin/member UI, organization API hooks, shell navigation, route-level frontend tests, and reviewed `401 not_authenticated` session-clear handling
 - Documentation checkpoint: agent operational memory was restructured on 2026-06-16 with this file, central touch-to-spec routing, per-spec scope/context blocks, and `ADR-005`
-- Recent validation recorded in `docs/implementation-log.md`: `SPEC-103` passed full `make verify`, `make smoke`, live PostgreSQL migration checks for migration `0005`, and the new `make verify-no-db` harness target
-- Current validation baseline: full `make verify`, live migration `0005`, Alembic drift check, Docker smoke, endpoint-level project/task coverage, and `make verify-no-db` passed for `SPEC-103` on 2026-06-23
+- Recent validation recorded in `docs/implementation-log.md`: `SPEC-105` review fix passed `make test-frontend`, `make lint`, `make format-check`, `make typecheck`, `make verify-no-db`, and `make smoke`; re-review reran `make test-frontend`, `make lint`, `make format-check`, and `make typecheck` on 2026-06-24
+- Current validation baseline: full non-DB verification, Docker smoke, and frontend organization route coverage passed for `SPEC-105` review fix on 2026-06-24; latest live migration validation remains the `SPEC-103` baseline from 2026-06-23
 
 ## Next Handoff
 
-- Next role: Arquitecto de specs
-- Next likely spec work: prepare frontend organization/project/task UI specs now that backend APIs exist, or refine `SPEC-201` after deciding which task assignment events should produce notifications.
+- Next role: Ingeniero de software
+- Next likely implementation work: implement `SPEC-106` frontend projects and tasks UI.
 - Keep `SPEC-301` expanding as deployment surfaces become real.
 
 ## Implemented Specs
@@ -30,11 +30,13 @@ This file is the compact operational state for agents. Use it to orient quickly 
 | `SPEC-104` | React app shell and auth/profile UI | `frontend/`, `Makefile`, `docker-compose.yml`, `.env.example`, `README.md` | Implemented, reviewed, and merged locally to `main` |
 | `SPEC-102` | Single-owner organizations, ownership transfer, permanent deletion, and RBAC | Organization backend, migrations `0003`/`0004`, tests, `ADR-007` | Implemented and review approved |
 | `SPEC-103` | Projects and tasks backend | Project/task backend, migration `0005`, endpoint tests | Implemented and review approved |
+| `SPEC-105` | Frontend organizations UI | Organization routes, shell navigation, organization API hooks, frontend tests | Implemented and review approved |
 
 ## Ready Specs Not Yet Implemented
 
 | Spec | Scope | Depends on | Expected next surfaces |
 |---|---|---|---|
+| `SPEC-106` | Frontend projects and tasks UI | `SPEC-103`, `SPEC-105` | Project/task routes, forms, filters, assignment UI, frontend tests |
 | `SPEC-301` | Production deployment and operations | `SPEC-010`, then evolving services | Production Compose, Caddy, deployment docs, backup/restore docs |
 
 ## Draft Specs
@@ -45,23 +47,23 @@ This file is the compact operational state for agents. Use it to orient quickly 
 
 ## Next Likely Work
 
-1. Prepare frontend organization/project/task UI specs now that `SPEC-103` is approved.
-2. Revisit `SPEC-201` after task assignment notification events are specified.
+1. Implement `SPEC-106` frontend projects and tasks UI.
+2. Revisit `SPEC-201` after task assignment notification events are specified through the task UI.
 3. Expand `SPEC-301` as frontend, backend, database, Redis, and worker services become real.
 
 ## Known Gaps
 
 - `SPEC-104` has no Playwright E2E tests yet; the spec intentionally recommends adding them after the frontend/local server harness stabilizes.
-- Organization, project, and task UI is intentionally unavailable until frontend specs support it.
+- Project and task UI is intentionally unavailable until `SPEC-106` is implemented.
 - `SPEC-201` remains Draft.
 - CI and public production deployment are not complete yet.
 
 ## Validation Baseline
 
 - Latest recorded full local verification: `make verify` PASS for `SPEC-103` on 2026-06-23, run outside sandbox for PostgreSQL migration access.
-- Latest recorded sandbox-friendly verification: `make verify-no-db` PASS for `SPEC-103` on 2026-06-23.
-- Latest recorded smoke check: `make smoke` PASS for `SPEC-103` on 2026-06-23.
-- Latest final review: `SPEC-103` APPROVED on 2026-06-23 after review against API conventions, tenant/RBAC ADRs, endpoint tests, migration checks, and project memory.
+- Latest recorded sandbox-friendly verification: `make verify-no-db` PASS for `SPEC-105` review fix on 2026-06-24.
+- Latest recorded smoke check: `make smoke` PASS for `SPEC-105` review fix on 2026-06-24.
+- Latest final review: `SPEC-105` APPROVED on 2026-06-24 after re-review of organization `401` session handling, route tests, validation evidence, and project memory.
 - Use `specs/harness/local-validation.md` for current command meanings and expected coverage.
 
 ## Code Map
@@ -78,6 +80,9 @@ This file is the compact operational state for agents. Use it to orient quickly 
 | `backend/tests` | Backend unit, integration, API, and migration-related tests |
 | `frontend/src/app` | Router, app shell, providers, route guards |
 | `frontend/src/features/auth` | Login, signup, session bootstrap, logout behavior |
+| `frontend/src/features/organizations` | Organization/workspace UI, member/admin UI, API hooks, and active organization route support for `SPEC-105` |
+| `frontend/src/features/projects` | Planned project UI for `SPEC-106` |
+| `frontend/src/features/tasks` | Planned task UI, filters, assignment controls, and task forms for `SPEC-106` |
 | `frontend/src/features/profile` | Current-user profile display and update flow |
 | `frontend/src/shared` | Shared API client, UI primitives, test helpers, utilities |
 
