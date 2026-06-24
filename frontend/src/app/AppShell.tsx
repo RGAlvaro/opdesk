@@ -1,11 +1,20 @@
 // Authenticated application shell with navigation, user chrome, and nested pages.
 
-import { LogOut, UserRound } from "lucide-react";
+import {
+  Building2,
+  FolderKanban,
+  ListChecks,
+  LogOut,
+  UserRound,
+} from "lucide-react";
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
 
 import { useLogout, useSession } from "../features/auth/session";
 
-const disabledNavItems = ["Organizations", "Projects", "Tasks"];
+const disabledNavItems = [
+  { label: "Projects", icon: FolderKanban },
+  { label: "Tasks", icon: ListChecks },
+];
 
 /** Render the protected layout and route outlet for signed-in users. */
 export function AppShell() {
@@ -76,13 +85,27 @@ export function AppShell() {
               Profile
             </NavLink>
             <div className="border-t border-line pt-2">
+              <NavLink
+                to="/app/organizations"
+                className={({ isActive }) =>
+                  `flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium ${
+                    isActive
+                      ? "bg-brand text-white"
+                      : "text-ink hover:bg-surface"
+                  }`
+                }
+              >
+                <Building2 aria-hidden="true" className="h-4 w-4" />
+                Organizations
+              </NavLink>
               {disabledNavItems.map((item) => (
                 <span
-                  key={item}
-                  className="block rounded-md px-3 py-2 text-sm font-medium text-muted opacity-70"
+                  key={item.label}
+                  className="flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium text-muted opacity-70"
                   aria-disabled="true"
                 >
-                  {item}
+                  <item.icon aria-hidden="true" className="h-4 w-4" />
+                  {item.label}
                 </span>
               ))}
             </div>

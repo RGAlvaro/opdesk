@@ -1,13 +1,14 @@
 // Placeholder dashboard that anchors the authenticated workspace shell.
 
 import { Building2, FolderKanban, ListChecks } from "lucide-react";
+import { Link } from "react-router-dom";
 
 const upcoming = [
   {
     title: "Organizations",
-    description:
-      "Workspace membership and role-aware navigation will connect here.",
+    description: "Create workspaces and manage role-aware membership.",
     icon: Building2,
+    href: "/app/organizations",
   },
   {
     title: "Projects",
@@ -45,6 +46,14 @@ export function DashboardPage() {
               <Icon aria-hidden="true" className="h-5 w-5 text-brand" />
               <h2 className="mt-3 font-semibold">{item.title}</h2>
               <p className="mt-2 text-sm text-muted">{item.description}</p>
+              {item.href ? (
+                <Link
+                  to={item.href}
+                  className="mt-3 inline-flex text-sm font-medium text-brand hover:underline"
+                >
+                  Open organizations
+                </Link>
+              ) : null}
             </article>
           );
         })}

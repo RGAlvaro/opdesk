@@ -224,7 +224,7 @@ describe("SPEC-104 frontend app shell and auth UI", () => {
     ).toBeInTheDocument();
   });
 
-  it("renders session shell and keeps future navigation unavailable", async () => {
+  it("renders session shell and enables organization navigation only", async () => {
     mockFetch(jsonResponse(user));
 
     renderRoute("/app");
@@ -234,10 +234,9 @@ describe("SPEC-104 frontend app shell and auth UI", () => {
     ).toBeInTheDocument();
 
     const nav = screen.getByRole("navigation", { name: /primary navigation/i });
-    expect(within(nav).getByText("Organizations")).toHaveAttribute(
-      "aria-disabled",
-      "true",
-    );
+    expect(
+      within(nav).getByRole("link", { name: /organizations/i }),
+    ).toHaveAttribute("href", "/app/organizations");
     expect(within(nav).getByText("Projects")).toHaveAttribute(
       "aria-disabled",
       "true",
