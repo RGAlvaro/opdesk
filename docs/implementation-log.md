@@ -35,6 +35,81 @@ Known gaps:
 
 ## Entries
 
+### 2026-06-24 — SPEC-106 — Memory harness review approved
+
+Role: Review agent
+Branch: main
+Commit/PR: Pending
+Status: Reviewed
+
+Summary:
+- Reviewed the review-gated memory workflow changes against the requested points: review approval as the canonical checkpoint, memory verification targets, and implementation-log scaffolding.
+- Confirmed the changes avoid commit/push hooks as the source of truth and keep generated memory factual.
+- Confirmed new scripts use standard-library Python, include required reader comments/docstrings, and are wired through Make targets.
+- Confirmed project memory and `ADR-005` reflect the durable workflow policy.
+
+Validation:
+- command: `git diff --check`: PASS.
+- command: `make memory-check SPEC=SPEC-106`: PASS — project-state and implementation-log mention the active spec and required handoff sections.
+- command: `make review-ready SPEC=SPEC-106`: PASS — memory readiness alias passed.
+- command: `python3 scripts/memory_check.py --spec SPEC-106 --reviewed`: PASS — strict reviewed/approved memory check passed.
+- command: `python3 -m compileall scripts`: PASS — both memory helper scripts compiled.
+
+Review:
+- decision: APPROVED
+
+Known gaps:
+- `SPEC-106` product UI remains unimplemented; this review only covers the base workflow and memory harness preparation.
+
+### 2026-06-24 — SPEC-106 — Review-gated memory harness prepared
+
+Role: Arquitecto de specs
+Branch: main
+Commit/PR: Pending
+Status: Ready
+
+Summary:
+- Updated the base workflow so Review agent `APPROVED` is the canonical point where `docs/project-state.md` and `docs/implementation-log.md` must be current.
+- Added `make memory-check SPEC=SPEC-XXX`, `make review-ready SPEC=SPEC-XXX`, and `make memory-entry SPEC=SPEC-XXX` as harness helpers for memory verification and log-entry scaffolding.
+- Documented the helpers in the local validation harness and captured the durable policy in `ADR-005`.
+- Kept the helpers factual: they validate or print templates, but do not auto-write validation evidence or review decisions.
+
+Validation:
+- command: `make memory-entry SPEC=SPEC-106 ROLE='Review agent' STATUS=Reviewed TITLE='Review approved' BRANCH=main`: PASS — printed a paste-ready reviewed-entry template.
+- command: `make memory-check SPEC=SPEC-106`: PASS — verified project-state and implementation-log memory shape for the active spec.
+- command: `make review-ready SPEC=SPEC-106`: PASS — ran the memory readiness alias successfully.
+- command: `git diff --check`: PASS.
+
+Review:
+- decision: N/A
+
+Known gaps:
+- `SPEC-106` remains unimplemented.
+
+### 2026-06-24 — SPEC-106 — Readiness audit for frontend projects and tasks UI
+
+Role: Arquitecto de specs
+Branch: main
+Commit/PR: Pending
+Status: Ready
+
+Summary:
+- Reviewed project memory, spec index, product/API conventions, local validation harness, `SPEC-103`, `SPEC-104`, `SPEC-105`, and `ADR-007` before implementation handoff.
+- Confirmed `SPEC-106` is the next dependency-valid implementation target after merged `SPEC-105`.
+- Checked backend project/task API contracts and frontend organization helper surfaces for obvious mismatches; no spec gap found.
+- Updated project memory so the active branch and active spec reflect the merged `main` state.
+
+Validation:
+- command: `git status -sb`: PASS — repository is on `main` tracking `origin/main` before documentation updates.
+- command: implementation harness NOT RUN — readiness/documentation review only; product code was not changed.
+
+Review:
+- decision: N/A
+
+Known gaps:
+- `SPEC-106` remains unimplemented.
+- Full implementation validation is deferred to the `SPEC-106` engineer.
+
 ### 2026-06-24 — SPEC-105 — Review approved after auth-loss fix
 
 Role: Review agent

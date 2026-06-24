@@ -8,7 +8,7 @@ FRONTEND_PORT ?= 5173
 
 .PHONY: verify verify-no-db test test-backend test-backend-db lint format-check typecheck
 .PHONY: migrations-check migrations-check-compose smoke compose-up compose-down
-.PHONY: test-frontend
+.PHONY: test-frontend memory-check review-ready memory-entry
 
 verify: verify-no-db migrations-check
 
@@ -21,6 +21,16 @@ test-backend:
 
 test-frontend:
 	cd frontend && npm run test
+
+memory-check:
+	test -n "$(SPEC)" || (echo "Usage: make memory-check SPEC=SPEC-106" && exit 2)
+	python3 scripts/memory_check.py --spec "$(SPEC)"
+
+review-ready: memory-check
+
+memory-entry:
+	test -n "$(SPEC)" || (echo "Usage: make memory-entry SPEC=SPEC-106 ROLE='Review agent' STATUS=Reviewed" && exit 2)
+	python3 scripts/memory_entry.py --spec "$(SPEC)" --role "$${ROLE:-Ingeniero de software}" --status "$${STATUS:-Implemented}" --branch "$${BRANCH:-branch-name}" --commit "$${COMMIT:-Pending}" --title "$${TITLE:-Short title}"
 
 test-backend-db:
 	cd backend && DATABASE_URL=$${LOCAL_DATABASE_URL:-postgresql+psycopg://opdesk:opdesk_dev_password@localhost:5432/opdesk} poetry run pytest -m db

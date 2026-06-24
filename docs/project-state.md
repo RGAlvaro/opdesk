@@ -6,10 +6,10 @@ This file is the compact operational state for agents. Use it to orient quickly 
 
 ## Current Work
 
-- Active branch: `codex/spec-105-frontend-organizations-ui`
-- Active spec: `SPEC-105` frontend organizations UI is implemented and review approved
-- Current state: `SPEC-105` adds frontend organization list/detail/create/settings/member routes, role-aware owner/admin/member UI, organization API hooks, shell navigation, route-level frontend tests, and reviewed `401 not_authenticated` session-clear handling
-- Documentation checkpoint: agent operational memory was restructured on 2026-06-16 with this file, central touch-to-spec routing, per-spec scope/context blocks, and `ADR-005`
+- Active branch: `main`
+- Active spec: `SPEC-106` frontend projects and tasks UI is ready for implementation
+- Current state: `SPEC-105` frontend organization UI is merged to `main`; `SPEC-106` is the next implementation target and should add project/task routes, forms, filters, assignment UI, route navigation, cache handling, and frontend tests
+- Documentation checkpoint: agent operational memory was restructured on 2026-06-16 with this file, central touch-to-spec routing, per-spec scope/context blocks, and `ADR-005`; on 2026-06-24 the base workflow added review-gated memory checks and implementation-log scaffolding targets
 - Recent validation recorded in `docs/implementation-log.md`: `SPEC-105` review fix passed `make test-frontend`, `make lint`, `make format-check`, `make typecheck`, `make verify-no-db`, and `make smoke`; re-review reran `make test-frontend`, `make lint`, `make format-check`, and `make typecheck` on 2026-06-24
 - Current validation baseline: full non-DB verification, Docker smoke, and frontend organization route coverage passed for `SPEC-105` review fix on 2026-06-24; latest live migration validation remains the `SPEC-103` baseline from 2026-06-23
 
@@ -64,6 +64,7 @@ This file is the compact operational state for agents. Use it to orient quickly 
 - Latest recorded sandbox-friendly verification: `make verify-no-db` PASS for `SPEC-105` review fix on 2026-06-24.
 - Latest recorded smoke check: `make smoke` PASS for `SPEC-105` review fix on 2026-06-24.
 - Latest final review: `SPEC-105` APPROVED on 2026-06-24 after re-review of organization `401` session handling, route tests, validation evidence, and project memory.
+- Memory harness baseline: `make memory-check SPEC=SPEC-106` verifies that project memory mentions the active spec and that the newest implementation-log entry includes required handoff sections.
 - Use `specs/harness/local-validation.md` for current command meanings and expected coverage.
 
 ## Code Map

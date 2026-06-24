@@ -22,6 +22,9 @@ make typecheck
 make migrations-check
 make migrations-check-compose
 make smoke
+make memory-check SPEC=SPEC-XXX
+make review-ready SPEC=SPEC-XXX
+make memory-entry SPEC=SPEC-XXX
 ```
 
 Expected meaning:
@@ -39,11 +42,19 @@ Expected meaning:
 | `make migrations-check` | Alembic migration consistency |
 | `make migrations-check-compose` | Alembic migration consistency from inside the Docker Compose backend container |
 | `make smoke` | Docker/local service startup and health checks |
+| `make memory-check SPEC=SPEC-XXX` | Checks that `docs/project-state.md` and `docs/implementation-log.md` mention the active spec and include required log sections before review handoff |
+| `make review-ready SPEC=SPEC-XXX` | Alias for the current memory readiness check; feature specs still define the validation commands that must also pass |
+| `make memory-entry SPEC=SPEC-XXX` | Prints a paste-ready implementation-log template without inventing validation evidence |
 
 `make verify` remains the complete pre-review and pre-PR check. It intentionally depends on
 PostgreSQL migration validation. Use `make verify-no-db` only when the local environment cannot
 reach Docker or PostgreSQL; record that migration validation remains unverified until
 `make migrations-check` or `make migrations-check-compose` passes.
+
+Memory validation is required before a Review agent returns `APPROVED`. The canonical trigger is the
+review decision, not commit or push. The helper targets intentionally validate and scaffold memory;
+they do not write project history automatically because validation evidence and known gaps must stay
+factual.
 
 In managed sandbox environments, commands that access host-published PostgreSQL ports or the Docker
 socket may need elevated execution permissions. This is an environment access constraint, not a
@@ -144,6 +155,7 @@ Every implementation review should report:
 - Pass/fail/not-run status.
 - Any unavailable commands and why.
 - Residual risk if scaffold or CI is not mature yet.
+- Memory evidence from `docs/project-state.md` and `docs/implementation-log.md`, normally checked with `make memory-check SPEC=SPEC-XXX`.
 
 ## CI Expectation
 

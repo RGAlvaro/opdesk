@@ -33,6 +33,22 @@ Keep touch-to-spec discovery in `specs/README.md`, where agents can decide which
 
 Add a `Scope And Required Context` section to feature specs and the feature-spec template so each opened spec states what it governs, which related documents matter, and which memory files must be updated after changes.
 
+Use the Review agent's `APPROVED` decision as the canonical operational-memory checkpoint. A review
+cannot be approved while `docs/project-state.md` or `docs/implementation-log.md` is materially stale
+for the active spec. Commit and push remain useful evidence checkpoints, but they are not the primary
+trigger for creating project memory.
+
+Add lightweight harness helpers:
+
+- `make memory-check SPEC=SPEC-XXX` verifies that the current-state and implementation-log files
+  contain the active spec and required log sections before review approval.
+- `make review-ready SPEC=SPEC-XXX` aliases the current memory readiness check so agents have a
+  stable handoff target.
+- `make memory-entry SPEC=SPEC-XXX` prints a paste-ready implementation-log template.
+
+These helpers validate or scaffold memory only. They must not fabricate validation evidence, review
+decisions, commits, gaps, or branch state.
+
 ## Consequences
 
 Future agents can orient from a short current-state file before reading detailed specs or code.
@@ -44,6 +60,9 @@ The project now has two memory layers:
 
 Agents and reviewers must keep both aligned when current state, validation baseline, known gaps, or spec readiness changes.
 
+Review approval is stricter than commit or push: stale memory is a review blocker even if the code
+and tests are otherwise correct.
+
 Feature specs confirm their own scope and required context, but discovery of which spec to read belongs in the central spec index.
 
 ## Alternatives Considered
@@ -51,3 +70,5 @@ Feature specs confirm their own scope and required context, but discovery of whi
 - Keep using only `docs/implementation-log.md`: preserves history, but becomes inefficient and error-prone as entries accumulate.
 - Put all state into `AGENTS.md`: makes the main instruction file too volatile and mixes workflow rules with changing project state.
 - Rely on Git history and PRs only: useful for evidence, but too slow for agent orientation and not explicit enough about next work or known gaps.
+- Auto-write memory on commit or push: rejected because hooks are local, easy to bypass, and cannot
+  safely know whether validation evidence, known gaps, or review decisions are true.

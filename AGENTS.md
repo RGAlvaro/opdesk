@@ -61,6 +61,14 @@ Spec -> Plan -> Tasks -> Implement -> Validate -> Review -> Merge
 
 Before editing code, provide a short plan naming likely files and risks. Keep implementation spec-scoped and small. Run the relevant harness commands. If a command cannot be run, state why and what remains unverified.
 
+Operational memory is part of the workflow, not a post-merge cleanup task:
+
+1. Implementation work must update `docs/implementation-log.md` and `docs/project-state.md` before review handoff.
+2. The Review agent may return `APPROVED` only after those two files accurately reflect the implementation, validation evidence, review decision, known gaps, and next work.
+3. Commit and push are evidence checkpoints, not the canonical memory-update trigger. Do not rely on commit/push hooks to create project memory.
+4. Use `make memory-entry SPEC=SPEC-XXX` to scaffold a factual implementation-log entry when useful.
+5. Use `make memory-check SPEC=SPEC-XXX` or `make review-ready SPEC=SPEC-XXX` before review approval to catch stale or missing memory. These targets verify memory shape; they do not replace feature-specific validation commands.
+
 ## Project Memory
 
 Use these files to preserve context across sessions, branches, and future agents:
@@ -189,6 +197,7 @@ Memory responsibilities:
 - Verify `docs/implementation-log.md` reflects the implementation and validation evidence.
 - Verify `docs/project-state.md` reflects the current branch/spec state, known gaps, and latest validation baseline.
 - Verify any new durable architecture decision is captured in `docs/decisions/`.
+- Run or require `make memory-check SPEC=SPEC-XXX` before approving a completed implementation.
 - Do not approve implementation if the project memory is materially stale for the active spec.
 
 ## Coding Rules
