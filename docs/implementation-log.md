@@ -39,7 +39,7 @@ Known gaps:
 
 Role: Arquitecto de specs
 Branch: codex/gh-outside-sandbox-policy
-Commit/PR: Pending
+Commit/PR: `5491223` / PR pending
 Status: Ready
 
 Summary:
