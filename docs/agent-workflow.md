@@ -4,6 +4,12 @@ Use these role prompts when asking Codex to work in this repository.
 
 Before any non-trivial work, read `docs/project-state.md` to identify the active branch/spec, current known gaps, and latest validation baseline. Use `docs/implementation-log.md` as historical evidence, not as the first current-state dashboard.
 
+## GitHub CLI In Managed Sandboxes
+
+Run network-backed `gh` commands outside the restricted sandbox from the first attempt. This includes authentication checks, repository metadata, pull requests, Actions runs, and workflow operations. A sandboxed `gh auth status` can report a valid host token as invalid when GitHub is unreachable.
+
+Use the runtime's elevated execution option with a narrowly scoped approval or prefix. Before pushing `.github/workflows/*`, check outside the sandbox that `gh auth status` includes the `workflow` scope. Local read-only Git commands remain sandboxed unless repository metadata permissions require elevation.
+
 ## Spec Architecture
 
 ```text

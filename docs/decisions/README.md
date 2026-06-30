@@ -30,6 +30,7 @@ Examples:
 ADR-001-python-package-manager.md
 ADR-002-backend-module-layout.md
 ADR-003-auth-cookie-token-strategy.md
+ADR-009-managed-sandbox-github-cli.md
 ```
 
 ## Template

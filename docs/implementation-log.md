@@ -35,6 +35,31 @@ Known gaps:
 
 ## Entries
 
+### 2026-06-30 — Repository workflow — Managed sandbox GitHub CLI policy
+
+Role: Arquitecto de specs
+Branch: codex/gh-outside-sandbox-policy
+Commit/PR: Pending
+Status: Ready
+
+Summary:
+- Required network-backed `gh` commands to run outside managed sandboxes from the first attempt.
+- Required narrowly scoped approvals and an outside-sandbox authentication check before publication.
+- Added an explicit `workflow` token-scope check when publishing `.github/workflows/*`.
+- Recorded the durable decision in `ADR-009`; no product spec status or behavior changed.
+
+Validation:
+- command: `git diff --check`: PASS.
+- command: policy reference check with `rg`: PASS — mandatory outside-sandbox execution and `workflow` scope guidance are present in agent instructions, workflow notes, ADR, and project memory.
+- command: `make memory-check SPEC=SPEC-106`: PASS — existing active product memory remains structurally valid; this policy does not introduce a product spec.
+- command: elevated `gh auth status`: PASS — authenticated account exposes `repo` and `workflow` scopes outside the sandbox.
+
+Review:
+- decision: N/A — workflow policy awaits review.
+
+Known gaps:
+- Runtime approval remains environment-specific; the repository can require elevation but cannot pre-authorize it.
+
 ### 2026-06-30 — SPEC-106 — Pagination review fix approved
 
 Role: Review agent

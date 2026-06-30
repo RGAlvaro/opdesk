@@ -6,11 +6,11 @@ This file is the compact operational state for agents. Use it to orient quickly 
 
 ## Current Work
 
-- Active branch: `main`
-- Active spec: `SPEC-106` frontend projects and tasks UI is review approved
-- Current state: `SPEC-106` adds project/task routes, forms, filters, assignment UI, route navigation, cache handling, frontend tests, and URL-backed project/task pagination with `limit`/`offset` request parameters; pagination review fix has been re-reviewed and approved
-- Documentation checkpoint: agent operational memory was restructured on 2026-06-16 with this file, central touch-to-spec routing, per-spec scope/context blocks, and `ADR-005`; on 2026-06-24 the base workflow added review-gated memory checks and implementation-log scaffolding targets
-- Recent validation recorded in `docs/implementation-log.md`: `SPEC-106` pagination review fix re-review passed `make test-frontend`, `make lint`, `make format-check`, `make typecheck`, `make smoke`, `make memory-check SPEC=SPEC-106`, and `git diff --check` on 2026-06-30
+- Active branch: `codex/gh-outside-sandbox-policy`
+- Active spec: no product spec; repository workflow policy for managed sandbox GitHub operations
+- Current state: `AGENTS.md` and the agent workflow require network-backed `gh` commands to use outside-sandbox execution from the first attempt
+- Documentation checkpoint: agent operational memory was restructured on 2026-06-16 with this file, central touch-to-spec routing, per-spec scope/context blocks, and `ADR-005`; on 2026-06-24 the base workflow added review-gated memory checks and implementation-log scaffolding targets; `ADR-009` records the managed-sandbox GitHub CLI policy
+- Recent validation recorded in `docs/implementation-log.md`: managed-sandbox GitHub CLI policy passed documentation reference checks, `make memory-check SPEC=SPEC-106`, `git diff --check`, and elevated `gh auth status` with `repo` and `workflow` scopes on 2026-06-30
 - Current validation baseline: required frontend implementation checks and Docker smoke passed for `SPEC-106` on 2026-06-30; latest live migration validation remains the `SPEC-103` baseline from 2026-06-23 because `SPEC-106` is frontend-only
 
 ## Next Handoff
