@@ -39,7 +39,7 @@ Known gaps:
 
 Role: Review agent
 Branch: main
-Commit/PR: Pending
+Commit/PR: `749c381`
 Status: Reviewed
 
 Summary:
@@ -69,7 +69,7 @@ Known gaps:
 
 Role: Ingeniero de software
 Branch: main
-Commit/PR: Pending
+Commit/PR: `749c381`
 Status: Implemented
 
 Summary:
@@ -100,7 +100,7 @@ Known gaps:
 
 Role: Review agent
 Branch: main
-Commit/PR: Pending
+Commit/PR: `749c381`
 Status: Reviewed
 
 Summary:
@@ -128,7 +128,7 @@ Known gaps:
 
 Role: Ingeniero de software
 Branch: main
-Commit/PR: Pending
+Commit/PR: `749c381`
 Status: Implemented
 
 Summary:
