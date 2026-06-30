@@ -5,9 +5,13 @@ endif
 
 ADMINER_PORT ?= 8080
 FRONTEND_PORT ?= 5173
+PROD_HTTP_PORT ?= 8081
+PROD_HTTPS_PORT ?= 8443
+PROD_POSTGRES_PASSWORD ?= prod_config_placeholder_password
+PROD_AUTH_SECRET_KEY ?= prod_config_placeholder_min_32_chars
 
 .PHONY: verify verify-no-db test test-backend test-backend-db lint format-check typecheck
-.PHONY: migrations-check migrations-check-compose smoke compose-up compose-down
+.PHONY: migrations-check migrations-check-compose smoke prod-config prod-smoke prod-down compose-up compose-down
 .PHONY: test-frontend memory-check review-ready memory-entry
 
 verify: verify-no-db migrations-check
@@ -60,6 +64,17 @@ smoke:
 	curl --fail --retry 10 --retry-delay 1 --retry-all-errors http://localhost:8000/health
 	curl --fail --retry 10 --retry-delay 1 --retry-all-errors http://127.0.0.1:$(ADMINER_PORT)
 	curl --fail --retry 10 --retry-delay 1 --retry-all-errors http://127.0.0.1:$(FRONTEND_PORT)
+
+prod-config:
+	POSTGRES_PASSWORD="$(PROD_POSTGRES_PASSWORD)" AUTH_SECRET_KEY="$(PROD_AUTH_SECRET_KEY)" CADDY_SITE_ADDRESS=":80" PROD_HTTP_PORT="$(PROD_HTTP_PORT)" PROD_HTTPS_PORT="$(PROD_HTTPS_PORT)" docker compose -f docker-compose.prod.yml config
+
+prod-smoke:
+	POSTGRES_PASSWORD="$(PROD_POSTGRES_PASSWORD)" AUTH_SECRET_KEY="$(PROD_AUTH_SECRET_KEY)" CADDY_SITE_ADDRESS=":80" PROD_HTTP_PORT="$(PROD_HTTP_PORT)" PROD_HTTPS_PORT="$(PROD_HTTPS_PORT)" docker compose -f docker-compose.prod.yml up -d --build
+	curl --fail --retry 20 --retry-delay 1 --retry-all-errors http://127.0.0.1:$(PROD_HTTP_PORT)/health
+	curl --fail --retry 20 --retry-delay 1 --retry-all-errors http://127.0.0.1:$(PROD_HTTP_PORT)/
+
+prod-down:
+	POSTGRES_PASSWORD="$(PROD_POSTGRES_PASSWORD)" AUTH_SECRET_KEY="$(PROD_AUTH_SECRET_KEY)" CADDY_SITE_ADDRESS=":80" PROD_HTTP_PORT="$(PROD_HTTP_PORT)" PROD_HTTPS_PORT="$(PROD_HTTPS_PORT)" docker compose -f docker-compose.prod.yml down
 
 compose-up:
 	docker compose up -d --build

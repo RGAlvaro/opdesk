@@ -35,6 +35,38 @@ Known gaps:
 
 ## Entries
 
+### 2026-06-30 — SPEC-301 — Production deployment implemented
+
+Role: Ingeniero de software
+Branch: codex/spec-301-deployment
+Commit/PR: Pending
+Status: Implemented
+
+Summary:
+- Added production Compose with private PostgreSQL, backend, static frontend, and Caddy as the only public entry point.
+- Added Caddy routing for `/api/*`, `/health`, and frontend routes, plus a production frontend image target served by nginx.
+- Added production Make targets for Compose config validation, local production smoke, and production stack cleanup.
+- Added GitHub Actions verification, deployment/backup/restore documentation, README updates, and `ADR-008` for the production topology.
+- Marked `SPEC-301` implemented in the spec index and updated project memory for review handoff.
+
+Validation:
+- command: `make verify-no-db`: PASS — backend Ruff, frontend ESLint, format checks, backend mypy, frontend typecheck, 65 backend non-DB tests, and 38 frontend tests passed.
+- command: `npm run build` from `frontend/`: PASS — TypeScript build and Vite production build passed.
+- command: `make prod-config`: PASS — production Compose config rendered with safe placeholder secrets.
+- command: `make prod-smoke`: PASS — production Compose built and started backend, frontend, PostgreSQL, and Caddy; `/health` and `/` passed through Caddy on local port 8081.
+- command: `make prod-down`: PASS — production smoke containers were stopped and removed; shared Compose network remained because local Adminer was still running.
+- command: `make smoke`: PASS — local Compose still starts backend, frontend dev server, PostgreSQL, and Adminer after frontend Dockerfile target changes.
+- command: `make migrations-check-compose`: PASS — Alembic upgrade/check passed inside the Compose backend container.
+- command: `make verify`: PASS — full verification passed when rerun with elevated host PostgreSQL access; sandboxed host migration connection failed before elevation.
+
+Review:
+- decision: N/A — implementation awaits review.
+
+Known gaps:
+- CI workflow is committed but has not yet run on GitHub in this local handoff.
+- Public production deployment is documented but not yet executed against a real VPS/domain.
+- Redis and worker production services remain deferred until `SPEC-201`.
+
 ### 2026-06-30 — SPEC-106 — Pagination review fix approved
 
 Role: Review agent

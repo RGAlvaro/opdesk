@@ -32,6 +32,17 @@ ADR-002-backend-module-layout.md
 ADR-003-auth-cookie-token-strategy.md
 ```
 
+## Accepted Decisions
+
+- `ADR-001-python-package-manager.md`
+- `ADR-002-backend-module-layout.md`
+- `ADR-003-local-container-database-configuration.md`
+- `ADR-004-local-database-admin-tool.md`
+- `ADR-005-agent-operational-memory.md`
+- `ADR-006-human-readable-code-comments.md`
+- `ADR-007-tenant-isolation-and-rbac-enforcement.md`
+- `ADR-008-production-compose-and-caddy.md`
+
 ## Template
 
 ```text

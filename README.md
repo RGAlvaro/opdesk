@@ -4,7 +4,12 @@ OpsDesk is a spec-driven B2B SaaS portfolio project for operational work managem
 
 ## Current Scope
 
-The current implementation covers `SPEC-010`, `SPEC-011`, backend `SPEC-101`, and `SPEC-104`: backend scaffold, local PostgreSQL, Alembic, health checks, Docker Compose, validation harness, a local-only database admin panel, authentication/user API endpoints, and the initial React auth/profile frontend.
+The current implementation covers local development, core product workflows, and first production deployment wiring:
+
+- `SPEC-010` and `SPEC-011`: backend scaffold, local PostgreSQL, Alembic, health checks, Docker Compose, validation harness, and local Adminer.
+- `SPEC-101`, `SPEC-102`, and `SPEC-103`: authentication/users, organizations/RBAC, projects, and tasks.
+- `SPEC-104`, `SPEC-105`, and `SPEC-106`: React app shell, auth/profile UI, organization UI, and project/task UI.
+- `SPEC-301`: production Compose, Caddy routing, CI verification, and deployment/backup documentation.
 
 ## Local Setup
 
@@ -84,6 +89,11 @@ make test-backend
 make typecheck
 make migrations-check
 make smoke
+make prod-config
 ```
 
 `DATABASE_URL` is intended for container-to-container access through the Compose `postgres` hostname. Host-side commands can use `LOCAL_DATABASE_URL` or the Makefile default pointing at `localhost:5432`.
+
+## Production Deployment
+
+Production deployment uses `docker-compose.prod.yml` with Caddy as the only public entry point, a private backend service, a private static frontend service, and private PostgreSQL. See `docs/deployment.md` for environment variables, startup, smoke checks, backup, and restore.
