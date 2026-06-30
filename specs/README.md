@@ -35,7 +35,7 @@ Use this index for routing. Use `docs/project-state.md` for the compact current 
 | `SPEC-102` | Implemented | Organizations and RBAC | `SPEC-101` | Backend models, migration, APIs, services, tests |
 | `SPEC-103` | Implemented | Projects and tasks | `SPEC-102` | Backend models, migration, APIs, services, tests |
 | `SPEC-105` | Implemented | Frontend organizations UI | `SPEC-102`, `SPEC-104` | Organization routes, forms, member/admin UI, frontend tests |
-| `SPEC-106` | Ready | Frontend projects and tasks UI | `SPEC-103`, `SPEC-105` | Project/task routes, forms, filters, frontend tests |
+| `SPEC-106` | Implemented | Frontend projects and tasks UI | `SPEC-103`, `SPEC-105` | Project/task routes, forms, filters, frontend tests |
 | `SPEC-201` | Draft | Background jobs and notifications | `SPEC-103` | Redis/Celery worker, notification models, tests |
 | `SPEC-301` | Ready | Production deployment and operations | Starts after `SPEC-010`; evolves with services | Production Compose, Caddy, deployment docs, backup/restore docs |
 

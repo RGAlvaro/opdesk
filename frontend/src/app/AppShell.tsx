@@ -11,11 +11,6 @@ import { NavLink, Outlet, useNavigate } from "react-router-dom";
 
 import { useLogout, useSession } from "../features/auth/session";
 
-const disabledNavItems = [
-  { label: "Projects", icon: FolderKanban },
-  { label: "Tasks", icon: ListChecks },
-];
-
 /** Render the protected layout and route outlet for signed-in users. */
 export function AppShell() {
   const { data: user } = useSession();
@@ -98,16 +93,32 @@ export function AppShell() {
                 <Building2 aria-hidden="true" className="h-4 w-4" />
                 Organizations
               </NavLink>
-              {disabledNavItems.map((item) => (
-                <span
-                  key={item.label}
-                  className="flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium text-muted opacity-70"
-                  aria-disabled="true"
-                >
-                  <item.icon aria-hidden="true" className="h-4 w-4" />
-                  {item.label}
-                </span>
-              ))}
+              <NavLink
+                to="/app/organizations"
+                className={({ isActive }) =>
+                  `flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium ${
+                    isActive
+                      ? "bg-brand text-white"
+                      : "text-ink hover:bg-surface"
+                  }`
+                }
+              >
+                <FolderKanban aria-hidden="true" className="h-4 w-4" />
+                Projects
+              </NavLink>
+              <NavLink
+                to="/app/organizations"
+                className={({ isActive }) =>
+                  `flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium ${
+                    isActive
+                      ? "bg-brand text-white"
+                      : "text-ink hover:bg-surface"
+                  }`
+                }
+              >
+                <ListChecks aria-hidden="true" className="h-4 w-4" />
+                Tasks
+              </NavLink>
             </div>
           </nav>
         </aside>

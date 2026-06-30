@@ -5,6 +5,7 @@ import {
   AlertTriangle,
   ArrowLeft,
   Building2,
+  FolderKanban,
   Save,
   ShieldCheck,
   Trash2,
@@ -404,8 +405,15 @@ export function OrganizationDetailPage() {
         </article>
 
         <article className="rounded-md border border-line bg-white p-5">
-          <h2 className="font-semibold">Administration</h2>
+          <h2 className="font-semibold">Workspace navigation</h2>
           <div className="mt-4 flex flex-wrap gap-3">
+            <Link
+              to={`/app/organizations/${organization.data.id}/projects`}
+              className="inline-flex items-center gap-2 rounded-md bg-brand px-3 py-2 text-sm font-semibold text-white hover:bg-brand/90"
+            >
+              <FolderKanban aria-hidden="true" className="h-4 w-4" />
+              Projects
+            </Link>
             {canViewMembers ? (
               <Link
                 to={`/app/organizations/${organization.data.id}/members`}

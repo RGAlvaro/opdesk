@@ -1,22 +1,22 @@
 # Project State
 
-Last updated: 2026-06-24
+Last updated: 2026-06-30
 
 This file is the compact operational state for agents. Use it to orient quickly before reading detailed specs, ADRs, implementation history, or code.
 
 ## Current Work
 
 - Active branch: `main`
-- Active spec: `SPEC-106` frontend projects and tasks UI is ready for implementation
-- Current state: `SPEC-105` frontend organization UI is merged to `main`; `SPEC-106` is the next implementation target and should add project/task routes, forms, filters, assignment UI, route navigation, cache handling, and frontend tests
+- Active spec: `SPEC-106` frontend projects and tasks UI is review approved
+- Current state: `SPEC-106` adds project/task routes, forms, filters, assignment UI, route navigation, cache handling, frontend tests, and URL-backed project/task pagination with `limit`/`offset` request parameters; pagination review fix has been re-reviewed and approved
 - Documentation checkpoint: agent operational memory was restructured on 2026-06-16 with this file, central touch-to-spec routing, per-spec scope/context blocks, and `ADR-005`; on 2026-06-24 the base workflow added review-gated memory checks and implementation-log scaffolding targets
-- Recent validation recorded in `docs/implementation-log.md`: `SPEC-105` review fix passed `make test-frontend`, `make lint`, `make format-check`, `make typecheck`, `make verify-no-db`, and `make smoke`; re-review reran `make test-frontend`, `make lint`, `make format-check`, and `make typecheck` on 2026-06-24
-- Current validation baseline: full non-DB verification, Docker smoke, and frontend organization route coverage passed for `SPEC-105` review fix on 2026-06-24; latest live migration validation remains the `SPEC-103` baseline from 2026-06-23
+- Recent validation recorded in `docs/implementation-log.md`: `SPEC-106` pagination review fix re-review passed `make test-frontend`, `make lint`, `make format-check`, `make typecheck`, `make smoke`, `make memory-check SPEC=SPEC-106`, and `git diff --check` on 2026-06-30
+- Current validation baseline: required frontend implementation checks and Docker smoke passed for `SPEC-106` on 2026-06-30; latest live migration validation remains the `SPEC-103` baseline from 2026-06-23 because `SPEC-106` is frontend-only
 
 ## Next Handoff
 
-- Next role: Ingeniero de software
-- Next likely implementation work: implement `SPEC-106` frontend projects and tasks UI.
+- Next role: Arquitecto de specs or Ingeniero de software
+- Next likely implementation work: revisit `SPEC-201` after task assignment notification events are available, or continue `SPEC-301` deployment work.
 - Keep `SPEC-301` expanding as deployment surfaces become real.
 
 ## Implemented Specs
@@ -31,12 +31,12 @@ This file is the compact operational state for agents. Use it to orient quickly 
 | `SPEC-102` | Single-owner organizations, ownership transfer, permanent deletion, and RBAC | Organization backend, migrations `0003`/`0004`, tests, `ADR-007` | Implemented and review approved |
 | `SPEC-103` | Projects and tasks backend | Project/task backend, migration `0005`, endpoint tests | Implemented and review approved |
 | `SPEC-105` | Frontend organizations UI | Organization routes, shell navigation, organization API hooks, frontend tests | Implemented and review approved |
+| `SPEC-106` | Frontend projects and tasks UI | Project/task routes, forms, filters, pagination, assignment UI, frontend tests | Implemented and review approved |
 
 ## Ready Specs Not Yet Implemented
 
 | Spec | Scope | Depends on | Expected next surfaces |
 |---|---|---|---|
-| `SPEC-106` | Frontend projects and tasks UI | `SPEC-103`, `SPEC-105` | Project/task routes, forms, filters, assignment UI, frontend tests |
 | `SPEC-301` | Production deployment and operations | `SPEC-010`, then evolving services | Production Compose, Caddy, deployment docs, backup/restore docs |
 
 ## Draft Specs
@@ -47,23 +47,22 @@ This file is the compact operational state for agents. Use it to orient quickly 
 
 ## Next Likely Work
 
-1. Implement `SPEC-106` frontend projects and tasks UI.
-2. Revisit `SPEC-201` after task assignment notification events are specified through the task UI.
-3. Expand `SPEC-301` as frontend, backend, database, Redis, and worker services become real.
+1. Revisit `SPEC-201` after task assignment notification events are specified through the task UI.
+2. Expand `SPEC-301` as frontend, backend, database, Redis, and worker services become real.
 
 ## Known Gaps
 
 - `SPEC-104` has no Playwright E2E tests yet; the spec intentionally recommends adding them after the frontend/local server harness stabilizes.
-- Project and task UI is intentionally unavailable until `SPEC-106` is implemented.
+- `SPEC-106` has route-level/component coverage but still has no Playwright E2E critical path; the spec recommends adding Playwright after organization/project/task UI stabilizes.
 - `SPEC-201` remains Draft.
 - CI and public production deployment are not complete yet.
 
 ## Validation Baseline
 
 - Latest recorded full local verification: `make verify` PASS for `SPEC-103` on 2026-06-23, run outside sandbox for PostgreSQL migration access.
-- Latest recorded sandbox-friendly verification: `make verify-no-db` PASS for `SPEC-105` review fix on 2026-06-24.
-- Latest recorded smoke check: `make smoke` PASS for `SPEC-105` review fix on 2026-06-24.
-- Latest final review: `SPEC-105` APPROVED on 2026-06-24 after re-review of organization `401` session handling, route tests, validation evidence, and project memory.
+- Latest recorded sandbox-friendly frontend validation: `make test-frontend`, `make lint`, `make format-check`, and `make typecheck` PASS for `SPEC-106` pagination review fix on 2026-06-30.
+- Latest recorded smoke check: `make smoke` PASS for `SPEC-106` pagination review fix on 2026-06-30.
+- Latest final review: `SPEC-106` APPROVED on 2026-06-30 after re-review of project/task pagination hooks, controls, URL state, tests, validation evidence, and project memory.
 - Memory harness baseline: `make memory-check SPEC=SPEC-106` verifies that project memory mentions the active spec and that the newest implementation-log entry includes required handoff sections.
 - Use `specs/harness/local-validation.md` for current command meanings and expected coverage.
 
@@ -82,8 +81,8 @@ This file is the compact operational state for agents. Use it to orient quickly 
 | `frontend/src/app` | Router, app shell, providers, route guards |
 | `frontend/src/features/auth` | Login, signup, session bootstrap, logout behavior |
 | `frontend/src/features/organizations` | Organization/workspace UI, member/admin UI, API hooks, and active organization route support for `SPEC-105` |
-| `frontend/src/features/projects` | Planned project UI for `SPEC-106` |
-| `frontend/src/features/tasks` | Planned task UI, filters, assignment controls, and task forms for `SPEC-106` |
+| `frontend/src/features/projects` | Project API hooks, paginated list/detail/settings/create routes, and SPEC-106 route tests |
+| `frontend/src/features/tasks` | Task API hooks, URL-backed pagination/filters, assignment controls, create/update forms, and SPEC-106 route tests |
 | `frontend/src/features/profile` | Current-user profile display and update flow |
 | `frontend/src/shared` | Shared API client, UI primitives, test helpers, utilities |
 

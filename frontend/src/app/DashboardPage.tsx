@@ -12,14 +12,15 @@ const upcoming = [
   },
   {
     title: "Projects",
-    description:
-      "Project lists and details will appear after organization APIs are available.",
+    description: "Open an organization to create and manage projects.",
     icon: FolderKanban,
+    href: "/app/organizations",
   },
   {
     title: "Tasks",
-    description: "Task tracking will appear when the module is available.",
+    description: "Open a project to filter, assign, and update task work.",
     icon: ListChecks,
+    href: "/app/organizations",
   },
 ];
 
@@ -51,7 +52,9 @@ export function DashboardPage() {
                   to={item.href}
                   className="mt-3 inline-flex text-sm font-medium text-brand hover:underline"
                 >
-                  Open organizations
+                  {item.title === "Organizations"
+                    ? "Open organizations"
+                    : `Open ${item.title.toLowerCase()}`}
                 </Link>
               ) : null}
             </article>

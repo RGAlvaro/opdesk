@@ -1,6 +1,6 @@
 # SPEC-106 — Frontend Projects and Tasks UI
 
-Status: Ready  
+Status: Implemented
 Owner: Arquitecto de specs  
 Last updated: 2026-06-24
 

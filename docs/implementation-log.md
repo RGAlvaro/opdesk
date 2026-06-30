@@ -35,6 +35,127 @@ Known gaps:
 
 ## Entries
 
+### 2026-06-30 — SPEC-106 — Pagination review fix approved
+
+Role: Review agent
+Branch: main
+Commit/PR: Pending
+Status: Reviewed
+
+Summary:
+- Re-reviewed the `SPEC-106` pagination review fix.
+- Confirmed project and task list hooks send `limit`/`offset` and include pagination in query keys.
+- Confirmed project and task list screens expose URL-backed previous/next pagination controls.
+- Confirmed task filters reset offset to the first page and preserve filters when paginating.
+- Confirmed tests assert paginated requests, shared pagination URLs, and filtered task pagination.
+- Updated project memory to mark `SPEC-106` review approved.
+
+Validation:
+- command: `make test-frontend`: PASS — 3 frontend test files, 38 tests passed.
+- command: `make lint`: PASS — backend Ruff and frontend ESLint passed.
+- command: `make format-check`: PASS — backend Ruff format check and frontend Prettier passed.
+- command: `make typecheck`: PASS — backend mypy and frontend TypeScript passed.
+- command: `make smoke`: PASS — Docker Compose rebuilt/started backend, frontend, PostgreSQL, and Adminer; backend health, Adminer, and frontend HTTP checks passed after backend startup retries.
+- command: `make memory-check SPEC=SPEC-106`: PASS.
+- command: `git diff --check`: PASS.
+
+Review:
+- decision: APPROVED
+
+Known gaps:
+- No Playwright E2E critical path yet; `SPEC-106` explicitly recommends adding it after organization/project/task UI stabilizes.
+
+### 2026-06-30 — SPEC-106 — Pagination review fix implemented
+
+Role: Ingeniero de software
+Branch: main
+Commit/PR: Pending
+Status: Implemented
+
+Summary:
+- Added `limit` and `offset` support to project and task list API hooks and query keys.
+- Added URL-backed previous/next pagination controls to project and task list routes.
+- Reset task pagination offset when filters change while preserving filter query parameters when paging.
+- Added route tests that assert project/task list requests include `limit`/`offset`, that shared pagination URLs load the requested page, and that task filters are preserved while paginating.
+- Updated project memory for re-review handoff.
+
+Validation:
+- command: `npm run test` from `frontend/`: PASS — 3 frontend test files, 38 tests passed.
+- command: `npm run lint` from `frontend/`: PASS — frontend ESLint passed.
+- command: `npm run format:check` from `frontend/`: PASS — frontend Prettier passed.
+- command: `npm run typecheck` from `frontend/`: PASS — TypeScript project build passed.
+- command: `make test-frontend`: PASS — 3 frontend test files, 38 tests passed.
+- command: `make lint`: PASS — backend Ruff and frontend ESLint passed.
+- command: `make format-check`: PASS — backend Ruff format check and frontend Prettier passed.
+- command: `make typecheck`: PASS — backend mypy and frontend TypeScript passed.
+- command: `make smoke`: PASS — Docker Compose rebuilt/started backend, frontend, PostgreSQL, and Adminer; backend health, Adminer, and frontend HTTP checks passed after backend startup retries.
+
+Review:
+- decision: N/A — review fix awaits re-review.
+
+Known gaps:
+- No Playwright E2E critical path yet; `SPEC-106` recommends adding it after organization/project/task UI stabilizes.
+
+### 2026-06-24 — SPEC-106 — Review changes requested
+
+Role: Review agent
+Branch: main
+Commit/PR: Pending
+Status: Reviewed
+
+Summary:
+- Reviewed the `SPEC-106` frontend projects/tasks implementation against routes, API usage, filters, role-aware controls, tests, validation, and project memory.
+- Confirmed required frontend validation and smoke checks pass.
+- Found that project and task list API hooks and screens do not expose `limit`/`offset` pagination controls or request parameters, leaving AC-1, AC-6, and the harness pagination requirement only partially implemented.
+- Updated project memory to reflect the review decision and next work.
+
+Validation:
+- command: `make test-frontend`: PASS — 3 frontend test files, 37 tests passed.
+- command: `make lint`: PASS — backend Ruff and frontend ESLint passed.
+- command: `make format-check`: PASS — backend Ruff format check and frontend Prettier passed.
+- command: `make typecheck`: PASS — backend mypy and frontend TypeScript passed.
+- command: `make smoke`: PASS — Docker Compose rebuilt/started backend, frontend, PostgreSQL, and Adminer; backend health, Adminer, and frontend HTTP checks passed after backend startup retries.
+- command: `make memory-check SPEC=SPEC-106`: PASS.
+- command: `git diff --check`: PASS.
+
+Review:
+- decision: CHANGES_REQUESTED
+
+Known gaps:
+- Project and task list pagination controls/request parameters are missing and must be implemented before approval.
+
+### 2026-06-24 — SPEC-106 — Frontend projects and tasks UI implemented
+
+Role: Ingeniero de software
+Branch: main
+Commit/PR: Pending
+Status: Implemented
+
+Summary:
+- Added project API hooks, types, list route, creation route, detail route, owner/admin settings, archive toggles, and organization-detail project navigation.
+- Added task API hooks, types, URL-backed task filters, task list route, task creation route, role-aware assignee controls, task detail/update route, and safe `401`/`403`/`404`/`409` handling.
+- Updated authenticated shell and dashboard navigation now that project/task routes are implemented.
+- Added route-level frontend coverage for project list/create/update/archive, role-aware controls, task filters, assignment behavior, archived projects, task update completion state, safe API errors, and auth guard behavior.
+- Marked `SPEC-106` implemented in the spec index and updated project memory for review handoff.
+
+Validation:
+- command: `npm run typecheck` from `frontend/`: PASS — TypeScript project build passed after initial implementation fixes.
+- command: `npm run test -- --runInBand` from `frontend/`: FAIL — Vitest does not support the Jest-style `--runInBand` option in this project.
+- command: `npm run test` from `frontend/`: PASS — 3 frontend test files, 37 tests passed.
+- command: `npm run lint` from `frontend/`: PASS — frontend ESLint passed after removing a dead import and Fast Refresh helper exports.
+- command: `npm run format:check` from `frontend/`: PASS — frontend Prettier check passed after formatting touched files.
+- command: `make test-frontend`: PASS — 3 frontend test files, 37 tests passed.
+- command: `make lint`: PASS — backend Ruff and frontend ESLint passed.
+- command: `make format-check`: PASS — backend Ruff format check and frontend Prettier passed.
+- command: `make typecheck`: PASS — backend mypy and frontend TypeScript passed.
+- command: `make smoke`: PASS — Docker Compose rebuilt/started backend, frontend, PostgreSQL, and Adminer; backend health, Adminer, and frontend HTTP checks passed after backend startup retries.
+
+Review:
+- decision: N/A — implementation awaits review.
+
+Known gaps:
+- No Playwright E2E critical path yet; `SPEC-106` recommends adding it after organization/project/task UI stabilizes.
+
 ### 2026-06-24 — SPEC-106 — Memory harness review approved
 
 Role: Review agent

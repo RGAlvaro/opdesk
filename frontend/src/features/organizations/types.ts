@@ -10,6 +10,12 @@ export type PaginatedResponse<TItem> = {
   offset: number;
 };
 
+/** Standard list pagination parameters accepted by backend endpoints. */
+export type PaginationParams = {
+  limit: number;
+  offset: number;
+};
+
 /** Organization fields returned with the current user's role. */
 export type Organization = {
   id: string;

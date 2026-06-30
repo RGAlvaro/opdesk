@@ -13,7 +13,18 @@ import {
   OrganizationNewPage,
   OrganizationSettingsPage,
 } from "../features/organizations/OrganizationPages";
+import {
+  ProjectDetailPage,
+  ProjectListPage,
+  ProjectNewPage,
+  ProjectSettingsPage,
+} from "../features/projects/ProjectPages";
 import { ProfilePage } from "../features/profile/ProfilePage";
+import {
+  TaskDetailPage,
+  TaskListPage,
+  TaskNewPage,
+} from "../features/tasks/TaskPages";
 import { AppShell } from "./AppShell";
 import { DashboardPage } from "./DashboardPage";
 import { LandingPage } from "./LandingPage";
@@ -70,6 +81,22 @@ export function AppRouter() {
           path="organizations/:organizationId/members"
           element={<OrganizationMembersPage />}
         />
+        <Route
+          path="organizations/:organizationId/projects"
+          element={<ProjectListPage />}
+        />
+        <Route
+          path="organizations/:organizationId/projects/new"
+          element={<ProjectNewPage />}
+        />
+        <Route path="projects/:projectId" element={<ProjectDetailPage />} />
+        <Route
+          path="projects/:projectId/settings"
+          element={<ProjectSettingsPage />}
+        />
+        <Route path="projects/:projectId/tasks" element={<TaskListPage />} />
+        <Route path="projects/:projectId/tasks/new" element={<TaskNewPage />} />
+        <Route path="tasks/:taskId" element={<TaskDetailPage />} />
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>

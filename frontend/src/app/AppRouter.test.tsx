@@ -224,7 +224,7 @@ describe("SPEC-104 frontend app shell and auth UI", () => {
     ).toBeInTheDocument();
   });
 
-  it("renders session shell and enables organization navigation only", async () => {
+  it("renders session shell and enables organization, project, and task navigation", async () => {
     mockFetch(jsonResponse(user));
 
     renderRoute("/app");
@@ -237,13 +237,12 @@ describe("SPEC-104 frontend app shell and auth UI", () => {
     expect(
       within(nav).getByRole("link", { name: /organizations/i }),
     ).toHaveAttribute("href", "/app/organizations");
-    expect(within(nav).getByText("Projects")).toHaveAttribute(
-      "aria-disabled",
-      "true",
-    );
-    expect(within(nav).getByText("Tasks")).toHaveAttribute(
-      "aria-disabled",
-      "true",
+    expect(
+      within(nav).getByRole("link", { name: /projects/i }),
+    ).toHaveAttribute("href", "/app/organizations");
+    expect(within(nav).getByRole("link", { name: /tasks/i })).toHaveAttribute(
+      "href",
+      "/app/organizations",
     );
   });
 
