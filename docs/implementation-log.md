@@ -39,7 +39,7 @@ Known gaps:
 
 Role: Ingeniero de software
 Branch: codex/spec-301-deployment
-Commit/PR: `3bb4882` / PR pending
+Commit/PR: `3bb4882` / PR #5
 Status: Implemented
 
 Summary:
@@ -63,7 +63,7 @@ Review:
 - decision: N/A — implementation awaits review.
 
 Known gaps:
-- CI workflow is committed but has not yet run on GitHub in this local handoff.
+- GitHub Actions workflow `Verify` was triggered by PR #5 and is pending completion.
 - Public production deployment is documented but not yet executed against a real VPS/domain.
 - Redis and worker production services remain deferred until `SPEC-201`.
 
