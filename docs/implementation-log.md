@@ -39,7 +39,7 @@ Known gaps:
 
 Role: Arquitecto de specs
 Branch: codex/gh-outside-sandbox-policy
-Commit/PR: `5491223` / PR pending
+Commit/PR: `5491223` / PR #6
 Status: Ready
 
 Summary:
@@ -59,6 +59,7 @@ Review:
 
 Known gaps:
 - Runtime approval remains environment-specific; the repository can require elevation but cannot pre-authorize it.
+- PR #6 has no GitHub Actions checks because the `Verify` workflow is still isolated in the unmerged SPEC-301 PR #5.
 
 ### 2026-06-30 — SPEC-106 — Pagination review fix approved
 
