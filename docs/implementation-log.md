@@ -63,7 +63,7 @@ Review:
 - decision: N/A — implementation awaits review.
 
 Known gaps:
-- GitHub Actions workflow `Verify` was triggered by PR #5 and is pending completion.
+- GitHub Actions workflow `Verify` passed on PR #5 in 1m12s.
 - Public production deployment is documented but not yet executed against a real VPS/domain.
 - Redis and worker production services remain deferred until `SPEC-201`.
 

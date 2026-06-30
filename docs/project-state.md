@@ -50,7 +50,7 @@ This file is the compact operational state for agents. Use it to orient quickly 
 - `SPEC-104` has no Playwright E2E tests yet; the spec intentionally recommends adding them after the frontend/local server harness stabilizes.
 - `SPEC-106` has route-level/component coverage but still has no Playwright E2E critical path; the spec recommends adding Playwright after organization/project/task UI stabilizes.
 - `SPEC-201` remains Draft.
-- GitHub Actions workflow `Verify` was triggered by PR #5 and is pending completion.
+- GitHub Actions workflow `Verify` passed on PR #5 in 1m12s.
 - Public production deployment is documented but not yet executed against a real VPS/domain.
 - Redis and worker production services remain deferred until `SPEC-201`.
 
