@@ -16,7 +16,7 @@ This file is the compact operational state for agents. Use it to orient quickly 
 ## Next Handoff
 
 - Next role: Review agent
-- Next likely implementation work: commit/push and re-review the validated `SPEC-301` fix in PR #5; after approval, integrate it before starting Playwright or `SPEC-201` work.
+- Next likely implementation work: push and re-review the committed `SPEC-301` fix in PR #5; after approval, integrate it before starting Playwright or `SPEC-201` work.
 - Keep `SPEC-301` expanding when Redis/worker services become real through `SPEC-201`.
 
 ## Implemented Specs
@@ -42,7 +42,7 @@ This file is the compact operational state for agents. Use it to orient quickly 
 
 ## Next Likely Work
 
-1. Commit/push and re-review the validated `SPEC-301` isolation/restore fix.
+1. Push and re-review the committed `SPEC-301` isolation/restore fix.
 2. Add Playwright coverage in a dedicated follow-up after the deployment harness is integrated.
 3. Prepare `SPEC-201` decisions and move it to Ready before implementing Redis/Celery.
 
@@ -51,7 +51,7 @@ This file is the compact operational state for agents. Use it to orient quickly 
 - `SPEC-104` has no Playwright E2E tests yet; the spec intentionally recommends adding them after the frontend/local server harness stabilizes.
 - `SPEC-106` has route-level/component coverage but still has no Playwright E2E critical path; the spec recommends adding Playwright after organization/project/task UI stabilizes.
 - `SPEC-201` remains Draft.
-- PR #5 was mergeable and its prior GitHub Actions `Verify` check passed; the local 2026-07-02 review fix now needs commit/push, fresh CI, and re-review.
+- PR #5 was mergeable and its prior GitHub Actions `Verify` check passed; commit `d413343` now needs push, fresh CI, and re-review.
 - Public production deployment is documented but not yet executed against a real VPS/domain.
 - Redis and worker production services remain deferred until `SPEC-201`.
 

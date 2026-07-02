@@ -39,7 +39,7 @@ Known gaps:
 
 Role: Ingeniero de software
 Branch: codex/spec-301-deployment
-Commit/PR: Pending / PR #5
+Commit/PR: `d413343` / PR #5
 Status: Implemented
 
 Summary:
