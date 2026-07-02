@@ -39,7 +39,7 @@ Known gaps:
 
 Role: Ingeniero de software
 Branch: codex/spec-301-deployment
-Commit/PR: `d413343` / PR #5
+Commit/PR: `d413343`, memory checkpoint `5cb0017` / PR #5
 Status: Implemented
 
 Summary:
@@ -55,12 +55,13 @@ Validation:
 - command: `make prod-down`: PASS — isolated production-smoke containers and network stopped and were removed without affecting the local Compose project or deleting the smoke database volume.
 - command: `make verify-no-db`: PASS — 65 backend tests and 38 frontend tests passed with lint, format, and type checks.
 - command: `git diff --check`: PASS.
+- command: `git push -u origin codex/spec-301-deployment`: PASS — implementation and memory commits were published to the branch used by PR #5.
 
 Review:
 - decision: N/A — fully validated review fix awaits re-review.
 
 Known gaps:
-- Re-review PR #5 after committing/pushing the review fix and obtaining a fresh CI result.
+- Obtain a fresh CI result for the updated PR #5 and re-review it.
 - Public VPS/domain deployment remains an external launch step.
 
 ### 2026-06-30 — SPEC-301 — Production deployment implemented
