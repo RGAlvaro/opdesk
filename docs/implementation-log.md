@@ -35,6 +35,34 @@ Known gaps:
 
 ## Entries
 
+### 2026-07-02 — SPEC-301 — Production smoke isolation and restore review fix
+
+Role: Ingeniero de software
+Branch: codex/spec-301-deployment
+Commit/PR: Pending / PR #5
+Status: Implemented
+
+Summary:
+- Isolated production harness commands under the configurable `opdesk-prod-smoke` Compose project so they cannot reuse local-development containers, networks, or volumes by default.
+- Added a production data smoke that applies migrations, creates a custom-format PostgreSQL backup, deletes a marker row, restores the backup transactionally, verifies the marker, removes the probe table, and checks Alembic drift.
+- Replaced the unsafe plain-SQL restore documentation with stable project naming and custom-format `pg_dump`/`pg_restore` commands.
+- Added production harness coverage to the local validation guide and ignored generated backup artifacts.
+
+Validation:
+- command: `make prod-config`: PASS — shell syntax and production Compose rendering passed; rendered resources use the `opdesk-prod-smoke_*` namespace.
+- command: `make prod-data-smoke`: PASS — migrations, custom-format dump, destructive marker deletion, transactional restore, restored marker verification, probe cleanup, and final Alembic drift check passed in the isolated database.
+- command: `make prod-smoke`: PASS — the complete data smoke passed, production images built, and `/health` plus `/` passed through Caddy on port 8081.
+- command: `make prod-down`: PASS — isolated production-smoke containers and network stopped and were removed without affecting the local Compose project or deleting the smoke database volume.
+- command: `make verify-no-db`: PASS — 65 backend tests and 38 frontend tests passed with lint, format, and type checks.
+- command: `git diff --check`: PASS.
+
+Review:
+- decision: N/A — fully validated review fix awaits re-review.
+
+Known gaps:
+- Re-review PR #5 after committing/pushing the review fix and obtaining a fresh CI result.
+- Public VPS/domain deployment remains an external launch step.
+
 ### 2026-06-30 — SPEC-301 — Production deployment implemented
 
 Role: Ingeniero de software

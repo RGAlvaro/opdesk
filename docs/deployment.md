@@ -18,11 +18,16 @@ Redis, workers, and scheduled jobs are not part of this deployment until `SPEC-2
 
 ## Required Server Variables
 
-Create a server-side env file from `.env.example` and replace the placeholders:
+Create a server-side env file from `.env.example` and replace the placeholders. Keep the
+Compose project name stable so every operational command targets the same deployment:
 
 ```bash
 cp .env.example .env.production
 ```
+
+The commands below use `opdesk-prod` as that stable project name. Do not reuse it for local
+development or smoke tests; `make prod-smoke` defaults to the isolated `opdesk-prod-smoke`
+project.
 
 Required production values:
 
@@ -49,28 +54,22 @@ Production Compose forces `APP_ENV=production`, `DEBUG=false`, `AUTH_COOKIE_SECU
 Validate the production Compose file before starting:
 
 ```bash
-set -a
-. ./.env.production
-set +a
-docker compose -f docker-compose.prod.yml config
+docker compose --project-name opdesk-prod --env-file .env.production \
+  -f docker-compose.prod.yml config
 ```
 
 Apply database migrations:
 
 ```bash
-set -a
-. ./.env.production
-set +a
-docker compose -f docker-compose.prod.yml run --rm backend poetry run alembic upgrade head
+docker compose --project-name opdesk-prod --env-file .env.production \
+  -f docker-compose.prod.yml run --rm backend poetry run alembic upgrade head
 ```
 
 Start or update the deployment:
 
 ```bash
-set -a
-. ./.env.production
-set +a
-docker compose -f docker-compose.prod.yml up -d --build
+docker compose --project-name opdesk-prod --env-file .env.production \
+  -f docker-compose.prod.yml up -d --build
 ```
 
 Check health through Caddy:
@@ -88,16 +87,15 @@ make prod-down
 
 ## Backup
 
-Create a compressed PostgreSQL backup:
+Create a PostgreSQL custom-format backup. This format supports a clean, transactional restore
+and avoids replaying ownership or privilege statements from the source environment:
 
 ```bash
-set -a
-. ./.env.production
-set +a
 mkdir -p backups
-docker compose -f docker-compose.prod.yml exec -T postgres \
-  pg_dump -U "${POSTGRES_USER:-opdesk}" -d "${POSTGRES_DB:-opdesk}" \
-  | gzip > "backups/opdesk-$(date +%Y%m%d-%H%M%S).sql.gz"
+docker compose --project-name opdesk-prod --env-file .env.production \
+  -f docker-compose.prod.yml exec -T postgres sh -c \
+  'pg_dump --format=custom --no-owner --no-privileges -U "$POSTGRES_USER" -d "$POSTGRES_DB"' \
+  > "backups/opdesk-$(date +%Y%m%d-%H%M%S).dump"
 ```
 
 Store backups outside the VPS as well as on disk. Take a fresh backup before deployment changes.
@@ -107,29 +105,31 @@ Store backups outside the VPS as well as on disk. Take a fresh backup before dep
 Stop the app services that may write to the database:
 
 ```bash
-set -a
-. ./.env.production
-set +a
-docker compose -f docker-compose.prod.yml stop backend
+docker compose --project-name opdesk-prod --env-file .env.production \
+  -f docker-compose.prod.yml stop backend
 ```
 
-Restore a backup:
+Restore a backup. This replaces the current application schema and data, so verify the selected
+file before running it:
 
 ```bash
-gunzip -c backups/opdesk-YYYYMMDD-HHMMSS.sql.gz | \
-  docker compose -f docker-compose.prod.yml exec -T postgres \
-  psql -U "${POSTGRES_USER:-opdesk}" -d "${POSTGRES_DB:-opdesk}"
+docker compose --project-name opdesk-prod --env-file .env.production \
+  -f docker-compose.prod.yml exec -T postgres sh -c \
+  'pg_restore --clean --if-exists --no-owner --no-privileges --single-transaction --exit-on-error -U "$POSTGRES_USER" -d "$POSTGRES_DB"' \
+  < backups/opdesk-YYYYMMDD-HHMMSS.dump
 ```
 
 Restart the app:
 
 ```bash
-docker compose -f docker-compose.prod.yml up -d
+docker compose --project-name opdesk-prod --env-file .env.production \
+  -f docker-compose.prod.yml up -d
 ```
 
 ## Operational Notes
 
 - Run `make verify` locally before deployment when Docker/PostgreSQL are available.
 - Run `make prod-config` in CI or locally to validate production Compose structure with safe placeholder secrets.
+- `make prod-data-smoke` applies migrations and proves a custom-format backup can restore a marker row inside the isolated smoke project.
 - Rotate `AUTH_SECRET_KEY` carefully; existing browser sessions become invalid.
 - Keep `.env.production` and backup files out of Git.
