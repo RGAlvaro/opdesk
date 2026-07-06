@@ -54,6 +54,7 @@ Validation:
 - command: policy reference check with `rg`: PASS — mandatory outside-sandbox execution and `workflow` scope guidance are present in agent instructions, workflow notes, ADR, and project memory.
 - command: `make memory-check SPEC=SPEC-301`: PASS — latest implemented product memory remains structurally valid; this policy does not introduce a product spec.
 - command: elevated `gh auth status`: PASS — authenticated account exposes `repo` and `workflow` scopes outside the sandbox.
+- command: GitHub Actions `Verify` / `verify`: PASS — run `28802653587`, job `85409870201`, completed successfully on reconciled head `32abece`.
 
 Review:
 - decision: APPROVED — the policy is consistent across `AGENTS.md`, workflow guidance, ADR-009, and project memory; it does not weaken secret handling or validation requirements.
