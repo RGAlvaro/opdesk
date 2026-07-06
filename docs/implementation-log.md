@@ -35,11 +35,34 @@ Known gaps:
 
 ## Entries
 
+### 2026-07-06 — SPEC-301 — Review fix published and CI passed
+
+Role: Ingeniero de software
+Branch: codex/spec-301-deployment
+Commit/PR: `2a36558` / PR #5
+Status: Reviewed
+
+Summary:
+- Published the review-approved production database URL and full-CI fixes to PR #5.
+- Confirmed the pushed head matches commit `2a36558` and the GitHub Actions `Verify` workflow completed successfully.
+- Reconciled project memory so it no longer describes the review fix as local or its CI as pending.
+
+Validation:
+- command: GitHub Actions `Verify` / `verify`: PASS — run `28778419569`, job `85327804130`, completed successfully on commit `2a36558`.
+- command: `git status -sb`: PASS — local branch matched `origin/codex/spec-301-deployment` before this memory checkpoint.
+
+Review:
+- decision: APPROVED — the implementation review remains approved; this entry corrects its publication and CI evidence.
+
+Known gaps:
+- Public VPS/domain deployment remains an explicitly deferred external launch step.
+- Redis and worker production services remain deferred until `SPEC-201`.
+
 ### 2026-07-06 — SPEC-301 — Production database URL and CI review approved
 
 Role: Review agent
 Branch: codex/spec-301-deployment
-Commit/PR: Uncommitted local changes / PR #5
+Commit/PR: `2a36558` / PR #5
 Status: Reviewed
 
 Summary:
@@ -65,7 +88,7 @@ Review:
 - decision: APPROVED
 
 Known gaps:
-- Fresh PR #5 CI is still pending until these local changes are committed and pushed.
+- PR #5 CI passed after these changes were committed and pushed as `2a36558`.
 - Public VPS/domain deployment remains an external launch step.
 
 ### 2026-07-06 — SPEC-301 — Production database URL and CI review fix
