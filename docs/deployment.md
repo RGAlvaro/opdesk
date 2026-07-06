@@ -36,12 +36,18 @@ Required production values:
 | `POSTGRES_USER` | PostgreSQL application user, defaults to `opdesk` if omitted. |
 | `POSTGRES_PASSWORD` | Strong PostgreSQL password. Required by production Compose. |
 | `POSTGRES_DB` | PostgreSQL database name, defaults to `opdesk` if omitted. |
+| `PROD_DATABASE_URL` | Backend PostgreSQL URL using the Compose host `postgres`; credentials must match the PostgreSQL variables and the password must be URL-encoded. |
 | `AUTH_SECRET_KEY` | Strong token signing secret; never reuse the local placeholder. |
 | `CADDY_SITE_ADDRESS` | Public domain, for example `opsdesk.example.com`. Use `:80` only for local smoke tests. |
 | `PROD_HTTP_PORT` | Host HTTP port, normally `80`. |
 | `PROD_HTTPS_PORT` | Host HTTPS port, normally `443`. |
 
 Production Compose forces `APP_ENV=production`, `DEBUG=false`, `AUTH_COOKIE_SECURE=true`, and keeps PostgreSQL off public host ports.
+
+Do not build `PROD_DATABASE_URL` by pasting a raw strong password directly into the URL. URL-encode
+reserved characters first, otherwise passwords containing characters such as `@`, `:`, `/`, `?`, or
+`#` can be parsed as URL syntax instead of password text. For example, a password containing `@`
+must use `%40` in the URL.
 
 ## DNS And Firewall
 

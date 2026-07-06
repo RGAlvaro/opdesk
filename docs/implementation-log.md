@@ -35,6 +35,70 @@ Known gaps:
 
 ## Entries
 
+### 2026-07-06 — SPEC-301 — Production database URL and CI review approved
+
+Role: Review agent
+Branch: codex/spec-301-deployment
+Commit/PR: Uncommitted local changes / PR #5
+Status: Reviewed
+
+Summary:
+- Re-reviewed the latest `SPEC-301` changes for explicit production database URL handling, CI full verification with PostgreSQL, deployment docs, ADR coverage, and project memory.
+- Confirmed production Compose no longer interpolates raw `POSTGRES_PASSWORD` into `DATABASE_URL`; backend uses explicit `PROD_DATABASE_URL`.
+- Confirmed docs and `.env.example` require URL-encoded production database credentials and no real secrets are committed.
+- Confirmed CI now provisions PostgreSQL and runs `make verify`, including migration validation.
+
+Validation:
+- command: `make prod-config`: PASS — production Compose rendered with `PROD_DATABASE_URL`, Caddy as the only public entry point, private PostgreSQL, and namespaced smoke volumes.
+- command: `make prod-config PROD_POSTGRES_PASSWORD='p@ss:word/with?x#y' PROD_DATABASE_URL='postgresql+psycopg://opdesk:p%40ss%3Aword%2Fwith%3Fx%23y@postgres:5432/opdesk'`: PASS — Compose rendered the encoded backend database URL and raw PostgreSQL password separately.
+- command: `make prod-smoke`: PASS — production data smoke, image builds, Caddy `/health`, and frontend `/` checks passed.
+- command: `make prod-down`: PASS — isolated production-smoke containers and network were removed without deleting the smoke database volume.
+- command: `make smoke`: PASS — local Compose built/started backend, frontend dev server, PostgreSQL, and Adminer; HTTP checks passed.
+- command: `make verify`: PARTIAL PASS — lint, format, type checks, backend non-DB tests, and frontend tests passed; sandboxed host PostgreSQL connection failed during `migrations-check`.
+- command: `make migrations-check-compose`: PASS — Alembic upgrade/check passed inside the Compose backend container.
+- command: `npm run build` from `frontend/`: PASS — TypeScript build and Vite production build passed.
+- command: URL-encoded SQLAlchemy parse check: PASS — `p%40ss%3Aword%2Fwith%3Fx%23y` parsed as `p@ss:word/with?x#y`.
+- command: `make memory-check SPEC=SPEC-301`: PASS.
+- command: `git diff --check`: PASS.
+
+Review:
+- decision: APPROVED
+
+Known gaps:
+- Fresh PR #5 CI is still pending until these local changes are committed and pushed.
+- Public VPS/domain deployment remains an external launch step.
+
+### 2026-07-06 — SPEC-301 — Production database URL and CI review fix
+
+Role: Ingeniero de software
+Branch: codex/spec-301-deployment
+Commit/PR: Uncommitted local changes / PR #5
+Status: Implemented
+
+Summary:
+- Replaced the production backend `DATABASE_URL` interpolation of raw `POSTGRES_PASSWORD` with an explicit required `PROD_DATABASE_URL`.
+- Documented that production database URL credentials must match PostgreSQL settings and URL-encode reserved password characters.
+- Updated `SPEC-301` to require parser-safe production database URL handling and full CI verification including migration validation.
+- Updated GitHub Actions to provide a PostgreSQL service and run `make verify` instead of the no-database subset.
+- Recorded the explicit production database URL decision in `ADR-008`.
+
+Validation:
+- command: `make verify-no-db`: PASS — backend Ruff, frontend ESLint, format checks, backend mypy, frontend typecheck, 65 backend non-DB tests, and 38 frontend tests passed.
+- command: `npm run build` from `frontend/`: PASS — TypeScript build and Vite production build passed.
+- command: `cd backend && poetry run python -c "from sqlalchemy.engine import make_url; url=make_url('postgresql+psycopg://opdesk:p%40ss%3Aword@postgres:5432/opdesk'); assert url.password == 'p@ss:word'; print(url.host, url.password)"`: PASS — SQLAlchemy parsed the URL-encoded password as password text.
+- command: `make memory-check SPEC=SPEC-301`: PASS.
+- command: `git diff --check`: PASS.
+- command: `make prod-config`: FAIL — Docker CLI is present through Docker Desktop but reports that WSL integration is unavailable in this distro, so production Compose rendering could not be rerun here.
+- command: `make migrations-check`: FAIL — local PostgreSQL was not reachable from this environment.
+
+Review:
+- decision: N/A — implementation awaits Docker/CI revalidation and re-review.
+
+Known gaps:
+- Rerun `make prod-config`, `make prod-smoke`, `make prod-down`, and full `make verify` once Docker/PostgreSQL are reachable.
+- Obtain fresh CI for PR #5 after committing/pushing the fix.
+- Public VPS/domain deployment remains an external launch step.
+
 ### 2026-07-02 — SPEC-301 — Production smoke isolation and restore review fix
 
 Role: Ingeniero de software

@@ -2,7 +2,7 @@
 
 Status: Implemented
 Owner: Arquitecto de specs  
-Last updated: 2026-06-16
+Last updated: 2026-07-06
 
 ## Scope And Required Context
 
@@ -64,6 +64,7 @@ The project should be demonstrable through a real public URL without recruiters 
 - BR-7: Production deployment must document which services are exposed publicly and which remain private on the Docker network.
 - BR-8: Production Compose must not expose PostgreSQL or Redis publicly by default.
 - BR-9: Production settings must override local debug and cookie/security defaults where applicable.
+- BR-10: Production database connection settings must not construct connection URLs by interpolating raw secrets. Use an explicitly documented, URL-encoded connection URL or construct the URL through a parser-safe mechanism.
 
 ## Target Services
 
@@ -97,7 +98,7 @@ Services added when their specs exist:
 - AC-3: Given `/health` is requested, when backend dependencies are healthy enough for traffic, then it returns success without sensitive details.
 - AC-4: Given the documented PostgreSQL backup command, when it is run, then a restorable backup is produced.
 - AC-5: Given deployment docs and `.env.example`, when a developer reads them, then all production-required variables are documented without real secrets.
-- AC-6: Given CI runs, when the project is in a valid state, then lint/tests/build checks pass.
+- AC-6: Given CI runs, when the project is in a valid state, then the full verification harness, including migration validation, passes.
 - AC-7: Given production Compose is used, when services start, then PostgreSQL and Redis are not publicly exposed by default.
 
 ## Harness Requirements

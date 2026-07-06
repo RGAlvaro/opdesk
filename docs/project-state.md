@@ -1,22 +1,22 @@
 # Project State
 
-Last updated: 2026-07-02
+Last updated: 2026-07-06
 
 This file is the compact operational state for agents. Use it to orient quickly before reading detailed specs, ADRs, implementation history, or code.
 
 ## Current Work
 
 - Active branch: `codex/spec-301-deployment`
-- Active spec: `SPEC-301` production deployment and operations is implemented with a fully validated review fix awaiting re-review
-- Current state: `SPEC-301` adds production Compose, Caddy routing, production frontend static serving, isolated production smoke/config/data targets, GitHub Actions verification, tested backup/restore behavior, deployment docs, and deployment topology ADR
+- Active spec: `SPEC-301` production deployment and operations is implemented and review approved
+- Current state: `SPEC-301` adds production Compose, Caddy routing, production frontend static serving, isolated production smoke/config/data targets, GitHub Actions verification, tested backup/restore behavior, deployment docs, and deployment topology ADR. The latest review fix requires an explicit URL-encoded production database URL and upgrades CI to run the full `make verify` harness with PostgreSQL.
 - Documentation checkpoint: agent operational memory was restructured on 2026-06-16 with this file, central touch-to-spec routing, per-spec scope/context blocks, and `ADR-005`; on 2026-06-24 the base workflow added review-gated memory checks and implementation-log scaffolding targets
-- Recent validation recorded in `docs/implementation-log.md`: the 2026-07-02 review fix passed `make verify-no-db`, production Compose rendering, isolated migration/backup/restore with Alembic drift detection, full production Caddy smoke, clean shutdown, memory checks, and diff checks
-- Current validation baseline: the isolated `SPEC-301` data/full smoke and shutdown targets pass with the review fix; full local `make verify` remains the passing 2026-06-30 baseline because the review fix does not change application code or migrations
+- Recent validation recorded in `docs/implementation-log.md`: the 2026-07-06 re-review passed production Compose rendering, isolated production data/full smoke, clean production shutdown, local Docker smoke, non-DB verification, Compose migration validation, frontend build, URL-encoded SQLAlchemy URL parsing, memory check, and diff check.
+- Current validation baseline: the isolated `SPEC-301` data/full smoke and shutdown targets pass with the latest production database URL and CI review fix; full `make verify` passes through lint, formatting, type checks, backend/frontend tests, and migration validation was completed with `make migrations-check-compose` because sandboxed host PostgreSQL access failed.
 
 ## Next Handoff
 
-- Next role: Review agent
-- Next likely implementation work: obtain fresh CI for the published `SPEC-301` fix and re-review PR #5; after approval, integrate it before starting Playwright or `SPEC-201` work.
+- Next role: Integrator
+- Next likely implementation work: commit and push the approved `SPEC-301` review fix, then confirm fresh PR #5 CI before merge.
 - Keep `SPEC-301` expanding when Redis/worker services become real through `SPEC-201`.
 
 ## Implemented Specs
@@ -32,7 +32,7 @@ This file is the compact operational state for agents. Use it to orient quickly 
 | `SPEC-103` | Projects and tasks backend | Project/task backend, migration `0005`, endpoint tests | Implemented and review approved |
 | `SPEC-105` | Frontend organizations UI | Organization routes, shell navigation, organization API hooks, frontend tests | Implemented and review approved |
 | `SPEC-106` | Frontend projects and tasks UI | Project/task routes, forms, filters, pagination, assignment UI, frontend tests | Implemented and review approved |
-| `SPEC-301` | Production deployment and operations | Production Compose, Caddy, CI, isolated smoke, deployment docs, tested backup/restore, `ADR-008` | Implemented; review fix validated and awaiting re-review |
+| `SPEC-301` | Production deployment and operations | Production Compose, Caddy, CI, isolated smoke, deployment docs, tested backup/restore, `ADR-008` | Implemented and review approved |
 
 ## Draft Specs
 
@@ -42,7 +42,7 @@ This file is the compact operational state for agents. Use it to orient quickly 
 
 ## Next Likely Work
 
-1. Obtain fresh CI and re-review the published `SPEC-301` isolation/restore fix.
+1. Commit and push the approved `SPEC-301` review fix, then confirm fresh PR #5 CI before merge.
 2. Add Playwright coverage in a dedicated follow-up after the deployment harness is integrated.
 3. Prepare `SPEC-201` decisions and move it to Ready before implementing Redis/Celery.
 
@@ -51,17 +51,17 @@ This file is the compact operational state for agents. Use it to orient quickly 
 - `SPEC-104` has no Playwright E2E tests yet; the spec intentionally recommends adding them after the frontend/local server harness stabilizes.
 - `SPEC-106` has route-level/component coverage but still has no Playwright E2E critical path; the spec recommends adding Playwright after organization/project/task UI stabilizes.
 - `SPEC-201` remains Draft.
-- PR #5 contains implementation commit `d413343` and memory checkpoint `5cb0017`; fresh CI and re-review remain pending.
+- PR #5 contains implementation commit `d413343`, memory checkpoint `5cb0017`, and local uncommitted 2026-07-06 review fixes for explicit `PROD_DATABASE_URL`, full CI verification, and refreshed spec memory; local re-review is approved and fresh pushed CI remains pending.
 - Public production deployment is documented but not yet executed against a real VPS/domain.
 - Redis and worker production services remain deferred until `SPEC-201`.
 
 ## Validation Baseline
 
 - Latest recorded full local verification: `make verify` PASS for `SPEC-301` on 2026-06-30, run with elevated host PostgreSQL access after the sandboxed migration step failed to connect to localhost.
-- Latest review-fix validation: `make verify-no-db`, `make prod-config`, `make prod-data-smoke`, `make prod-smoke`, and `make prod-down` PASS on 2026-07-02.
+- Latest review-fix validation: `make prod-config`, `make prod-smoke`, `make prod-down`, `make smoke`, `make migrations-check-compose`, `make verify-no-db`, `npm run build` from `frontend/`, URL-encoded SQLAlchemy URL parse check, `make memory-check SPEC=SPEC-301`, and `git diff --check` PASS on 2026-07-06. Full `make verify` passed lint, formatting, type checks, and tests, then failed only at host PostgreSQL connection from the sandbox; migration coverage passed through Compose.
 - Latest recorded sandbox-friendly frontend validation: `make test-frontend`, `make lint`, `make format-check`, and `make typecheck` PASS for `SPEC-106` pagination review fix on 2026-06-30.
 - Latest recorded smoke check: isolated `make prod-smoke` and `make prod-down` PASS for the completed `SPEC-301` review fix on 2026-07-02.
-- Latest final review: `SPEC-106` APPROVED on 2026-06-30 after re-review of project/task pagination hooks, controls, URL state, tests, validation evidence, and project memory; `SPEC-301` awaits review.
+- Latest final review: `SPEC-301` APPROVED on 2026-07-06 after re-review of production database URL handling, full CI migration coverage, production/local Docker smoke, backup/restore smoke, validation evidence, ADR, and project memory.
 - Memory harness baseline: `make memory-check SPEC=SPEC-301` verifies that project memory mentions the active spec and that the newest implementation-log entry includes required handoff sections.
 - Use `specs/harness/local-validation.md` for current command meanings and expected coverage.
 

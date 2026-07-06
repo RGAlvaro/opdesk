@@ -15,6 +15,8 @@ Use `docker-compose.prod.yml` as the production runtime definition. Caddy is the
 
 PostgreSQL remains private on the Compose network and stores data in a named Docker volume. Production secrets are provided through server-side environment variables; committed files only contain placeholders.
 
+The backend receives an explicit `PROD_DATABASE_URL` value instead of a Compose-built URL that interpolates the raw PostgreSQL password. Operators must URL-encode reserved password characters before placing credentials in that URL.
+
 ## Consequences
 
 The production path stays close to the local Docker workflow and is simple enough for a solo portfolio deployment. The deployment does not depend on a cloud database or external process manager.

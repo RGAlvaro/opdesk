@@ -9,6 +9,20 @@ on:
 jobs:
   verify:
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: opdesk
+          POSTGRES_PASSWORD: opdesk_dev_password
+          POSTGRES_DB: opdesk
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U opdesk -d opdesk"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 10
 
     steps:
       - name: Check out repository
@@ -37,8 +51,10 @@ jobs:
         working-directory: frontend
         run: npm ci
 
-      - name: Run no-database verification
-        run: make verify-no-db
+      - name: Run full verification
+        env:
+          LOCAL_DATABASE_URL: postgresql+psycopg://opdesk:opdesk_dev_password@localhost:5432/opdesk
+        run: make verify
 
       - name: Build frontend assets
         working-directory: frontend
