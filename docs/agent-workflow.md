@@ -24,7 +24,7 @@ Act as Ingeniero de software. Read AGENTS.md, docs/project-state.md, specs/READM
 
 ## Current Handoff
 
-As of 2026-07-06, `main` includes the review-approved implementation through `SPEC-301`, including production Compose, CI, backup/restore validation, and deployment documentation. Repository workflow PR #6 is the remaining integration work; product known gaps are intentionally deferred to later sessions.
+As of 2026-07-06, `main` includes the review-approved implementation through `SPEC-301`, including production Compose, CI, backup/restore validation, deployment documentation, and the managed-sandbox GitHub CLI policy. No integration work remains; product known gaps are intentionally deferred to later sessions.
 
 Use this prompt when one of the deferred product gaps is selected:
 

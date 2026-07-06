@@ -35,6 +35,30 @@ Known gaps:
 
 ## Entries
 
+### 2026-07-06 — Repository integration — SPEC-301 and sandbox policy merged
+
+Role: Ingeniero de software
+Branch: main
+Commit/PR: merge `8225e6f` / PR #5; merge `c1a730b` / PR #6
+Status: Merged
+
+Summary:
+- Merged the review-approved `SPEC-301` production deployment work and its final memory checkpoint into `main`.
+- Reconciled the managed-sandbox GitHub CLI policy with the new production workflow, reviewed it, and merged it into `main`.
+- Removed obsolete handoff text and recorded that no integration branches remain.
+
+Validation:
+- command: PR #5 GitHub Actions `Verify`: PASS — final PR head `99ee74d`, merged as `8225e6f`.
+- command: PR #6 GitHub Actions `Verify`: PASS — run `28802864739`, job `85410599193`, final PR head `fb1f5a6`, merged as `c1a730b`.
+- command: `make memory-check SPEC=SPEC-301`: PASS.
+- command: `git diff --check`: PASS.
+
+Review:
+- decision: APPROVED — both integrated PRs were mergeable, review approved, and green before merge.
+
+Known gaps:
+- Playwright E2E coverage, public VPS/domain launch, and `SPEC-201` remain explicitly deferred for later prioritization.
+
 ### 2026-07-06 — Repository workflow — Managed sandbox GitHub CLI policy reconciled
 
 Role: Arquitecto de specs
