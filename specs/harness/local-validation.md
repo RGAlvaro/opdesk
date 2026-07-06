@@ -22,6 +22,10 @@ make typecheck
 make migrations-check
 make migrations-check-compose
 make smoke
+make prod-config
+make prod-data-smoke
+make prod-smoke
+make prod-down
 make memory-check SPEC=SPEC-XXX
 make review-ready SPEC=SPEC-XXX
 make memory-entry SPEC=SPEC-XXX
@@ -42,6 +46,10 @@ Expected meaning:
 | `make migrations-check` | Alembic migration consistency |
 | `make migrations-check-compose` | Alembic migration consistency from inside the Docker Compose backend container |
 | `make smoke` | Docker/local service startup and health checks |
+| `make prod-config` | Render and validate the production Compose definition with safe placeholder secrets |
+| `make prod-data-smoke` | Apply production migrations and prove backup/restore against the isolated production-smoke database |
+| `make prod-smoke` | Run the data smoke, build/start the isolated production stack, and check frontend/backend through Caddy |
+| `make prod-down` | Stop the isolated production-smoke stack without deleting its database volume |
 | `make memory-check SPEC=SPEC-XXX` | Checks that `docs/project-state.md` and `docs/implementation-log.md` mention the active spec and include required log sections before review handoff |
 | `make review-ready SPEC=SPEC-XXX` | Alias for the current memory readiness check; feature specs still define the validation commands that must also pass |
 | `make memory-entry SPEC=SPEC-XXX` | Prints a paste-ready implementation-log template without inventing validation evidence |
@@ -133,6 +141,11 @@ curl -f http://127.0.0.1:5173
 
 If Adminer uses a non-default `ADMINER_PORT`, replace `8080` with that local port.
 If the frontend is served through a reverse proxy instead of Vite in local mode, document that URL here.
+
+Production smoke targets use the Compose project `opdesk-prod-smoke` by default so they do not
+reuse local-development containers, networks, or volumes. Any override of
+`PROD_COMPOSE_PROJECT` must name another non-production project ending in `-smoke`; destructive
+smoke and shutdown targets reject other names.
 
 ## Compose Migration Checks
 

@@ -5,9 +5,16 @@ endif
 
 ADMINER_PORT ?= 8080
 FRONTEND_PORT ?= 5173
+PROD_HTTP_PORT ?= 8081
+PROD_HTTPS_PORT ?= 8443
+PROD_COMPOSE_PROJECT ?= opdesk-prod-smoke
+PROD_POSTGRES_PASSWORD ?= prod_config_placeholder_password
+PROD_DATABASE_URL ?= postgresql+psycopg://opdesk:prod_config_placeholder_password@postgres:5432/opdesk
+PROD_AUTH_SECRET_KEY ?= prod_config_placeholder_min_32_chars
 
 .PHONY: verify verify-no-db test test-backend test-backend-db lint format-check typecheck
-.PHONY: migrations-check migrations-check-compose smoke compose-up compose-down
+.PHONY: migrations-check migrations-check-compose smoke prod-config prod-smoke-project-check
+.PHONY: prod-data-smoke prod-smoke prod-down compose-up compose-down
 .PHONY: test-frontend memory-check review-ready memory-entry
 
 verify: verify-no-db migrations-check
@@ -60,6 +67,24 @@ smoke:
 	curl --fail --retry 10 --retry-delay 1 --retry-all-errors http://localhost:8000/health
 	curl --fail --retry 10 --retry-delay 1 --retry-all-errors http://127.0.0.1:$(ADMINER_PORT)
 	curl --fail --retry 10 --retry-delay 1 --retry-all-errors http://127.0.0.1:$(FRONTEND_PORT)
+
+prod-config:
+	bash -n scripts/prod_data_smoke.sh
+	POSTGRES_PASSWORD="$(PROD_POSTGRES_PASSWORD)" PROD_DATABASE_URL="$(PROD_DATABASE_URL)" AUTH_SECRET_KEY="$(PROD_AUTH_SECRET_KEY)" CADDY_SITE_ADDRESS=":80" PROD_HTTP_PORT="$(PROD_HTTP_PORT)" PROD_HTTPS_PORT="$(PROD_HTTPS_PORT)" docker compose --project-name "$(PROD_COMPOSE_PROJECT)" -f docker-compose.prod.yml config
+
+prod-smoke-project-check:
+	@case "$(PROD_COMPOSE_PROJECT)" in *-smoke) ;; *) echo "PROD_COMPOSE_PROJECT must end in -smoke for destructive smoke targets." >&2; exit 2 ;; esac
+
+prod-data-smoke: prod-smoke-project-check
+	POSTGRES_PASSWORD="$(PROD_POSTGRES_PASSWORD)" PROD_DATABASE_URL="$(PROD_DATABASE_URL)" AUTH_SECRET_KEY="$(PROD_AUTH_SECRET_KEY)" CADDY_SITE_ADDRESS=":80" PROD_HTTP_PORT="$(PROD_HTTP_PORT)" PROD_HTTPS_PORT="$(PROD_HTTPS_PORT)" PROD_COMPOSE_PROJECT="$(PROD_COMPOSE_PROJECT)" ./scripts/prod_data_smoke.sh
+
+prod-smoke: prod-data-smoke
+	POSTGRES_PASSWORD="$(PROD_POSTGRES_PASSWORD)" PROD_DATABASE_URL="$(PROD_DATABASE_URL)" AUTH_SECRET_KEY="$(PROD_AUTH_SECRET_KEY)" CADDY_SITE_ADDRESS=":80" PROD_HTTP_PORT="$(PROD_HTTP_PORT)" PROD_HTTPS_PORT="$(PROD_HTTPS_PORT)" docker compose --project-name "$(PROD_COMPOSE_PROJECT)" -f docker-compose.prod.yml up -d --build
+	curl --fail --retry 20 --retry-delay 1 --retry-all-errors http://127.0.0.1:$(PROD_HTTP_PORT)/health
+	curl --fail --retry 20 --retry-delay 1 --retry-all-errors http://127.0.0.1:$(PROD_HTTP_PORT)/
+
+prod-down: prod-smoke-project-check
+	POSTGRES_PASSWORD="$(PROD_POSTGRES_PASSWORD)" PROD_DATABASE_URL="$(PROD_DATABASE_URL)" AUTH_SECRET_KEY="$(PROD_AUTH_SECRET_KEY)" CADDY_SITE_ADDRESS=":80" PROD_HTTP_PORT="$(PROD_HTTP_PORT)" PROD_HTTPS_PORT="$(PROD_HTTPS_PORT)" docker compose --project-name "$(PROD_COMPOSE_PROJECT)" -f docker-compose.prod.yml down
 
 compose-up:
 	docker compose up -d --build

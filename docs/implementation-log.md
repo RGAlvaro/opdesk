@@ -35,31 +35,179 @@ Known gaps:
 
 ## Entries
 
-### 2026-06-30 — Repository workflow — Managed sandbox GitHub CLI policy
+### 2026-07-06 — Repository workflow — Managed sandbox GitHub CLI policy reconciled
 
 Role: Arquitecto de specs
 Branch: codex/gh-outside-sandbox-policy
-Commit/PR: `5491223` / PR #6
-Status: Ready
+Commit/PR: `62bfaa0` / PR #6
+Status: Reviewed
 
 Summary:
 - Required network-backed `gh` commands to run outside managed sandboxes from the first attempt.
 - Required narrowly scoped approvals and an outside-sandbox authentication check before publication.
 - Added an explicit `workflow` token-scope check when publishing `.github/workflows/*`.
 - Recorded the durable decision in `ADR-009`; no product spec status or behavior changed.
+- Reconciled the policy branch with `main` after SPEC-301 and PR #5 were integrated.
 
 Validation:
 - command: `git diff --check`: PASS.
 - command: policy reference check with `rg`: PASS — mandatory outside-sandbox execution and `workflow` scope guidance are present in agent instructions, workflow notes, ADR, and project memory.
-- command: `make memory-check SPEC=SPEC-106`: PASS — existing active product memory remains structurally valid; this policy does not introduce a product spec.
+- command: `make memory-check SPEC=SPEC-301`: PASS — latest implemented product memory remains structurally valid; this policy does not introduce a product spec.
 - command: elevated `gh auth status`: PASS — authenticated account exposes `repo` and `workflow` scopes outside the sandbox.
 
 Review:
-- decision: N/A — workflow policy awaits review.
+- decision: APPROVED — the policy is consistent across `AGENTS.md`, workflow guidance, ADR-009, and project memory; it does not weaken secret handling or validation requirements.
 
 Known gaps:
 - Runtime approval remains environment-specific; the repository can require elevation but cannot pre-authorize it.
-- PR #6 has no GitHub Actions checks because the `Verify` workflow is still isolated in the unmerged SPEC-301 PR #5.
+
+### 2026-07-06 — SPEC-301 — Review fix published and CI passed
+
+Role: Ingeniero de software
+Branch: codex/spec-301-deployment
+Commit/PR: `2a36558` / PR #5
+Status: Reviewed
+
+Summary:
+- Published the review-approved production database URL and full-CI fixes to PR #5.
+- Confirmed the pushed head matches commit `2a36558` and the GitHub Actions `Verify` workflow completed successfully.
+- Reconciled project memory so it no longer describes the review fix as local or its CI as pending.
+
+Validation:
+- command: GitHub Actions `Verify` / `verify`: PASS — run `28778419569`, job `85327804130`, completed successfully on commit `2a36558`.
+- command: `git status -sb`: PASS — local branch matched `origin/codex/spec-301-deployment` before this memory checkpoint.
+
+Review:
+- decision: APPROVED — the implementation review remains approved; this entry corrects its publication and CI evidence.
+
+Known gaps:
+- Public VPS/domain deployment remains an explicitly deferred external launch step.
+- Redis and worker production services remain deferred until `SPEC-201`.
+
+### 2026-07-06 — SPEC-301 — Production database URL and CI review approved
+
+Role: Review agent
+Branch: codex/spec-301-deployment
+Commit/PR: `2a36558` / PR #5
+Status: Reviewed
+
+Summary:
+- Re-reviewed the latest `SPEC-301` changes for explicit production database URL handling, CI full verification with PostgreSQL, deployment docs, ADR coverage, and project memory.
+- Confirmed production Compose no longer interpolates raw `POSTGRES_PASSWORD` into `DATABASE_URL`; backend uses explicit `PROD_DATABASE_URL`.
+- Confirmed docs and `.env.example` require URL-encoded production database credentials and no real secrets are committed.
+- Confirmed CI now provisions PostgreSQL and runs `make verify`, including migration validation.
+
+Validation:
+- command: `make prod-config`: PASS — production Compose rendered with `PROD_DATABASE_URL`, Caddy as the only public entry point, private PostgreSQL, and namespaced smoke volumes.
+- command: `make prod-config PROD_POSTGRES_PASSWORD='p@ss:word/with?x#y' PROD_DATABASE_URL='postgresql+psycopg://opdesk:p%40ss%3Aword%2Fwith%3Fx%23y@postgres:5432/opdesk'`: PASS — Compose rendered the encoded backend database URL and raw PostgreSQL password separately.
+- command: `make prod-smoke`: PASS — production data smoke, image builds, Caddy `/health`, and frontend `/` checks passed.
+- command: `make prod-down`: PASS — isolated production-smoke containers and network were removed without deleting the smoke database volume.
+- command: `make smoke`: PASS — local Compose built/started backend, frontend dev server, PostgreSQL, and Adminer; HTTP checks passed.
+- command: `make verify`: PARTIAL PASS — lint, format, type checks, backend non-DB tests, and frontend tests passed; sandboxed host PostgreSQL connection failed during `migrations-check`.
+- command: `make migrations-check-compose`: PASS — Alembic upgrade/check passed inside the Compose backend container.
+- command: `npm run build` from `frontend/`: PASS — TypeScript build and Vite production build passed.
+- command: URL-encoded SQLAlchemy parse check: PASS — `p%40ss%3Aword%2Fwith%3Fx%23y` parsed as `p@ss:word/with?x#y`.
+- command: `make memory-check SPEC=SPEC-301`: PASS.
+- command: `git diff --check`: PASS.
+
+Review:
+- decision: APPROVED
+
+Known gaps:
+- PR #5 CI passed after these changes were committed and pushed as `2a36558`.
+- Public VPS/domain deployment remains an external launch step.
+
+### 2026-07-06 — SPEC-301 — Production database URL and CI review fix
+
+Role: Ingeniero de software
+Branch: codex/spec-301-deployment
+Commit/PR: Uncommitted local changes / PR #5
+Status: Implemented
+
+Summary:
+- Replaced the production backend `DATABASE_URL` interpolation of raw `POSTGRES_PASSWORD` with an explicit required `PROD_DATABASE_URL`.
+- Documented that production database URL credentials must match PostgreSQL settings and URL-encode reserved password characters.
+- Updated `SPEC-301` to require parser-safe production database URL handling and full CI verification including migration validation.
+- Updated GitHub Actions to provide a PostgreSQL service and run `make verify` instead of the no-database subset.
+- Recorded the explicit production database URL decision in `ADR-008`.
+
+Validation:
+- command: `make verify-no-db`: PASS — backend Ruff, frontend ESLint, format checks, backend mypy, frontend typecheck, 65 backend non-DB tests, and 38 frontend tests passed.
+- command: `npm run build` from `frontend/`: PASS — TypeScript build and Vite production build passed.
+- command: `cd backend && poetry run python -c "from sqlalchemy.engine import make_url; url=make_url('postgresql+psycopg://opdesk:p%40ss%3Aword@postgres:5432/opdesk'); assert url.password == 'p@ss:word'; print(url.host, url.password)"`: PASS — SQLAlchemy parsed the URL-encoded password as password text.
+- command: `make memory-check SPEC=SPEC-301`: PASS.
+- command: `git diff --check`: PASS.
+- command: `make prod-config`: FAIL — Docker CLI is present through Docker Desktop but reports that WSL integration is unavailable in this distro, so production Compose rendering could not be rerun here.
+- command: `make migrations-check`: FAIL — local PostgreSQL was not reachable from this environment.
+
+Review:
+- decision: N/A — implementation awaits Docker/CI revalidation and re-review.
+
+Known gaps:
+- Rerun `make prod-config`, `make prod-smoke`, `make prod-down`, and full `make verify` once Docker/PostgreSQL are reachable.
+- Obtain fresh CI for PR #5 after committing/pushing the fix.
+- Public VPS/domain deployment remains an external launch step.
+
+### 2026-07-02 — SPEC-301 — Production smoke isolation and restore review fix
+
+Role: Ingeniero de software
+Branch: codex/spec-301-deployment
+Commit/PR: `d413343`, memory checkpoint `5cb0017` / PR #5
+Status: Implemented
+
+Summary:
+- Isolated production harness commands under the configurable `opdesk-prod-smoke` Compose project so they cannot reuse local-development containers, networks, or volumes by default.
+- Added a production data smoke that applies migrations, creates a custom-format PostgreSQL backup, deletes a marker row, restores the backup transactionally, verifies the marker, removes the probe table, and checks Alembic drift.
+- Replaced the unsafe plain-SQL restore documentation with stable project naming and custom-format `pg_dump`/`pg_restore` commands.
+- Added production harness coverage to the local validation guide and ignored generated backup artifacts.
+
+Validation:
+- command: `make prod-config`: PASS — shell syntax and production Compose rendering passed; rendered resources use the `opdesk-prod-smoke_*` namespace.
+- command: `make prod-data-smoke`: PASS — migrations, custom-format dump, destructive marker deletion, transactional restore, restored marker verification, probe cleanup, and final Alembic drift check passed in the isolated database.
+- command: `make prod-smoke`: PASS — the complete data smoke passed, production images built, and `/health` plus `/` passed through Caddy on port 8081.
+- command: `make prod-down`: PASS — isolated production-smoke containers and network stopped and were removed without affecting the local Compose project or deleting the smoke database volume.
+- command: `make verify-no-db`: PASS — 65 backend tests and 38 frontend tests passed with lint, format, and type checks.
+- command: `git diff --check`: PASS.
+- command: `git push -u origin codex/spec-301-deployment`: PASS — implementation and memory commits were published to the branch used by PR #5.
+
+Review:
+- decision: N/A — fully validated review fix awaits re-review.
+
+Known gaps:
+- Obtain a fresh CI result for the updated PR #5 and re-review it.
+- Public VPS/domain deployment remains an external launch step.
+
+### 2026-06-30 — SPEC-301 — Production deployment implemented
+
+Role: Ingeniero de software
+Branch: codex/spec-301-deployment
+Commit/PR: `3bb4882` / PR #5
+Status: Implemented
+
+Summary:
+- Added production Compose with private PostgreSQL, backend, static frontend, and Caddy as the only public entry point.
+- Added Caddy routing for `/api/*`, `/health`, and frontend routes, plus a production frontend image target served by nginx.
+- Added production Make targets for Compose config validation, local production smoke, and production stack cleanup.
+- Added GitHub Actions verification, deployment/backup/restore documentation, README updates, and `ADR-008` for the production topology.
+- Marked `SPEC-301` implemented in the spec index and updated project memory for review handoff.
+
+Validation:
+- command: `make verify-no-db`: PASS — backend Ruff, frontend ESLint, format checks, backend mypy, frontend typecheck, 65 backend non-DB tests, and 38 frontend tests passed.
+- command: `npm run build` from `frontend/`: PASS — TypeScript build and Vite production build passed.
+- command: `make prod-config`: PASS — production Compose config rendered with safe placeholder secrets.
+- command: `make prod-smoke`: PASS — production Compose built and started backend, frontend, PostgreSQL, and Caddy; `/health` and `/` passed through Caddy on local port 8081.
+- command: `make prod-down`: PASS — production smoke containers were stopped and removed; shared Compose network remained because local Adminer was still running.
+- command: `make smoke`: PASS — local Compose still starts backend, frontend dev server, PostgreSQL, and Adminer after frontend Dockerfile target changes.
+- command: `make migrations-check-compose`: PASS — Alembic upgrade/check passed inside the Compose backend container.
+- command: `make verify`: PASS — full verification passed when rerun with elevated host PostgreSQL access; sandboxed host migration connection failed before elevation.
+
+Review:
+- decision: N/A — implementation awaits review.
+
+Known gaps:
+- GitHub Actions workflow `Verify` passed on PR #5 in 1m12s.
+- Public production deployment is documented but not yet executed against a real VPS/domain.
+- Redis and worker production services remain deferred until `SPEC-201`.
 
 ### 2026-06-30 — SPEC-106 — Pagination review fix approved
 
