@@ -6,17 +6,17 @@ This file is the compact operational state for agents. Use it to orient quickly 
 
 ## Current Work
 
-- Active branch: `codex/spec-301-deployment`
-- Active spec: `SPEC-301` production deployment and operations is implemented and review approved
-- Current state: `SPEC-301` adds production Compose, Caddy routing, production frontend static serving, isolated production smoke/config/data targets, GitHub Actions verification, tested backup/restore behavior, deployment docs, and deployment topology ADR. The latest review fix requires an explicit URL-encoded production database URL and upgrades CI to run the full `make verify` harness with PostgreSQL.
-- Documentation checkpoint: agent operational memory was restructured on 2026-06-16 with this file, central touch-to-spec routing, per-spec scope/context blocks, and `ADR-005`; on 2026-06-24 the base workflow added review-gated memory checks and implementation-log scaffolding targets
-- Recent validation recorded in `docs/implementation-log.md`: the 2026-07-06 re-review passed production Compose rendering, isolated production data/full smoke, clean production shutdown, local Docker smoke, non-DB verification, Compose migration validation, frontend build, URL-encoded SQLAlchemy URL parsing, memory check, and diff check; PR #5 then passed the full GitHub Actions `Verify` workflow at commit `2a36558`.
-- Current validation baseline: the isolated `SPEC-301` data/full smoke and shutdown targets pass with the latest production database URL and CI review fix; the pushed PR runs the complete `make verify` harness with PostgreSQL and passed at commit `2a36558`.
+- Active branch: `codex/gh-outside-sandbox-policy`
+- Active spec: no product spec; repository workflow policy for managed sandbox GitHub operations
+- Current state: `SPEC-301` is merged into `main` through PR #5; PR #6 adds the managed-sandbox policy requiring network-backed `gh` commands to use outside-sandbox execution from the first attempt.
+- Documentation checkpoint: agent operational memory was restructured on 2026-06-16 with this file, central touch-to-spec routing, per-spec scope/context blocks, and `ADR-005`; on 2026-06-24 the base workflow added review-gated memory checks and implementation-log scaffolding targets; `ADR-009` records the managed-sandbox GitHub CLI policy
+- Recent validation recorded in `docs/implementation-log.md`: PR #5 passed the full GitHub Actions `Verify` workflow before merging as `8225e6f`; reconciled PR #6 passed its documentation checks and the complete GitHub Actions `Verify` workflow at head `32abece`.
+- Current validation baseline: `SPEC-301` production and local Docker validation passed, and PR #6 passed the merged workflow's complete `make verify` harness with PostgreSQL, frontend build, and production Compose config validation.
 
 ## Next Handoff
 
 - Next role: Integrator
-- Next likely integration work: confirm the memory-only checkpoint keeps PR #5 CI green, mark the review-approved PR ready, and merge it into `main`.
+- Next likely integration work: confirm the final memory-only checkpoint keeps PR #6 CI green, then merge the reviewed repository workflow policy into `main`.
 - Keep `SPEC-301` expanding when Redis/worker services become real through `SPEC-201`.
 
 ## Implemented Specs
@@ -42,7 +42,7 @@ This file is the compact operational state for agents. Use it to orient quickly 
 
 ## Next Likely Work
 
-1. Merge the review-approved PR #5 after its memory-only checkpoint retains green CI.
+1. Merge reviewed PR #6 after its final memory-only checkpoint retains green CI.
 2. Add Playwright coverage in a dedicated follow-up after the deployment harness is integrated.
 3. Prepare `SPEC-201` decisions and move it to Ready before implementing Redis/Celery.
 
@@ -51,7 +51,6 @@ This file is the compact operational state for agents. Use it to orient quickly 
 - `SPEC-104` has no Playwright E2E tests yet; the spec intentionally recommends adding them after the frontend/local server harness stabilizes.
 - `SPEC-106` has route-level/component coverage but still has no Playwright E2E critical path; the spec recommends adding Playwright after organization/project/task UI stabilizes.
 - `SPEC-201` remains Draft.
-- PR #5 contains the approved `SPEC-301` implementation and review fixes through commit `2a36558`; its full GitHub Actions `Verify` workflow passed and only the final memory checkpoint/integration remains.
 - Public production deployment is documented but not yet executed against a real VPS/domain.
 - Redis and worker production services remain deferred until `SPEC-201`.
 
@@ -104,3 +103,4 @@ For implementation or review:
 - `docs/decisions/ADR-006-human-readable-code-comments.md`
 - `docs/decisions/ADR-007-tenant-isolation-and-rbac-enforcement.md`
 - `docs/decisions/ADR-008-production-compose-and-caddy.md`
+- `docs/decisions/ADR-009-managed-sandbox-github-cli.md`

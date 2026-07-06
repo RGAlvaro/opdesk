@@ -35,6 +35,33 @@ Known gaps:
 
 ## Entries
 
+### 2026-07-06 — Repository workflow — Managed sandbox GitHub CLI policy reconciled
+
+Role: Arquitecto de specs
+Branch: codex/gh-outside-sandbox-policy
+Commit/PR: `62bfaa0` / PR #6
+Status: Reviewed
+
+Summary:
+- Required network-backed `gh` commands to run outside managed sandboxes from the first attempt.
+- Required narrowly scoped approvals and an outside-sandbox authentication check before publication.
+- Added an explicit `workflow` token-scope check when publishing `.github/workflows/*`.
+- Recorded the durable decision in `ADR-009`; no product spec status or behavior changed.
+- Reconciled the policy branch with `main` after SPEC-301 and PR #5 were integrated.
+
+Validation:
+- command: `git diff --check`: PASS.
+- command: policy reference check with `rg`: PASS — mandatory outside-sandbox execution and `workflow` scope guidance are present in agent instructions, workflow notes, ADR, and project memory.
+- command: `make memory-check SPEC=SPEC-301`: PASS — latest implemented product memory remains structurally valid; this policy does not introduce a product spec.
+- command: elevated `gh auth status`: PASS — authenticated account exposes `repo` and `workflow` scopes outside the sandbox.
+- command: GitHub Actions `Verify` / `verify`: PASS — run `28802653587`, job `85409870201`, completed successfully on reconciled head `32abece`.
+
+Review:
+- decision: APPROVED — the policy is consistent across `AGENTS.md`, workflow guidance, ADR-009, and project memory; it does not weaken secret handling or validation requirements.
+
+Known gaps:
+- Runtime approval remains environment-specific; the repository can require elevation but cannot pre-authorize it.
+
 ### 2026-07-06 — SPEC-301 — Review fix published and CI passed
 
 Role: Ingeniero de software

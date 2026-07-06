@@ -69,6 +69,15 @@ Operational memory is part of the workflow, not a post-merge cleanup task:
 4. Use `make memory-entry SPEC=SPEC-XXX` to scaffold a factual implementation-log entry when useful.
 5. Use `make memory-check SPEC=SPEC-XXX` or `make review-ready SPEC=SPEC-XXX` before review approval to catch stale or missing memory. These targets verify memory shape; they do not replace feature-specific validation commands.
 
+### Managed Sandbox GitHub Operations
+
+When an agent runs inside a managed sandbox, every `gh` command that needs GitHub access must be executed with the runtime's elevated or outside-sandbox mode from the first attempt. Do not run `gh auth status`, `gh repo`, `gh pr`, `gh run`, `gh workflow`, or other network-backed `gh` commands in the restricted sandbox first, because blocked network access can be misreported as invalid authentication.
+
+- Request the narrowest available approval and reusable command prefix for the intended `gh` operation.
+- Verify authentication outside the sandbox before publishing. When a push creates or updates `.github/workflows/*`, confirm that `gh auth status` includes the `workflow` scope.
+- Keep ordinary local Git inspection sandboxed. Elevate `git` only when repository metadata is read-only or the remote operation requires network access.
+- Never print or persist unmasked tokens, credentials, or authentication files.
+
 ## Project Memory
 
 Use these files to preserve context across sessions, branches, and future agents:

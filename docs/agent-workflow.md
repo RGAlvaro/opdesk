@@ -4,6 +4,12 @@ Use these role prompts when asking Codex to work in this repository.
 
 Before any non-trivial work, read `docs/project-state.md` to identify the active branch/spec, current known gaps, and latest validation baseline. Use `docs/implementation-log.md` as historical evidence, not as the first current-state dashboard.
 
+## GitHub CLI In Managed Sandboxes
+
+Run network-backed `gh` commands outside the restricted sandbox from the first attempt. This includes authentication checks, repository metadata, pull requests, Actions runs, and workflow operations. A sandboxed `gh auth status` can report a valid host token as invalid when GitHub is unreachable.
+
+Use the runtime's elevated execution option with a narrowly scoped approval or prefix. Before pushing `.github/workflows/*`, check outside the sandbox that `gh auth status` includes the `workflow` scope. Local read-only Git commands remain sandboxed unless repository metadata permissions require elevation.
+
 ## Spec Architecture
 
 ```text
@@ -18,12 +24,12 @@ Act as Ingeniero de software. Read AGENTS.md, docs/project-state.md, specs/READM
 
 ## Current Handoff
 
-As of 2026-06-23, `main` includes the review-approved `SPEC-103` backend projects/tasks diff. The next step is spec architecture for frontend organization/project/task UI or notification events.
+As of 2026-07-06, `main` includes the review-approved implementation through `SPEC-301`, including production Compose, CI, backup/restore validation, and deployment documentation. Repository workflow PR #6 is the remaining integration work; product known gaps are intentionally deferred to later sessions.
 
-Use this prompt for the next spec session:
+Use this prompt when one of the deferred product gaps is selected:
 
 ```text
-Act as Arquitecto de specs. Read AGENTS.md, docs/project-state.md, specs/README.md, docs/implementation-log.md, relevant ADRs, and the backend specs for organizations/projects/tasks. Prepare the next frontend organization/project/task UI spec, or refine SPEC-201 notification events if that is the chosen next step. Do not implement product code.
+Act as Arquitecto de specs. Read AGENTS.md, docs/project-state.md, specs/README.md, docs/implementation-log.md, relevant ADRs, and the implemented feature specs. Select one documented known gap, refine its owning spec and acceptance criteria, and update project memory. Do not implement product code.
 ```
 
 ## Review
