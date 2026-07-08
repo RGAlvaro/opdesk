@@ -35,6 +35,31 @@ Known gaps:
 
 ## Entries
 
+### 2026-07-08 — SPEC-201 — Review-approved branch published
+
+Role: Ingeniero de software
+Branch: codex/spec-201-background-jobs
+Commit/PR: `4ccbd84`
+Status: Implemented
+
+Summary:
+- Committed the review-approved `SPEC-201` implementation as `4ccbd84`.
+- Pushed `codex/spec-201-background-jobs` to `origin/codex/spec-201-background-jobs`.
+- Updated project memory so the next handoff is PR/CI integration rather than local publication.
+
+Validation:
+- command: `git diff --check`: PASS before commit.
+- command: `make memory-check SPEC=SPEC-201`: PASS before commit.
+- command: `git push -u origin codex/spec-201-background-jobs`: PASS.
+
+Review:
+- decision: APPROVED — previous review entry approved the implementation; this entry records publication.
+
+Known gaps:
+- PR creation, CI result, and merge remain pending.
+- Public VPS/domain deployment remains an external launch step.
+- Notification delivery remains log-only; real email provider integration, notification inbox UI, scheduled jobs, and persistent job audit remain outside `SPEC-201`.
+
 ### 2026-07-08 — SPEC-201 — Assignment-version review fix approved
 
 Role: Review agent
