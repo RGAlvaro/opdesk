@@ -11,6 +11,8 @@ PROD_COMPOSE_PROJECT ?= opdesk-prod-smoke
 PROD_POSTGRES_PASSWORD ?= prod_config_placeholder_password
 PROD_DATABASE_URL ?= postgresql+psycopg://opdesk:prod_config_placeholder_password@postgres:5432/opdesk
 PROD_AUTH_SECRET_KEY ?= prod_config_placeholder_min_32_chars
+CELERY_BROKER_URL ?= redis://redis:6379/0
+CELERY_RESULT_BACKEND ?= redis://redis:6379/1
 
 .PHONY: verify verify-no-db test test-backend test-backend-db lint format-check typecheck
 .PHONY: migrations-check migrations-check-compose smoke prod-config prod-smoke-project-check
@@ -65,26 +67,30 @@ migrations-check-compose:
 smoke:
 	docker compose up -d --build
 	curl --fail --retry 10 --retry-delay 1 --retry-all-errors http://localhost:8000/health
+	docker compose exec -T redis redis-cli ping
+	docker compose ps --status running --services worker | grep -x worker
 	curl --fail --retry 10 --retry-delay 1 --retry-all-errors http://127.0.0.1:$(ADMINER_PORT)
 	curl --fail --retry 10 --retry-delay 1 --retry-all-errors http://127.0.0.1:$(FRONTEND_PORT)
 
 prod-config:
 	bash -n scripts/prod_data_smoke.sh
-	POSTGRES_PASSWORD="$(PROD_POSTGRES_PASSWORD)" PROD_DATABASE_URL="$(PROD_DATABASE_URL)" AUTH_SECRET_KEY="$(PROD_AUTH_SECRET_KEY)" CADDY_SITE_ADDRESS=":80" PROD_HTTP_PORT="$(PROD_HTTP_PORT)" PROD_HTTPS_PORT="$(PROD_HTTPS_PORT)" docker compose --project-name "$(PROD_COMPOSE_PROJECT)" -f docker-compose.prod.yml config
+	POSTGRES_PASSWORD="$(PROD_POSTGRES_PASSWORD)" PROD_DATABASE_URL="$(PROD_DATABASE_URL)" AUTH_SECRET_KEY="$(PROD_AUTH_SECRET_KEY)" CELERY_BROKER_URL="$(CELERY_BROKER_URL)" CELERY_RESULT_BACKEND="$(CELERY_RESULT_BACKEND)" CADDY_SITE_ADDRESS=":80" PROD_HTTP_PORT="$(PROD_HTTP_PORT)" PROD_HTTPS_PORT="$(PROD_HTTPS_PORT)" docker compose --project-name "$(PROD_COMPOSE_PROJECT)" -f docker-compose.prod.yml config
 
 prod-smoke-project-check:
 	@case "$(PROD_COMPOSE_PROJECT)" in *-smoke) ;; *) echo "PROD_COMPOSE_PROJECT must end in -smoke for destructive smoke targets." >&2; exit 2 ;; esac
 
 prod-data-smoke: prod-smoke-project-check
-	POSTGRES_PASSWORD="$(PROD_POSTGRES_PASSWORD)" PROD_DATABASE_URL="$(PROD_DATABASE_URL)" AUTH_SECRET_KEY="$(PROD_AUTH_SECRET_KEY)" CADDY_SITE_ADDRESS=":80" PROD_HTTP_PORT="$(PROD_HTTP_PORT)" PROD_HTTPS_PORT="$(PROD_HTTPS_PORT)" PROD_COMPOSE_PROJECT="$(PROD_COMPOSE_PROJECT)" ./scripts/prod_data_smoke.sh
+	POSTGRES_PASSWORD="$(PROD_POSTGRES_PASSWORD)" PROD_DATABASE_URL="$(PROD_DATABASE_URL)" AUTH_SECRET_KEY="$(PROD_AUTH_SECRET_KEY)" CELERY_BROKER_URL="$(CELERY_BROKER_URL)" CELERY_RESULT_BACKEND="$(CELERY_RESULT_BACKEND)" CADDY_SITE_ADDRESS=":80" PROD_HTTP_PORT="$(PROD_HTTP_PORT)" PROD_HTTPS_PORT="$(PROD_HTTPS_PORT)" PROD_COMPOSE_PROJECT="$(PROD_COMPOSE_PROJECT)" ./scripts/prod_data_smoke.sh
 
 prod-smoke: prod-data-smoke
-	POSTGRES_PASSWORD="$(PROD_POSTGRES_PASSWORD)" PROD_DATABASE_URL="$(PROD_DATABASE_URL)" AUTH_SECRET_KEY="$(PROD_AUTH_SECRET_KEY)" CADDY_SITE_ADDRESS=":80" PROD_HTTP_PORT="$(PROD_HTTP_PORT)" PROD_HTTPS_PORT="$(PROD_HTTPS_PORT)" docker compose --project-name "$(PROD_COMPOSE_PROJECT)" -f docker-compose.prod.yml up -d --build
+	POSTGRES_PASSWORD="$(PROD_POSTGRES_PASSWORD)" PROD_DATABASE_URL="$(PROD_DATABASE_URL)" AUTH_SECRET_KEY="$(PROD_AUTH_SECRET_KEY)" CELERY_BROKER_URL="$(CELERY_BROKER_URL)" CELERY_RESULT_BACKEND="$(CELERY_RESULT_BACKEND)" CADDY_SITE_ADDRESS=":80" PROD_HTTP_PORT="$(PROD_HTTP_PORT)" PROD_HTTPS_PORT="$(PROD_HTTPS_PORT)" docker compose --project-name "$(PROD_COMPOSE_PROJECT)" -f docker-compose.prod.yml up -d --build
 	curl --fail --retry 20 --retry-delay 1 --retry-all-errors http://127.0.0.1:$(PROD_HTTP_PORT)/health
+	POSTGRES_PASSWORD="$(PROD_POSTGRES_PASSWORD)" PROD_DATABASE_URL="$(PROD_DATABASE_URL)" AUTH_SECRET_KEY="$(PROD_AUTH_SECRET_KEY)" CELERY_BROKER_URL="$(CELERY_BROKER_URL)" CELERY_RESULT_BACKEND="$(CELERY_RESULT_BACKEND)" CADDY_SITE_ADDRESS=":80" PROD_HTTP_PORT="$(PROD_HTTP_PORT)" PROD_HTTPS_PORT="$(PROD_HTTPS_PORT)" docker compose --project-name "$(PROD_COMPOSE_PROJECT)" -f docker-compose.prod.yml exec -T redis redis-cli ping
+	POSTGRES_PASSWORD="$(PROD_POSTGRES_PASSWORD)" PROD_DATABASE_URL="$(PROD_DATABASE_URL)" AUTH_SECRET_KEY="$(PROD_AUTH_SECRET_KEY)" CELERY_BROKER_URL="$(CELERY_BROKER_URL)" CELERY_RESULT_BACKEND="$(CELERY_RESULT_BACKEND)" CADDY_SITE_ADDRESS=":80" PROD_HTTP_PORT="$(PROD_HTTP_PORT)" PROD_HTTPS_PORT="$(PROD_HTTPS_PORT)" docker compose --project-name "$(PROD_COMPOSE_PROJECT)" -f docker-compose.prod.yml ps --status running --services worker | grep -x worker
 	curl --fail --retry 20 --retry-delay 1 --retry-all-errors http://127.0.0.1:$(PROD_HTTP_PORT)/
 
 prod-down: prod-smoke-project-check
-	POSTGRES_PASSWORD="$(PROD_POSTGRES_PASSWORD)" PROD_DATABASE_URL="$(PROD_DATABASE_URL)" AUTH_SECRET_KEY="$(PROD_AUTH_SECRET_KEY)" CADDY_SITE_ADDRESS=":80" PROD_HTTP_PORT="$(PROD_HTTP_PORT)" PROD_HTTPS_PORT="$(PROD_HTTPS_PORT)" docker compose --project-name "$(PROD_COMPOSE_PROJECT)" -f docker-compose.prod.yml down
+	POSTGRES_PASSWORD="$(PROD_POSTGRES_PASSWORD)" PROD_DATABASE_URL="$(PROD_DATABASE_URL)" AUTH_SECRET_KEY="$(PROD_AUTH_SECRET_KEY)" CELERY_BROKER_URL="$(CELERY_BROKER_URL)" CELERY_RESULT_BACKEND="$(CELERY_RESULT_BACKEND)" CADDY_SITE_ADDRESS=":80" PROD_HTTP_PORT="$(PROD_HTTP_PORT)" PROD_HTTPS_PORT="$(PROD_HTTPS_PORT)" docker compose --project-name "$(PROD_COMPOSE_PROJECT)" -f docker-compose.prod.yml down
 
 compose-up:
 	docker compose up -d --build

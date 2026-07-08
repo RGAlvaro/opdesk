@@ -43,6 +43,8 @@ ADR-009-managed-sandbox-github-cli.md
 - `ADR-006-human-readable-code-comments.md`
 - `ADR-007-tenant-isolation-and-rbac-enforcement.md`
 - `ADR-008-production-compose-and-caddy.md`
+- `ADR-009-managed-sandbox-github-cli.md`
+- `ADR-010-background-jobs-and-notifications.md`
 
 ## Template
 
