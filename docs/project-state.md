@@ -8,7 +8,7 @@ This file is the compact operational state for agents. Use it to orient quickly 
 
 - Active branch: `codex/spec-201-background-jobs`
 - Active spec: `SPEC-201`
-- Current state: `SPEC-201` is review approved and published to `origin/codex/spec-201-background-jobs` as commit `4ccbd84`, with a follow-up memory publication checkpoint pending in the same branch. It adds Redis/Celery background jobs, task assignment notification enqueueing, a local-safe logging notification adapter, backend tests, and local/production Compose worker wiring.
+- Current state: `SPEC-201` is review approved and published to `origin/codex/spec-201-background-jobs` as implementation commit `4ccbd84` plus publication-memory checkpoint `e88dc90`. It adds Redis/Celery background jobs, task assignment notification enqueueing, a local-safe logging notification adapter, backend tests, and local/production Compose worker wiring.
 - Documentation checkpoint: agent operational memory was restructured on 2026-06-16 with this file, central touch-to-spec routing, per-spec scope/context blocks, and `ADR-005`; on 2026-06-24 the base workflow added review-gated memory checks and implementation-log scaffolding targets; `ADR-009` records the managed-sandbox GitHub CLI policy
 - Recent validation recorded in `docs/implementation-log.md`: `SPEC-201` review fix passed `make verify-no-db`, `make smoke`, elevated `make migrations-check`, focused re-review tests, memory check, and whitespace check on 2026-07-08 after the earlier 2026-07-07 production smoke baseline passed.
 - Current validation baseline: `SPEC-201` background jobs and worker/Redis Compose wiring pass the no-DB verification harness, local Docker smoke, production Compose config, production smoke, and PostgreSQL migration drift checks.
