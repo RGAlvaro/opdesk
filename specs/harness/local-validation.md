@@ -2,7 +2,7 @@
 
 Status: Ready  
 Owner: Review agent  
-Last updated: 2026-06-23
+Last updated: 2026-07-07
 
 This file defines validation commands for local development and review. Feature specs may require a subset or add feature-specific checks.
 
@@ -45,7 +45,7 @@ Expected meaning:
 | `make typecheck` | Backend and frontend type checks where configured |
 | `make migrations-check` | Alembic migration consistency |
 | `make migrations-check-compose` | Alembic migration consistency from inside the Docker Compose backend container |
-| `make smoke` | Docker/local service startup and health checks |
+| `make smoke` | Docker/local service startup and health checks, including Redis and worker once background jobs exist |
 | `make prod-config` | Render and validate the production Compose definition with safe placeholder secrets |
 | `make prod-data-smoke` | Apply production migrations and prove backup/restore against the isolated production-smoke database |
 | `make prod-smoke` | Run the data smoke, build/start the isolated production stack, and check frontend/backend through Caddy |

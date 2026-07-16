@@ -35,6 +35,115 @@ Known gaps:
 
 ## Entries
 
+### 2026-07-08 — SPEC-201 — Review-approved branch published
+
+Role: Ingeniero de software
+Branch: codex/spec-201-background-jobs
+Commit/PR: `4ccbd84`
+Status: Implemented
+
+Summary:
+- Committed the review-approved `SPEC-201` implementation as `4ccbd84`.
+- Pushed `codex/spec-201-background-jobs` to `origin/codex/spec-201-background-jobs`.
+- Updated project memory so the next handoff is PR/CI integration rather than local publication.
+
+Validation:
+- command: `git diff --check`: PASS before commit.
+- command: `make memory-check SPEC=SPEC-201`: PASS before commit.
+- command: `git push -u origin codex/spec-201-background-jobs`: PASS.
+
+Review:
+- decision: APPROVED — previous review entry approved the implementation; this entry records publication.
+
+Known gaps:
+- PR creation, CI result, and merge remain pending.
+- Public VPS/domain deployment remains an external launch step.
+- Notification delivery remains log-only; real email provider integration, notification inbox UI, scheduled jobs, and persistent job audit remain outside `SPEC-201`.
+
+### 2026-07-08 — SPEC-201 — Assignment-version review fix approved
+
+Role: Review agent
+Branch: codex/spec-201-background-jobs
+Commit/PR: Uncommitted local changes
+Status: Reviewed
+
+Summary:
+- Re-reviewed the `SPEC-201` assignment-version stale job fix.
+- Confirmed worker processing now compares payload `assignment_version` with current task `updated_at` before delivery.
+- Confirmed stale-version payloads return a safe no-op and have focused backend coverage.
+- Confirmed project memory reflects the review-fix validation and remaining known gaps.
+
+Validation:
+- command: `cd backend && poetry run pytest tests/test_background_jobs_notifications.py -q`: PASS — 6 tests passed.
+- command: `make memory-check SPEC=SPEC-201`: PASS.
+- command: `git diff --check`: PASS.
+
+Review:
+- decision: APPROVED
+
+Known gaps:
+- Public VPS/domain deployment remains an external launch step.
+- Notification delivery remains log-only; real email provider integration, notification inbox UI, scheduled jobs, and persistent job audit remain outside `SPEC-201`.
+- Playwright E2E coverage remains deferred.
+
+### 2026-07-08 — SPEC-201 — Assignment-version stale job review fix
+
+Role: Ingeniero de software
+Branch: codex/spec-201-background-jobs
+Commit/PR: Uncommitted local changes
+Status: Implemented
+
+Summary:
+- Addressed review feedback that worker processing ignored `assignment_version`.
+- Added stale-version detection so an assignment notification job is ignored when the task assignee still matches but the current `updated_at` version differs from the payload.
+- Added backend coverage for stale assignment-version payloads returning a safe no-op.
+
+Validation:
+- command: `cd backend && poetry run pytest tests/test_background_jobs_notifications.py -q`: PASS — 6 tests passed.
+- command: `make verify-no-db`: PASS — backend Ruff, frontend ESLint, format checks, backend mypy, frontend typecheck, 71 backend non-DB tests, and 38 frontend tests passed.
+- command: elevated `make verify`: FAIL — no-DB checks passed, but Alembic could not connect to PostgreSQL on `127.0.0.1:5432` because the local Compose database was not running.
+- command: `make smoke`: PASS — local Compose built/started backend, frontend, PostgreSQL, Redis, worker, and Adminer; backend health, Redis `PONG`, worker running check, Adminer, and frontend HTTP checks passed.
+- command: elevated `make migrations-check`: PASS — Alembic upgrade and drift check passed against the Compose PostgreSQL database.
+
+Review:
+- decision: N/A — review fix awaits re-review.
+
+Known gaps:
+- Public VPS/domain deployment remains an external launch step.
+- Notification delivery remains log-only; real email provider integration, notification inbox UI, scheduled jobs, and persistent job audit remain outside `SPEC-201`.
+- Playwright E2E coverage remains deferred.
+
+### 2026-07-07 — SPEC-201 — Background jobs and task assignment notifications implemented
+
+Role: Ingeniero de software
+Branch: codex/spec-201-background-jobs
+Commit/PR: Uncommitted local changes
+Status: Implemented
+
+Summary:
+- Closed `SPEC-201` implementation decisions for Redis/Celery, log-only local-safe delivery, no persistent notification tables, and limited worker retries; recorded the durable choice in `ADR-010`.
+- Added Celery/Redis dependencies, backend settings, Celery app wiring, request-time enqueue helper, worker task, and task assignment notification payload/processing code.
+- Enqueued assignment notification jobs after successful task creation with an assignee and after successful reassignment to a non-null assignee.
+- Added local and production Redis/worker Compose services, documented production Redis/worker operations, and expanded smoke checks to verify Redis and worker runtime state.
+- Added backend coverage for minimal payload creation, task create/reassign enqueue hooks, synchronous worker processing, and broker-free worker task execution.
+
+Validation:
+- command: elevated `make verify`: PASS — backend Ruff, frontend ESLint, format checks, backend mypy, frontend typecheck, 70 backend non-DB tests, 38 frontend tests, Alembic upgrade, and Alembic drift check passed.
+- command: `make verify-no-db`: PASS — backend Ruff, frontend ESLint, format checks, backend mypy, frontend typecheck, 69 backend non-DB tests, and 38 frontend tests passed before the invalid-payload worker test was added.
+- command: `make prod-config`: PASS — production Compose renders private Redis, worker, backend, frontend, PostgreSQL, and Caddy with safe placeholder secrets.
+- command: `make smoke`: PASS — local Compose built/started backend, frontend, PostgreSQL, Redis, worker, and Adminer; backend health, Redis `PONG`, worker running check, Adminer, and frontend HTTP checks passed.
+- command: `make migrations-check`: FAIL then PASS — sandboxed localhost PostgreSQL connection failed; elevated rerun passed Alembic upgrade and drift check with no new upgrade operations detected.
+- command: `make prod-smoke`: FAIL then PASS — sandboxed Docker socket access failed; elevated rerun passed production migrations, backup/restore data smoke, production image builds, Caddy `/health`, Redis `PONG`, worker running check, and frontend `/`.
+- command: `make prod-down`: FAIL then PASS — sandboxed Docker socket access failed; elevated rerun removed the isolated production-smoke containers and network.
+
+Review:
+- decision: N/A — implementation awaits review.
+
+Known gaps:
+- Public VPS/domain deployment remains an external launch step.
+- Notification delivery is log-only; real email provider integration, notification inbox UI, scheduled jobs, and persistent job audit remain outside `SPEC-201`.
+- Playwright E2E coverage remains deferred.
+
 ### 2026-07-06 — Repository integration — SPEC-301 and sandbox policy merged
 
 Role: Ingeniero de software

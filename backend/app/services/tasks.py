@@ -7,6 +7,7 @@ from datetime import UTC, date, datetime
 from sqlalchemy.orm import Session
 
 from app.api.errors import APIError
+from app.jobs.enqueue import enqueue_task_assignment_notification
 from app.models.organization import MembershipRole, OrganizationMembership
 from app.models.project import Project, Task, TaskPriority, TaskStatus
 from app.models.user import User
@@ -89,6 +90,8 @@ class TaskService:
         self.tasks.add(task)
         self.db.commit()
         self.db.refresh(task)
+        if task.assignee_id is not None:
+            enqueue_task_assignment_notification(task)
         return task
 
     def list_tasks(
@@ -143,6 +146,7 @@ class TaskService:
         self._validate_update_permission(actor, membership, task, fields_set)
         if not fields_set:
             raise APIError(400, "invalid_task", "At least one field must be updated.")
+        assignment_changed = False
         if "title" in fields_set:
             if title is None:
                 raise APIError(400, "invalid_task", "Title is required.")
@@ -160,6 +164,7 @@ class TaskService:
             previous_assignee_id = task.assignee_id
             task.assignee_id = assignee_id
             if previous_assignee_id != assignee_id:
+                assignment_changed = True
                 logger.info(
                     "task assignment changed actor_id=%s organization_id=%s task_id=%s "
                     "old_assignee_id=%s new_assignee_id=%s",
@@ -180,6 +185,8 @@ class TaskService:
         self.db.add(task)
         self.db.commit()
         self.db.refresh(task)
+        if assignment_changed and task.assignee_id is not None:
+            enqueue_task_assignment_notification(task)
         return task
 
     def _get_project_for_member(

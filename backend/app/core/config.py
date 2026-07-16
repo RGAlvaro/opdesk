@@ -22,6 +22,10 @@ class Settings(BaseSettings):
     refresh_token_cookie_name: str = Field(default="refresh_token")
     auth_cookie_secure: bool = Field(default=False)
     auth_cookie_samesite: Literal["lax", "strict", "none"] = Field(default="lax")
+    celery_broker_url: str = Field(default="redis://localhost:6379/0")
+    celery_result_backend: str = Field(default="redis://localhost:6379/1")
+    celery_task_always_eager: bool = Field(default=False)
+    celery_task_eager_propagates: bool = Field(default=True)
 
     model_config = SettingsConfigDict(
         env_file=".env",

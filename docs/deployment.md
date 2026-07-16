@@ -1,6 +1,7 @@
 # Production Deployment
 
-This guide covers the first OpsDesk production path for `SPEC-301`: one VPS, Docker Compose, Caddy, PostgreSQL, backend API, and the built React frontend.
+This guide covers the OpsDesk production path for `SPEC-301`: one VPS, Docker Compose, Caddy,
+PostgreSQL, Redis, backend API, Celery worker, and the built React frontend.
 
 ## Services
 
@@ -13,8 +14,8 @@ Private Compose-network services:
 - `backend`: FastAPI API server.
 - `frontend`: static React build served by nginx.
 - `postgres`: PostgreSQL with a named persistent volume.
-
-Redis, workers, and scheduled jobs are not part of this deployment until `SPEC-201` is implemented.
+- `redis`: private Celery broker/result backend.
+- `worker`: Celery worker for background notification jobs.
 
 ## Required Server Variables
 
@@ -41,8 +42,11 @@ Required production values:
 | `CADDY_SITE_ADDRESS` | Public domain, for example `opsdesk.example.com`. Use `:80` only for local smoke tests. |
 | `PROD_HTTP_PORT` | Host HTTP port, normally `80`. |
 | `PROD_HTTPS_PORT` | Host HTTPS port, normally `443`. |
+| `CELERY_BROKER_URL` | Redis broker URL, defaults to `redis://redis:6379/0`. |
+| `CELERY_RESULT_BACKEND` | Redis result backend URL, defaults to `redis://redis:6379/1`. |
 
-Production Compose forces `APP_ENV=production`, `DEBUG=false`, `AUTH_COOKIE_SECURE=true`, and keeps PostgreSQL off public host ports.
+Production Compose forces `APP_ENV=production`, `DEBUG=false`, `AUTH_COOKIE_SECURE=true`, and
+keeps PostgreSQL and Redis off public host ports.
 
 Do not build `PROD_DATABASE_URL` by pasting a raw strong password directly into the URL. URL-encode
 reserved characters first, otherwise passwords containing characters such as `@`, `:`, `/`, `?`, or
@@ -53,7 +57,7 @@ must use `%40` in the URL.
 
 1. Point the domain in `CADDY_SITE_ADDRESS` at the VPS public IP.
 2. Allow inbound TCP `80` and `443`.
-3. Do not expose PostgreSQL publicly.
+3. Do not expose PostgreSQL or Redis publicly.
 
 ## Build And Start
 
@@ -84,6 +88,15 @@ Check health through Caddy:
 curl --fail https://opsdesk.example.com/health
 ```
 
+Check private Redis and worker state from the VPS:
+
+```bash
+docker compose --project-name opdesk-prod --env-file .env.production \
+  -f docker-compose.prod.yml exec -T redis redis-cli ping
+docker compose --project-name opdesk-prod --env-file .env.production \
+  -f docker-compose.prod.yml ps worker
+```
+
 For a local production smoke test without TLS, use:
 
 ```bash
@@ -112,7 +125,7 @@ Stop the app services that may write to the database:
 
 ```bash
 docker compose --project-name opdesk-prod --env-file .env.production \
-  -f docker-compose.prod.yml stop backend
+  -f docker-compose.prod.yml stop backend worker
 ```
 
 Restore a backup. This replaces the current application schema and data, so verify the selected
