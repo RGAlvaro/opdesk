@@ -35,6 +35,31 @@ Known gaps:
 
 ## Entries
 
+### 2026-07-16 — SPEC-201 — PR #7 merged and branch closed
+
+Role: Ingeniero de software
+Branch: main
+Commit/PR: merge `ad90534` / PR #7
+Status: Merged
+
+Summary:
+- Opened PR #7 from `codex/spec-201-background-jobs` to `main`.
+- Confirmed GitHub Actions verification passed and the PR was mergeable.
+- Merged `SPEC-201` into `main` and deleted the remote `codex/spec-201-background-jobs` branch.
+- Updated project memory so `SPEC-201` is recorded as integrated rather than awaiting PR/CI.
+
+Validation:
+- command: GitHub Actions `Verify / verify`: PASS — run `29481984511`, job `87567615091`.
+- command: `make memory-check SPEC=SPEC-201`: PASS.
+- command: `git diff --check`: PASS.
+
+Review:
+- decision: APPROVED — prior review approved `SPEC-201`; PR #7 CI passed before merge.
+
+Known gaps:
+- Public VPS/domain deployment remains an external launch step.
+- Notification delivery remains log-only; real email provider integration, notification inbox UI, scheduled jobs, and persistent job audit remain outside `SPEC-201`.
+
 ### 2026-07-08 — SPEC-201 — Review-approved branch published
 
 Role: Ingeniero de software
