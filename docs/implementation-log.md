@@ -35,6 +35,74 @@ Known gaps:
 
 ## Entries
 
+### 2026-07-15 — SPEC-303/SPEC-304/SPEC-305/SPEC-306 — Product decisions incorporated
+
+Role: Arquitecto de specs
+Branch: codex/spec-predeployment-planning
+Commit/PR: Pending
+Status: Planned
+
+Summary:
+- Updated `SPEC-303` so invite-by-email targets must be existing users, access is granted only after in-app invitation acceptance, and project membership restricts task assignment.
+- Updated `SPEC-304` toward a Slack-like chat model with direct messages, groups, organization channels, and project channels.
+- Updated `SPEC-305` so clients are lightweight project contacts, and client tickets are stored as differentiated task records with a visible ticket label/color.
+- Added Draft `SPEC-306` for persistent in-app notifications, unread state, actionable invitations, project/task state notifications, and missed chat message notifications.
+- Updated project memory and the spec index with the new notification spec and resolved product choices.
+
+Validation:
+- command: NOT RUN — spec/documentation-only change.
+
+Review:
+- decision: N/A
+
+Known gaps:
+- Specs remain Draft pending final decisions about admin invite permissions, project visibility restrictions, chat transport, client ticket form access, notification retention, and notification recipient rules.
+
+### 2026-07-15 — SPEC-303/SPEC-304/SPEC-305 — Draft product additions captured
+
+Role: Arquitecto de specs
+Branch: codex/spec-predeployment-planning
+Commit/PR: Pending
+Status: Planned
+
+Summary:
+- Added Draft `SPEC-303` for adding organization members by email and assigning organization members to projects.
+- Added Draft `SPEC-304` for organization chat with a left-side member list ordered by shared project participation.
+- Added Draft `SPEC-305` for project clients and client-created tickets visible to project members.
+- Updated `SPEC-302` to stay focused on predeployment UI stabilization and route larger product additions to separate specs.
+- Updated the spec index and project memory with the new Draft specs and open scope decisions.
+
+Validation:
+- command: NOT RUN — spec/documentation-only change.
+
+Review:
+- decision: N/A
+
+Known gaps:
+- `SPEC-303`, `SPEC-304`, and `SPEC-305` remain Draft pending product decisions about invite acceptance, email delivery, project-level access semantics, chat transport, client identity, and ticket data modeling.
+
+### 2026-07-15 — SPEC-302 — Predeployment UI stabilization spec started
+
+Role: Arquitecto de specs
+Branch: codex/spec-predeployment-planning
+Commit/PR: Pending
+Status: Planned
+
+Summary:
+- Added Draft `SPEC-302` for predeployment UI stabilization and small corrections/additions.
+- Captured the confirmed left-panel navigation defect: after creating an organization, clicking `Organizations`, `Projects`, or `Tasks` routes to organizations and highlights all three entries.
+- Updated the spec index and project memory so the next work is completing `SPEC-302` scope before implementation.
+
+Validation:
+- command: NOT RUN — spec/documentation-only change.
+
+Review:
+- decision: N/A
+
+Known gaps:
+- Additional predeployment corrections/additions still need to be collected before `SPEC-302` can move to Ready.
+- The intended `Tasks` left-panel target remains an open product/routing question.
+
 ### 2026-07-16 — SPEC-201 — PR #7 merged and branch closed
 
 Role: Ingeniero de software

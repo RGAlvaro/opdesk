@@ -1,22 +1,22 @@
 # Project State
 
-Last updated: 2026-07-16
+Last updated: 2026-07-17
 
 This file is the compact operational state for agents. Use it to orient quickly before reading detailed specs, ADRs, implementation history, or code.
 
 ## Current Work
 
-- Active branch: `main`
-- Active spec: none; implemented and reviewed work through `SPEC-201` is integrated
-- Current state: `SPEC-201` was merged through PR #7 as merge commit `ad90534`. It adds Redis/Celery background jobs, task assignment notification enqueueing, a local-safe logging notification adapter, backend tests, and local/production Compose worker wiring. The remote `codex/spec-201-background-jobs` branch was deleted after merge.
-- Documentation checkpoint: agent operational memory was restructured on 2026-06-16 with this file, central touch-to-spec routing, per-spec scope/context blocks, and `ADR-005`; on 2026-06-24 the base workflow added review-gated memory checks and implementation-log scaffolding targets; `ADR-009` records the managed-sandbox GitHub CLI policy
+- Active branch: `codex/spec-predeployment-planning`
+- Active spec: `SPEC-302`
+- Current state: `SPEC-201` is integrated in `main` through PR #7, and this branch now carries Draft predeployment planning specs on top of that baseline. `SPEC-302` captures the confirmed left-panel navigation defect after organization creation. Draft follow-up product specs capture member invites/project access (`SPEC-303`), Slack-like organization/project chat (`SPEC-304`), project clients/client tickets (`SPEC-305`), and in-app notifications (`SPEC-306`).
+- Documentation checkpoint: agent operational memory was restructured on 2026-06-16 with this file, central touch-to-spec routing, per-spec scope/context blocks, and `ADR-005`; on 2026-06-24 the base workflow added review-gated memory checks and implementation-log scaffolding targets; `ADR-009` records the managed-sandbox GitHub CLI policy.
 - Recent validation recorded in `docs/implementation-log.md`: PR #7 passed GitHub Actions `Verify / verify` on 2026-07-16 before merging; `SPEC-201` review-fix validation also passed `make verify-no-db`, `make smoke`, elevated `make migrations-check`, focused re-review tests, memory check, and whitespace check on 2026-07-08.
 - Current validation baseline: integrated `main` includes `SPEC-201` and passed the GitHub Actions verification workflow for PR #7.
 
 ## Next Handoff
 
-- Next role: Product owner / Arquitecto de specs when the next predeployment scope is selected
-- Next likely integration work: continue predeployment planning from the separate `codex/spec-predeployment-planning` branch or prioritize the documented public VPS/domain deployment.
+- Next role: Arquitecto de specs
+- Next likely integration work: decide whether only `SPEC-302` blocks deployment or whether `SPEC-303`/`SPEC-304`/`SPEC-305`/`SPEC-306` should also be implemented first. Then move the chosen active spec(s) from Draft to Ready before implementation.
 - Keep `SPEC-301` production docs aligned if future scheduled jobs or a Celery beat service are added.
 
 ## Implemented Specs
@@ -37,25 +37,34 @@ This file is the compact operational state for agents. Use it to orient quickly 
 
 ## Draft Specs
 
-None currently.
+| Spec | Scope | Primary surfaces | Latest state |
+|---|---|---|---|
+| `SPEC-302` | Predeployment UI stabilization and small corrections/additions | App shell navigation, organization/project/task frontend routes, frontend regression tests | Draft created with left-panel Organizations/Projects/Tasks routing and active-state defect captured |
+| `SPEC-303` | Member invitations by email and project-level access | Organization members, project members, invite APIs, migrations, frontend management UI | Draft updated: existing-user invitations require in-app acceptance; project membership restricts task assignment |
+| `SPEC-304` | Organization member chat | Chat persistence, chat APIs, organization chat UI, shared-project member ordering | Draft updated for Slack-like direct, group, organization channel, and project channel chat |
+| `SPEC-305` | Project clients and client-created tickets | Client project contacts, ticket-as-task API/UI, migrations | Draft updated: clients are lightweight contacts and tickets live in `tasks` with a type/source and distinct UI label/color |
+| `SPEC-306` | In-app notifications | Notification models, APIs, inbox UI, invitation/state/chat notification fan-out | Draft created for persistent in-app notifications and actionable invitation notifications |
 
 ## Next Likely Work
 
-1. Continue predeployment UI/product spec planning on `codex/spec-predeployment-planning` when that branch is prioritized.
-2. Add Playwright coverage in a dedicated follow-up when E2E work is prioritized.
-3. Execute the documented VPS/domain deployment when public launch work is prioritized.
+1. Decide predeployment scope: `SPEC-302` only, or `SPEC-302` plus one or more product additions from `SPEC-303`/`SPEC-304`/`SPEC-305`/`SPEC-306`.
+2. Resolve open questions and mark the chosen active spec Ready.
+3. Implement the chosen active spec before public deployment.
+4. Execute the documented VPS/domain deployment when public launch work is prioritized.
 
 ## Known Gaps
 
 - `SPEC-104` has no Playwright E2E tests yet; the spec intentionally recommends adding them after the frontend/local server harness stabilizes.
 - `SPEC-106` has route-level/component coverage but still has no Playwright E2E critical path; the spec recommends adding Playwright after organization/project/task UI stabilizes.
+- `SPEC-302` is Draft; current open questions are additional predeployment corrections/additions, the intended Tasks left-panel target, and whether project/task shortcuts should disable or route to empty states before context exists.
+- `SPEC-303`, `SPEC-304`, `SPEC-305`, and `SPEC-306` are Draft product additions with unresolved admin-invite permissions, project visibility, chat transport, client ticket form access, notification retention, and notification recipient rules.
 - Public production deployment is documented but not yet executed against a real VPS/domain.
 - `SPEC-201` uses a log-only notification adapter; real email delivery, notification inbox UI, scheduled jobs, and persistent job audit remain outside this spec.
 
 ## Validation Baseline
 
-- Latest recorded review-fix validation for `SPEC-201`: `make verify-no-db` PASS with 71 backend non-DB tests and 38 frontend tests, `make smoke` PASS with Redis `PONG` and worker running, and elevated `make migrations-check` PASS on 2026-07-08. A full `make verify` rerun on 2026-07-08 passed no-DB checks but failed at migrations before Compose PostgreSQL was started; the subsequent smoke plus elevated migration check covered the failed step.
 - Latest `SPEC-201` CI validation: GitHub Actions `Verify / verify` PASS on PR #7 at merge commit `ad90534` on 2026-07-16.
+- Latest recorded review-fix validation for `SPEC-201`: `make verify-no-db` PASS with 71 backend non-DB tests and 38 frontend tests, `make smoke` PASS with Redis `PONG` and worker running, and elevated `make migrations-check` PASS on 2026-07-08. A full `make verify` rerun on 2026-07-08 passed no-DB checks but failed at migrations before Compose PostgreSQL was started; the subsequent smoke plus elevated migration check covered the failed step.
 - Latest `SPEC-201` review decision: APPROVED on 2026-07-08 after focused stale-version worker test, memory check, and whitespace check passed.
 - Latest recorded full local verification for `SPEC-201`: elevated `make verify` PASS on 2026-07-07; earlier sandboxed `make migrations-check` failed due localhost PostgreSQL access and the elevated rerun passed.
 - Latest `SPEC-201` Compose validation: `make prod-config` PASS; `make smoke` PASS with Redis `PONG` and worker running; sandboxed `make prod-smoke` FAIL due Docker socket access, elevated `make prod-smoke` PASS, elevated `make prod-down` PASS on 2026-07-07.
@@ -83,7 +92,7 @@ None currently.
 | `backend/tests` | Backend unit, integration, API, and migration-related tests |
 | `frontend/src/app` | Router, app shell, providers, route guards |
 | `frontend/src/features/auth` | Login, signup, session bootstrap, logout behavior |
-| `frontend/src/features/organizations` | Organization/workspace UI, member/admin UI, API hooks, and active organization route support for `SPEC-105` |
+| `frontend/src/features/organizations` | Organization/workspace UI, member/admin UI, organization API hooks, and active organization route support for `SPEC-105` |
 | `frontend/src/features/projects` | Project API hooks, paginated list/detail/settings/create routes, and SPEC-106 route tests |
 | `frontend/src/features/tasks` | Task API hooks, URL-backed pagination/filters, assignment controls, create/update forms, and SPEC-106 route tests |
 | `frontend/src/features/profile` | Current-user profile display and update flow |
