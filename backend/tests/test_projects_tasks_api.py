@@ -12,6 +12,7 @@ from sqlalchemy.orm import Session, sessionmaker
 from sqlalchemy.pool import StaticPool
 
 import app.services.security as security_service
+import app.services.tasks as task_service_module
 from app.core.config import Settings, get_settings
 from app.db.base import Base
 from app.db.session import get_db
@@ -28,6 +29,16 @@ def fast_password_hasher(monkeypatch: pytest.MonkeyPatch) -> None:
         security_service,
         "password_hasher",
         PasswordHasher(time_cost=1, memory_cost=512, parallelism=1),
+    )
+
+
+@pytest.fixture(autouse=True)
+def disable_task_notification_enqueue(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Keep SPEC-103 API tests independent from the external Celery broker."""
+    monkeypatch.setattr(
+        task_service_module,
+        "enqueue_task_assignment_notification",
+        lambda task: True,
     )
 
 

@@ -2,7 +2,7 @@
 
 Status: Implemented
 Owner: Arquitecto de specs  
-Last updated: 2026-07-06
+Last updated: 2026-07-07
 
 ## Scope And Required Context
 
@@ -68,17 +68,17 @@ The project should be demonstrable through a real public URL without recruiters 
 
 ## Target Services
 
-Minimum production services after `SPEC-010`:
+Current production services:
 
 - `backend`
 - `postgres`
 - `caddy`
+- `frontend`
+- `redis`
+- `worker`
 
-Services added when their specs exist:
+Future services:
 
-- `frontend` after frontend scaffold/UI specs exist
-- `redis` after background job or cache specs require it
-- `worker` after `SPEC-201`
 - `beat` only if scheduled jobs exist
 
 ## Required Files

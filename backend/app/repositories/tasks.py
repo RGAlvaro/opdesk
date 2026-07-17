@@ -32,6 +32,10 @@ class TaskRepository:
             )
         )
 
+    def get_by_id_for_notification(self, task_id: uuid.UUID) -> Task | None:
+        """Load a task for worker-side notification validation."""
+        return self.db.get(Task, task_id)
+
     def get_for_member(
         self, task_id: uuid.UUID, user_id: uuid.UUID
     ) -> tuple[Task, OrganizationMembership] | None:
