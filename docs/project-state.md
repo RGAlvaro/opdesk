@@ -6,12 +6,12 @@ This file is the compact operational state for agents. Use it to orient quickly 
 
 ## Current Work
 
-- Active branch: `codex/spec-predeployment-planning`
+- Active branch: `main`
 - Active spec: `SPEC-302`
-- Current state: `SPEC-201` is integrated in `main` through PR #7, and this branch now carries Draft predeployment planning specs on top of that baseline. `SPEC-302` captures the confirmed left-panel navigation defect after organization creation. Draft follow-up product specs capture member invites/project access (`SPEC-303`), Slack-like organization/project chat (`SPEC-304`), project clients/client tickets (`SPEC-305`), and in-app notifications (`SPEC-306`).
+- Current state: Draft predeployment planning specs are integrated in `main` through PR #8. `SPEC-302` captures the confirmed left-panel navigation defect after organization creation. Draft follow-up product specs capture member invites/project access (`SPEC-303`), Slack-like organization/project chat (`SPEC-304`), project clients/client tickets (`SPEC-305`), and in-app notifications (`SPEC-306`). `SPEC-201` remains integrated through PR #7.
 - Documentation checkpoint: agent operational memory was restructured on 2026-06-16 with this file, central touch-to-spec routing, per-spec scope/context blocks, and `ADR-005`; on 2026-06-24 the base workflow added review-gated memory checks and implementation-log scaffolding targets; `ADR-009` records the managed-sandbox GitHub CLI policy.
-- Recent validation recorded in `docs/implementation-log.md`: PR #7 passed GitHub Actions `Verify / verify` on 2026-07-16 before merging; `SPEC-201` review-fix validation also passed `make verify-no-db`, `make smoke`, elevated `make migrations-check`, focused re-review tests, memory check, and whitespace check on 2026-07-08.
-- Current validation baseline: integrated `main` includes `SPEC-201` and passed the GitHub Actions verification workflow for PR #7.
+- Recent validation recorded in `docs/implementation-log.md`: PR #8 passed GitHub Actions `Verify / verify` on 2026-07-17 before merging; PR #7 passed GitHub Actions `Verify / verify` on 2026-07-16 before merging.
+- Current validation baseline: integrated `main` includes `SPEC-201` plus Draft `SPEC-302` to `SPEC-306`, and passed the GitHub Actions verification workflow for PR #8.
 
 ## Next Handoff
 
@@ -39,7 +39,7 @@ This file is the compact operational state for agents. Use it to orient quickly 
 
 | Spec | Scope | Primary surfaces | Latest state |
 |---|---|---|---|
-| `SPEC-302` | Predeployment UI stabilization and small corrections/additions | App shell navigation, organization/project/task frontend routes, frontend regression tests | Draft created with left-panel Organizations/Projects/Tasks routing and active-state defect captured |
+| `SPEC-302` | Predeployment UI stabilization and small corrections/additions | App shell navigation, organization/project/task frontend routes, frontend regression tests | Draft integrated through PR #8 with left-panel Organizations/Projects/Tasks routing and active-state defect captured |
 | `SPEC-303` | Member invitations by email and project-level access | Organization members, project members, invite APIs, migrations, frontend management UI | Draft updated: existing-user invitations require in-app acceptance; project membership restricts task assignment |
 | `SPEC-304` | Organization member chat | Chat persistence, chat APIs, organization chat UI, shared-project member ordering | Draft updated for Slack-like direct, group, organization channel, and project channel chat |
 | `SPEC-305` | Project clients and client-created tickets | Client project contacts, ticket-as-task API/UI, migrations | Draft updated: clients are lightweight contacts and tickets live in `tasks` with a type/source and distinct UI label/color |
@@ -64,6 +64,7 @@ This file is the compact operational state for agents. Use it to orient quickly 
 ## Validation Baseline
 
 - Latest `SPEC-201` CI validation: GitHub Actions `Verify / verify` PASS on PR #7 at merge commit `ad90534` on 2026-07-16.
+- Latest planning-spec CI validation: GitHub Actions `Verify / verify` PASS on PR #8 at merge commit `5c1a205` on 2026-07-17.
 - Latest recorded review-fix validation for `SPEC-201`: `make verify-no-db` PASS with 71 backend non-DB tests and 38 frontend tests, `make smoke` PASS with Redis `PONG` and worker running, and elevated `make migrations-check` PASS on 2026-07-08. A full `make verify` rerun on 2026-07-08 passed no-DB checks but failed at migrations before Compose PostgreSQL was started; the subsequent smoke plus elevated migration check covered the failed step.
 - Latest `SPEC-201` review decision: APPROVED on 2026-07-08 after focused stale-version worker test, memory check, and whitespace check passed.
 - Latest recorded full local verification for `SPEC-201`: elevated `make verify` PASS on 2026-07-07; earlier sandboxed `make migrations-check` failed due localhost PostgreSQL access and the elevated rerun passed.

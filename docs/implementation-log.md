@@ -35,6 +35,32 @@ Known gaps:
 
 ## Entries
 
+### 2026-07-17 — SPEC-302/SPEC-303/SPEC-304/SPEC-305/SPEC-306 — Planning PR merged
+
+Role: Arquitecto de specs
+Branch: main
+Commit/PR: merge `5c1a205` / PR #8
+Status: Merged
+
+Summary:
+- Reconciled the predeployment planning branch with `main` after `SPEC-201` merged.
+- Opened PR #8 from `codex/spec-predeployment-planning` to `main`.
+- Confirmed GitHub Actions verification passed and the PR was mergeable.
+- Merged Draft `SPEC-302`, `SPEC-303`, `SPEC-304`, `SPEC-305`, and `SPEC-306` into `main`, then deleted the remote planning branch.
+- Updated project memory so predeployment planning is recorded as integrated into `main`.
+
+Validation:
+- command: `make memory-check SPEC=SPEC-302`: PASS.
+- command: `git diff --check`: PASS.
+- command: GitHub Actions `Verify / verify`: PASS — run `29564046240`, job `87832556220`.
+
+Review:
+- decision: N/A — spec-planning PR; specs remain Draft and need readiness decisions before implementation.
+
+Known gaps:
+- `SPEC-302` remains Draft pending final predeployment scope and Tasks/sidebar behavior decisions.
+- `SPEC-303`, `SPEC-304`, `SPEC-305`, and `SPEC-306` remain Draft pending product and implementation-order decisions.
+
 ### 2026-07-15 — SPEC-303/SPEC-304/SPEC-305/SPEC-306 — Product decisions incorporated
 
 Role: Arquitecto de specs
