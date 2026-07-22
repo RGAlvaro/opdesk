@@ -35,6 +35,35 @@ Known gaps:
 
 ## Entries
 
+### 2026-07-22 — SPEC-301 — Production domain configured
+
+Role: Ingeniero de software
+Branch: main
+Commit/PR: Pending
+Status: Implemented
+
+Summary:
+- Confirmed public DNS for `rgalvaro.es` and `www.rgalvaro.es` points to the VPS IPv4 `51.255.202.88` and IPv6 `2001:41d0:305:2100::1:1f66`.
+- Updated server-side `/srv/opdesk/.env.production` so Caddy serves `rgalvaro.es`, `www.rgalvaro.es`, and the temporary `opdesk.51.255.202.88.sslip.io` hostname.
+- Recreated the production Caddy container and confirmed Caddy obtained Let's Encrypt certificates for `rgalvaro.es` and `www.rgalvaro.es`.
+
+Validation:
+- command: `dig @1.1.1.1 +short rgalvaro.es A`: PASS — `51.255.202.88`.
+- command: `dig @1.1.1.1 +short rgalvaro.es AAAA`: PASS — `2001:41d0:305:2100::1:1f66`.
+- command: `curl -I https://rgalvaro.es/`: PASS — `HTTP/2 200`.
+- command: `curl https://rgalvaro.es/health`: PASS — `{"status":"ok"}`.
+- command: `curl -I https://www.rgalvaro.es/`: PASS — `HTTP/2 200`.
+- command: `curl https://www.rgalvaro.es/health`: PASS — `{"status":"ok"}`.
+- command: VPS stack check: PASS — backend, Caddy, frontend, PostgreSQL, Redis, and worker running.
+
+Review:
+- decision: N/A — production domain configuration for already approved `SPEC-301`.
+
+Known gaps:
+- `SPEC-307` release automation is still the next deployment-hardening implementation.
+- The temporary `opdesk.51.255.202.88.sslip.io` hostname remains configured as a fallback and can be removed later.
+- The VPS still needs a controlled reboot for the pending Ubuntu kernel upgrade.
+
 ### 2026-07-22 — SPEC-301 — Initial public VPS deployment executed
 
 Role: Ingeniero de software
