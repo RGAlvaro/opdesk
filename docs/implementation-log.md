@@ -35,6 +35,43 @@ Known gaps:
 
 ## Entries
 
+### 2026-07-22 — SPEC-301 — Initial public VPS deployment executed
+
+Role: Ingeniero de software
+Branch: main
+Commit/PR: deployed `a664414` / PR #9 already merged
+Status: Implemented
+
+Summary:
+- Executed the documented initial `SPEC-301` production deployment on VPS host `opdesk-vps` as user `ubuntu`.
+- Installed Docker Engine and Docker Compose plugin on Ubuntu 24.04 because the VPS did not yet have Docker available.
+- Deployed source commit `a6644146fdda33ec592024fbdf16ff23e9a9f75a` to `/srv/opdesk` from a local `git archive`, avoiding persistent GitHub credentials on the VPS.
+- Created server-side `/srv/opdesk/.env.production` with generated secrets, mode `600`, stable Compose project `opdesk-prod`, and public site `opdesk.51.255.202.88.sslip.io`.
+- Created the initial PostgreSQL custom-format backup before migrations: `/srv/opdesk/backups/opdesk-initial-20260722-182637.dump`.
+- Ran production Alembic migrations through revision `0005`, built backend/frontend/worker images, and started PostgreSQL, Redis, backend, worker, frontend, and Caddy.
+- Confirmed Caddy obtained a Let's Encrypt certificate and serves the backend health endpoint and frontend through HTTPS.
+
+Validation:
+- command: `make prod-config`: PASS.
+- command: `make verify`: FAIL — lint, format, typecheck, backend non-DB tests, and frontend tests passed; host-local `migrations-check` failed to connect to localhost PostgreSQL.
+- command: `make migrations-check-compose`: PASS — Alembic upgrade/check passed inside Docker Compose.
+- command: `make prod-data-smoke`: FAIL then PASS — sandboxed Docker socket access failed; elevated rerun passed production migrations plus backup/restore smoke for `opdesk-prod-smoke`.
+- command: `ssh opdesk-vps 'docker compose --project-name opdesk-prod --env-file .env.production -f docker-compose.prod.yml config'`: PASS.
+- command: production backup before migrations: PASS — custom-format dump created at `/srv/opdesk/backups/opdesk-initial-20260722-182637.dump`.
+- command: production `alembic upgrade head`: PASS — migrations applied through `0005`.
+- command: production `docker compose up -d --build`: PASS — backend healthy, frontend running, Caddy running, PostgreSQL/Redis healthy, worker running.
+- command: production HTTPS `/health`: PASS — `{"status":"ok"}` from `https://opdesk.51.255.202.88.sslip.io/health`.
+- command: production HTTPS `/`: PASS — `HTTP/2 200` from `https://opdesk.51.255.202.88.sslip.io/`.
+- command: production Redis/worker/private-port checks: PASS — Redis `PONG`, worker running, PostgreSQL and Redis expose only container ports in Compose.
+
+Review:
+- decision: N/A — deployment execution for already approved `SPEC-301`.
+
+Known gaps:
+- `SPEC-307` release automation is now the next deployment-hardening implementation; routine post-launch updates remain manual until it is implemented.
+- The deployment currently uses `opdesk.51.255.202.88.sslip.io`; replace with a durable custom domain if/when one is selected.
+- The VPS has a pending Ubuntu kernel upgrade; schedule a controlled reboot outside this deployment window.
+
 ### 2026-07-22 — SPEC-302 — PR merged and obsolete branch cleaned
 
 Role: Ingeniero de software

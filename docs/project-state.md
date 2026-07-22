@@ -1,6 +1,6 @@
 # Project State
 
-Last updated: 2026-07-17
+Last updated: 2026-07-22
 
 This file is the compact operational state for agents. Use it to orient quickly before reading detailed specs, ADRs, implementation history, or code.
 
@@ -8,15 +8,15 @@ This file is the compact operational state for agents. Use it to orient quickly 
 
 - Active branch: `main`
 - Active spec: `SPEC-307`
-- Current state: `SPEC-302` is implemented, review approved, passed PR CI, and merged through PR #9. `SPEC-307` is Ready as a post-launch release automation spec for safe updates after the initial public deployment. Draft follow-up product specs capture member invites/project access (`SPEC-303`), Slack-like organization/project chat (`SPEC-304`), project clients/client tickets (`SPEC-305`), and in-app notifications (`SPEC-306`). `SPEC-201` remains integrated through PR #7.
+- Current state: `SPEC-302` is implemented, review approved, passed PR CI, and merged through PR #9. The initial `SPEC-301` public deployment has been executed on `opdesk-vps` from commit `a664414`, with production available at `https://opdesk.51.255.202.88.sslip.io/`. `SPEC-307` is Ready as the next deployment-hardening spec for safe post-launch updates. Draft follow-up product specs capture member invites/project access (`SPEC-303`), Slack-like organization/project chat (`SPEC-304`), project clients/client tickets (`SPEC-305`), and in-app notifications (`SPEC-306`). `SPEC-201` remains integrated through PR #7.
 - Documentation checkpoint: agent operational memory was restructured on 2026-06-16 with this file, central touch-to-spec routing, per-spec scope/context blocks, and `ADR-005`; on 2026-06-24 the base workflow added review-gated memory checks and implementation-log scaffolding targets; `ADR-009` records the managed-sandbox GitHub CLI policy.
-- Recent validation recorded in `docs/implementation-log.md`: PR #9 passed GitHub Actions `Verify / verify` before merging on 2026-07-22; local `SPEC-302` review validation passed `make test-frontend`, `make lint`, `make format-check`, `make typecheck`, `make memory-check SPEC=SPEC-302`, `git diff --check`, and `make smoke` on 2026-07-22.
-- Current validation baseline: `main` includes merged `SPEC-302` plus Draft `SPEC-303` to `SPEC-306` and Ready `SPEC-307`; the latest PR CI and local checks for `SPEC-302` passed.
+- Recent validation recorded in `docs/implementation-log.md`: initial `SPEC-301` public deployment passed production Compose config, backup, migrations, `up -d --build`, HTTPS backend/frontend checks, Redis `PONG`, worker running check, and private PostgreSQL/Redis exposure checks on 2026-07-22; PR #9 passed GitHub Actions `Verify / verify` before merging on 2026-07-22.
+- Current validation baseline: `main` includes merged `SPEC-302` plus Draft `SPEC-303` to `SPEC-306` and Ready `SPEC-307`; the latest production deployment checks and PR CI passed. Local `make verify` on 2026-07-22 passed lint, format, typecheck, backend non-DB tests, and frontend tests, then failed at host-local `migrations-check`; `make migrations-check-compose` passed afterward.
 
 ## Next Handoff
 
-- Next role: Arquitecto de specs or Ingeniero de software
-- Next likely integration work: decide whether public deployment can proceed with `SPEC-302` only, execute the documented initial public deployment when launch work is prioritized, then implement `SPEC-307` release automation before routine post-launch updates.
+- Next role: Ingeniero de software
+- Next likely integration work: implement `SPEC-307` release automation before depending on routine post-launch updates, then decide which Draft product spec (`SPEC-303` to `SPEC-306`) should be made Ready next.
 - Keep `SPEC-301` production docs aligned if future scheduled jobs or a Celery beat service are added.
 
 ## Implemented Specs
@@ -33,7 +33,7 @@ This file is the compact operational state for agents. Use it to orient quickly 
 | `SPEC-105` | Frontend organizations UI | Organization routes, shell navigation, organization API hooks, frontend tests | Implemented and review approved |
 | `SPEC-106` | Frontend projects and tasks UI | Project/task routes, forms, filters, pagination, assignment UI, frontend tests | Implemented and review approved |
 | `SPEC-201` | Background jobs and notifications | Redis/Celery worker, task assignment notification enqueueing, logging adapter, Compose wiring, `ADR-010` | Implemented, CI passed, and merged through PR #7 |
-| `SPEC-301` | Production deployment and operations | Production Compose, Caddy, CI, isolated smoke, deployment docs, tested backup/restore, `ADR-008` | Implemented and review approved |
+| `SPEC-301` | Production deployment and operations | Production Compose, Caddy, CI, isolated smoke, deployment docs, tested backup/restore, `ADR-008`, public VPS deployment | Implemented, review approved, and initially deployed to `https://opdesk.51.255.202.88.sslip.io/` |
 | `SPEC-302` | Predeployment UI stabilization | App shell navigation, organization/project/task frontend route tests | Implemented, review approved, CI passed, and merged through PR #9 |
 
 ## Draft Specs
@@ -53,22 +53,24 @@ This file is the compact operational state for agents. Use it to orient quickly 
 
 ## Next Likely Work
 
-1. Decide whether public deployment can proceed with `SPEC-302` only, or whether one or more product additions from `SPEC-303`/`SPEC-304`/`SPEC-305`/`SPEC-306` should be implemented first.
-2. Execute the documented VPS/domain deployment when public launch work is prioritized.
-3. Implement `SPEC-307` before depending on routine post-launch updates.
-4. Resolve open questions and mark the next chosen Draft product spec Ready before implementation.
+1. Implement `SPEC-307` before depending on routine post-launch updates.
+2. Resolve open questions and mark the next chosen Draft product spec Ready before implementation.
+3. Replace `opdesk.51.255.202.88.sslip.io` with a durable custom domain if a final domain is selected.
+4. Schedule a controlled VPS reboot for the pending Ubuntu kernel upgrade.
 
 ## Known Gaps
 
 - `SPEC-104` has no Playwright E2E tests yet; the spec intentionally recommends adding them after the frontend/local server harness stabilizes.
 - `SPEC-106` has route-level/component coverage but still has no Playwright E2E critical path; the spec recommends adding Playwright after organization/project/task UI stabilizes.
 - `SPEC-303`, `SPEC-304`, `SPEC-305`, and `SPEC-306` are Draft product additions with unresolved admin-invite permissions, project visibility, chat transport, client ticket form access, notification retention, and notification recipient rules.
-- Public production deployment is documented but not yet executed against a real VPS/domain.
 - `SPEC-307` is Ready but not implemented; post-launch update automation remains manual until after the initial deployment.
+- Production is currently deployed at `https://opdesk.51.255.202.88.sslip.io/`; this is suitable for immediate public inspection but should be replaced with a durable custom domain if one is selected.
+- The VPS reported a pending Ubuntu kernel upgrade after Docker installation; schedule a controlled reboot.
 - `SPEC-201` uses a log-only notification adapter; real email delivery, notification inbox UI, scheduled jobs, and persistent job audit remain outside this spec.
 
 ## Validation Baseline
 
+- Latest `SPEC-301` production deployment validation: `make prod-config` PASS; `make verify` partial PASS then FAIL at host-local `migrations-check`; `make migrations-check-compose` PASS; elevated `make prod-data-smoke` PASS; VPS production Compose config PASS; backup `/srv/opdesk/backups/opdesk-initial-20260722-182637.dump` created; production migrations PASS through `0005`; production `docker compose up -d --build` PASS; `https://opdesk.51.255.202.88.sslip.io/health` PASS; `https://opdesk.51.255.202.88.sslip.io/` PASS; Redis `PONG`, worker running, and private PostgreSQL/Redis exposure checks PASS on 2026-07-22.
 - Latest `SPEC-302` review validation: `make test-frontend`, `make lint`, `make format-check`, `make typecheck`, `make memory-check SPEC=SPEC-302`, `git diff --check`, and `make smoke` PASS on 2026-07-22.
 - Latest `SPEC-302` CI validation: GitHub Actions `Verify / verify` PASS on PR #9 before merge commit `6f0a49b` on 2026-07-22.
 - Latest `SPEC-201` CI validation: GitHub Actions `Verify / verify` PASS on PR #7 at merge commit `ad90534` on 2026-07-16.
