@@ -6,17 +6,17 @@ This file is the compact operational state for agents. Use it to orient quickly 
 
 ## Current Work
 
-- Active branch: `main`
-- Active spec: `SPEC-302`
-- Current state: Draft predeployment planning specs are integrated in `main` through PR #8. `SPEC-302` captures the confirmed left-panel navigation defect after organization creation. Draft follow-up product specs capture member invites/project access (`SPEC-303`), Slack-like organization/project chat (`SPEC-304`), project clients/client tickets (`SPEC-305`), and in-app notifications (`SPEC-306`). `SPEC-201` remains integrated through PR #7.
+- Active branch: `codex/spec-302-navigation-stabilization`
+- Active spec: `SPEC-307`
+- Current state: `SPEC-302` is implemented and review approved locally, with publication to PR pending. `SPEC-307` is now Ready as a post-launch release automation spec for safe updates after the initial public deployment. Draft follow-up product specs capture member invites/project access (`SPEC-303`), Slack-like organization/project chat (`SPEC-304`), project clients/client tickets (`SPEC-305`), and in-app notifications (`SPEC-306`). `SPEC-201` remains integrated through PR #7.
 - Documentation checkpoint: agent operational memory was restructured on 2026-06-16 with this file, central touch-to-spec routing, per-spec scope/context blocks, and `ADR-005`; on 2026-06-24 the base workflow added review-gated memory checks and implementation-log scaffolding targets; `ADR-009` records the managed-sandbox GitHub CLI policy.
-- Recent validation recorded in `docs/implementation-log.md`: PR #8 passed GitHub Actions `Verify / verify` on 2026-07-17 before merging; PR #7 passed GitHub Actions `Verify / verify` on 2026-07-16 before merging.
-- Current validation baseline: integrated `main` includes `SPEC-201` plus Draft `SPEC-302` to `SPEC-306`, and passed the GitHub Actions verification workflow for PR #8.
+- Recent validation recorded in `docs/implementation-log.md`: `SPEC-302` review validation passed `make test-frontend`, `make lint`, `make format-check`, `make typecheck`, `make memory-check SPEC=SPEC-302`, `git diff --check`, and `make smoke` on 2026-07-22.
+- Current validation baseline: local `codex/spec-302-navigation-stabilization` includes implemented and review-approved `SPEC-302` plus Draft `SPEC-303` to `SPEC-306`; the latest local checks for `SPEC-302` passed.
 
 ## Next Handoff
 
-- Next role: Arquitecto de specs
-- Next likely integration work: decide whether only `SPEC-302` blocks deployment or whether `SPEC-303`/`SPEC-304`/`SPEC-305`/`SPEC-306` should also be implemented first. Then move the chosen active spec(s) from Draft to Ready before implementation.
+- Next role: Ingeniero de software
+- Next likely integration work: publish the approved `SPEC-302` branch to PR/CI, execute the documented initial public deployment when launch work is prioritized, then implement `SPEC-307` release automation before routine post-launch updates.
 - Keep `SPEC-301` production docs aligned if future scheduled jobs or a Celery beat service are added.
 
 ## Implemented Specs
@@ -34,35 +34,43 @@ This file is the compact operational state for agents. Use it to orient quickly 
 | `SPEC-106` | Frontend projects and tasks UI | Project/task routes, forms, filters, pagination, assignment UI, frontend tests | Implemented and review approved |
 | `SPEC-201` | Background jobs and notifications | Redis/Celery worker, task assignment notification enqueueing, logging adapter, Compose wiring, `ADR-010` | Implemented, CI passed, and merged through PR #7 |
 | `SPEC-301` | Production deployment and operations | Production Compose, Caddy, CI, isolated smoke, deployment docs, tested backup/restore, `ADR-008` | Implemented and review approved |
+| `SPEC-302` | Predeployment UI stabilization | App shell navigation, organization/project/task frontend route tests | Implemented and review approved locally; PR/CI publication pending |
 
 ## Draft Specs
 
 | Spec | Scope | Primary surfaces | Latest state |
 |---|---|---|---|
-| `SPEC-302` | Predeployment UI stabilization and small corrections/additions | App shell navigation, organization/project/task frontend routes, frontend regression tests | Draft integrated through PR #8 with left-panel Organizations/Projects/Tasks routing and active-state defect captured |
 | `SPEC-303` | Member invitations by email and project-level access | Organization members, project members, invite APIs, migrations, frontend management UI | Draft updated: existing-user invitations require in-app acceptance; project membership restricts task assignment |
 | `SPEC-304` | Organization member chat | Chat persistence, chat APIs, organization chat UI, shared-project member ordering | Draft updated for Slack-like direct, group, organization channel, and project channel chat |
 | `SPEC-305` | Project clients and client-created tickets | Client project contacts, ticket-as-task API/UI, migrations | Draft updated: clients are lightweight contacts and tickets live in `tasks` with a type/source and distinct UI label/color |
 | `SPEC-306` | In-app notifications | Notification models, APIs, inbox UI, invitation/state/chat notification fan-out | Draft created for persistent in-app notifications and actionable invitation notifications |
 
+## Ready Specs
+
+| Spec | Scope | Primary surfaces | Latest state |
+|---|---|---|---|
+| `SPEC-307` | Release automation and safe production updates after initial deployment | GitHub Actions/manual release workflow, pre-deploy backup, production migrations, post-deploy checks, rollback docs | Ready for implementation after the first public `SPEC-301` deployment is complete |
+
 ## Next Likely Work
 
-1. Decide predeployment scope: `SPEC-302` only, or `SPEC-302` plus one or more product additions from `SPEC-303`/`SPEC-304`/`SPEC-305`/`SPEC-306`.
-2. Resolve open questions and mark the chosen active spec Ready.
-3. Implement the chosen active spec before public deployment.
-4. Execute the documented VPS/domain deployment when public launch work is prioritized.
+1. Publish the approved `SPEC-302` navigation stabilization branch to PR and confirm CI.
+2. Decide whether public deployment can proceed with `SPEC-302` only, or whether one or more product additions from `SPEC-303`/`SPEC-304`/`SPEC-305`/`SPEC-306` should be implemented first.
+3. Execute the documented VPS/domain deployment when public launch work is prioritized.
+4. Implement `SPEC-307` before depending on routine post-launch updates.
+5. Resolve open questions and mark the next chosen Draft product spec Ready before implementation.
 
 ## Known Gaps
 
 - `SPEC-104` has no Playwright E2E tests yet; the spec intentionally recommends adding them after the frontend/local server harness stabilizes.
 - `SPEC-106` has route-level/component coverage but still has no Playwright E2E critical path; the spec recommends adding Playwright after organization/project/task UI stabilizes.
-- `SPEC-302` is Draft; current open questions are additional predeployment corrections/additions, the intended Tasks left-panel target, and whether project/task shortcuts should disable or route to empty states before context exists.
 - `SPEC-303`, `SPEC-304`, `SPEC-305`, and `SPEC-306` are Draft product additions with unresolved admin-invite permissions, project visibility, chat transport, client ticket form access, notification retention, and notification recipient rules.
 - Public production deployment is documented but not yet executed against a real VPS/domain.
+- `SPEC-307` is Ready but not implemented; post-launch update automation remains manual until after the initial deployment.
 - `SPEC-201` uses a log-only notification adapter; real email delivery, notification inbox UI, scheduled jobs, and persistent job audit remain outside this spec.
 
 ## Validation Baseline
 
+- Latest `SPEC-302` review validation: `make test-frontend`, `make lint`, `make format-check`, `make typecheck`, `make memory-check SPEC=SPEC-302`, `git diff --check`, and `make smoke` PASS on 2026-07-22.
 - Latest `SPEC-201` CI validation: GitHub Actions `Verify / verify` PASS on PR #7 at merge commit `ad90534` on 2026-07-16.
 - Latest planning-spec CI validation: GitHub Actions `Verify / verify` PASS on PR #8 at merge commit `5c1a205` on 2026-07-17.
 - Latest recorded review-fix validation for `SPEC-201`: `make verify-no-db` PASS with 71 backend non-DB tests and 38 frontend tests, `make smoke` PASS with Redis `PONG` and worker running, and elevated `make migrations-check` PASS on 2026-07-08. A full `make verify` rerun on 2026-07-08 passed no-DB checks but failed at migrations before Compose PostgreSQL was started; the subsequent smoke plus elevated migration check covered the failed step.

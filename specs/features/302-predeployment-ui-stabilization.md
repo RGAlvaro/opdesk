@@ -1,8 +1,8 @@
 # SPEC-302 — Predeployment UI Stabilization
 
-Status: Draft
+Status: Implemented
 Owner: Arquitecto de specs
-Last updated: 2026-07-15
+Last updated: 2026-07-17
 
 ## Scope And Required Context
 
@@ -35,7 +35,7 @@ Memory updates:
 
 Before public deployment, the authenticated frontend still has visible workflow defects. One confirmed defect is that after creating an organization, clicking the left-panel `Organizations`, `Projects`, or `Tasks` navigation entries routes the user to organizations and highlights all three entries at the same time. This makes the app shell misleading and blocks a clean recruiter-visible path through organizations, projects, and tasks.
 
-More predeployment corrections and small additions may be added to this spec before implementation. Larger product additions are tracked separately so this spec can remain a narrow stabilization slice.
+Larger product additions are tracked separately so this spec remains a narrow stabilization slice.
 
 ## Goals
 
@@ -43,7 +43,7 @@ More predeployment corrections and small additions may be added to this spec bef
 - Ensure the active navigation state marks only the currently relevant top-level section.
 - Preserve route-derived organization context from `SPEC-105`.
 - Preserve project/task route behavior from `SPEC-106`.
-- Capture additional small predeployment UI corrections before implementation begins.
+- Keep the predeployment stabilization slice limited to the confirmed navigation defect.
 
 ## Non-Goals
 
@@ -69,8 +69,8 @@ Client-side routing and active-state checks are UX only. Backend authorization r
 
 - BR-1: The app shell must derive active navigation from the current route, not from a broad prefix that causes unrelated top-level sections to appear active together.
 - BR-2: The Organizations navigation entry must route to `/app/organizations` or the existing organization route selected by the implementation, but it must remain distinct from project and task navigation.
-- BR-3: The Projects navigation entry must route to the active organization's project list when an active organization is known.
-- BR-4: The Tasks navigation entry must route to a task working surface for the active organization or current project context when enough context exists; if no usable project/task context exists, the UI must show a safe empty or recovery state rather than silently routing to organizations.
+- BR-3: The Projects navigation entry must route to the active organization's project list when an active organization is known from the current route or from the current project/task response. When no active organization is known, the entry must be disabled rather than route to an unrelated surface.
+- BR-4: The Tasks navigation entry must route to the current project's task list when a project context is known from the current route or from the current task detail response. When no usable project/task context exists, the entry must be disabled rather than silently routing to organizations.
 - BR-5: Clicking Organizations, Projects, or Tasks must not highlight more than one of those top-level navigation entries at once.
 - BR-6: Navigation must not create local-only organizations, projects, or tasks.
 
@@ -139,11 +139,11 @@ No migration checks are required for the confirmed frontend-only bug unless this
 - Navigation failures must recover through visible route states, not silent redirects to unrelated sections.
 - Stale organization/project/task context must be corrected by backend `401`, `403`, or `404` handling.
 
-## Open Questions
+## Resolved Questions
 
-- [ ] Which additional predeployment corrections should be included in this spec before implementation?
-- [ ] Should the Tasks left-panel entry target a global assigned-to-me task surface, the current project's task list, or remain context-dependent until a global task list spec exists?
-- [ ] Should project/task shortcuts be disabled before the first project exists, or route to empty states?
+- No additional predeployment corrections are included in this implementation slice.
+- The Tasks left-panel entry remains context-dependent until a future spec defines a global task list.
+- Project and task shortcuts are disabled when their required route context does not exist.
 
 ## Implementation Notes
 

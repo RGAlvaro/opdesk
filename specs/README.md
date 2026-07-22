@@ -38,11 +38,12 @@ Use this index for routing. Use `docs/project-state.md` for the compact current 
 | `SPEC-106` | Implemented | Frontend projects and tasks UI | `SPEC-103`, `SPEC-105` | Project/task routes, forms, filters, frontend tests |
 | `SPEC-201` | Implemented | Background jobs and notifications | `SPEC-103` | Redis/Celery worker, notification payloads, tests |
 | `SPEC-301` | Implemented | Production deployment and operations | Starts after `SPEC-010`; evolves with services | Production Compose, Caddy, deployment docs, backup/restore docs, CI |
-| `SPEC-302` | Draft | Predeployment UI stabilization and small corrections/additions | `SPEC-104`, `SPEC-105`, `SPEC-106` | App shell navigation, organization/project/task frontend routes, frontend regression tests |
+| `SPEC-302` | Implemented | Predeployment UI stabilization and small corrections/additions | `SPEC-104`, `SPEC-105`, `SPEC-106` | App shell navigation, organization/project/task frontend routes, frontend regression tests |
 | `SPEC-303` | Draft | Member invitations by email and project-level access | `SPEC-102`, `SPEC-103`, `SPEC-105`, `SPEC-106` | Organization members, project members, invite APIs, migrations, frontend management UI |
 | `SPEC-304` | Draft | Organization member chat with shared-project member ordering | `SPEC-102`, `SPEC-103`, `SPEC-303`, optionally `SPEC-306` | Chat persistence, chat APIs, organization chat UI |
 | `SPEC-305` | Draft | Project clients and client-created tickets | `SPEC-102`, `SPEC-103`, optionally `SPEC-303` | Client project access, ticket APIs, ticket UI, migrations |
 | `SPEC-306` | Draft | Persistent in-app notifications | `SPEC-201`, optionally `SPEC-303`, `SPEC-304` | Notification models, APIs, inbox UI, notification fan-out |
+| `SPEC-307` | Ready | Release automation and safe production updates after initial deployment | `SPEC-301`, initial public deployment | GitHub Actions/manual release workflow, pre-deploy backup, production migrations, post-deploy checks, rollback docs |
 
 Implementation order should usually follow spec dependencies:
 
@@ -50,6 +51,7 @@ Implementation order should usually follow spec dependencies:
 SPEC-010 -> SPEC-011 -> SPEC-101 -> SPEC-104 -> SPEC-002 -> SPEC-102 -> SPEC-103 -> SPEC-105 -> SPEC-106 -> SPEC-201 -> SPEC-302
 SPEC-303, SPEC-304, SPEC-305, and SPEC-306 are Draft follow-up product additions whose final order depends on invite, notification, chat, and client-ticket decisions.
 SPEC-301 starts after SPEC-010 and should evolve as backend, frontend, Redis, and worker services exist.
+SPEC-307 is Ready for post-launch release automation after the initial `SPEC-301` public deployment is executed.
 ```
 
 ## Agent Routing
@@ -85,3 +87,4 @@ Use this table to decide which feature spec to open before editing.
 | Organization chat, chat member list, shared-project ordering | `SPEC-304` |
 | Project clients, client access, client-created tickets | `SPEC-305` |
 | In-app notifications, unread inbox, invitation notifications, missed chat notifications | `SPEC-306` |
+| GitHub Actions deployment workflows, release automation, post-launch production updates, pre-deploy backup, rollback docs | `SPEC-307` |
