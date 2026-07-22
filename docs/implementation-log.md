@@ -35,6 +35,83 @@ Known gaps:
 
 ## Entries
 
+### 2026-07-22 — SPEC-302 — Navigation stabilization reviewed
+
+Role: Review agent
+Branch: codex/spec-302-navigation-stabilization
+Commit/PR: Pending
+Status: Reviewed
+
+Summary:
+- Reviewed the app-shell navigation implementation against `SPEC-302` and confirmed the frontend-only scope matches the spec.
+- Confirmed Organizations, Projects, and Tasks now use deterministic route-derived active state and context-dependent links rather than all pointing to Organizations.
+- Confirmed Projects and Tasks are disabled when their required organization/project context is unavailable.
+- Confirmed project memory reflects the implementation, validation evidence, known gaps, and next work.
+
+Validation:
+- command: `make test-frontend`: PASS — 3 frontend test files passed, 41 tests passed.
+- command: `make lint`: PASS.
+- command: `make format-check`: PASS.
+- command: `make typecheck`: PASS.
+- command: `make memory-check SPEC=SPEC-302`: PASS.
+- command: `git diff --check`: PASS.
+- command: `make smoke`: PASS — Docker Compose rebuilt/started backend, frontend, Redis, worker, PostgreSQL, and Adminer; backend `/health`, Redis `PONG`, worker running check, Adminer, and Vite frontend responded.
+
+Review:
+- decision: APPROVED
+
+Known gaps:
+- No Playwright E2E coverage was added; this remains a documented later frontend stabilization gap.
+
+### 2026-07-22 — SPEC-307 — Post-launch release automation spec prepared
+
+Role: Arquitecto de specs
+Branch: main
+Commit/PR: Pending
+Status: Ready
+
+Summary:
+- Added `SPEC-307` for release automation and safe production updates after the initial `SPEC-301` public deployment.
+- Scoped the first implementation toward an explicit manual release workflow, pre-deploy PostgreSQL backup, blocking production migrations, production Compose update, post-deploy health checks, rollback documentation, and release evidence.
+- Updated the spec index and project state so automation is planned after the initial VPS/domain deployment rather than blocking it.
+
+Validation:
+- command: NOT RUN — spec/documentation-only change.
+
+Review:
+- decision: N/A
+
+Known gaps:
+- Initial public deployment is still an external launch step before `SPEC-307` should be implemented.
+- Release automation implementation is pending.
+
+### 2026-07-17 — SPEC-302 — Predeployment navigation stabilization implemented
+
+Role: Ingeniero de software
+Branch: main
+Commit/PR: Pending
+Status: Implemented
+
+Summary:
+- Moved `SPEC-302` from Draft to Implemented by resolving the remaining navigation scope questions in favor of context-dependent project/task shortcuts.
+- Updated the authenticated app shell so Organizations, Projects, and Tasks derive mutually exclusive active state from the current route.
+- Routed Projects to the active organization projects page only when route context or loaded project/task data provides active organization context.
+- Routed Tasks to the current project task list when a project route or task detail response provides project context, and disabled unsafe project/task shortcuts instead of routing to Organizations.
+- Added frontend regression tests for no-context disabled navigation, Organizations active state, Projects click routing, and Tasks click routing.
+
+Validation:
+- command: `make test-frontend`: PASS — 3 frontend test files passed, 41 tests passed.
+- command: `make lint`: PASS.
+- command: `make format-check`: PASS.
+- command: `make typecheck`: PASS.
+- command: `make smoke`: PASS — Docker Compose rebuilt/started backend, frontend, Redis, worker, PostgreSQL, and Adminer; backend `/health`, Redis `PONG`, worker running check, Adminer, and Vite frontend responded.
+
+Review:
+- decision: N/A — implementation complete; review pending.
+
+Known gaps:
+- No Playwright E2E coverage was added; existing project memory already tracks Playwright as a later frontend stabilization gap.
+
 ### 2026-07-17 — SPEC-302/SPEC-303/SPEC-304/SPEC-305/SPEC-306 — Planning PR merged
 
 Role: Arquitecto de specs

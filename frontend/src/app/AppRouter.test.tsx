@@ -19,6 +19,25 @@ const user = {
   updated_at: "2026-06-15T10:00:00Z",
 };
 
+const organization = {
+  id: "9ed75133-2898-4d82-8d1c-0da379207144",
+  name: "Acme Ops",
+  slug: "acme-ops",
+  role: "owner",
+  created_at: "2026-06-20T10:00:00Z",
+  updated_at: "2026-06-20T10:00:00Z",
+};
+
+const project = {
+  id: "68163673-46be-4baa-97ec-9138258c6b7d",
+  organization_id: organization.id,
+  name: "Customer Onboarding",
+  description: "Implementation work",
+  is_archived: false,
+  created_at: "2026-06-21T10:00:00Z",
+  updated_at: "2026-06-21T10:00:00Z",
+};
+
 /** Build a JSON fetch response for mocked backend calls. */
 function jsonResponse(body: unknown, status = 200) {
   return new Response(JSON.stringify(body), {
@@ -44,6 +63,16 @@ function apiError(code: string, message: string, status: number) {
     },
     status,
   );
+}
+
+/** Build a paginated API response for list-route assertions. */
+function page<TItem>(items: TItem[]) {
+  return {
+    items,
+    total: items.length,
+    limit: 20,
+    offset: 0,
+  };
 }
 
 /** Render the router under test with isolated query and memory-router state. */
@@ -224,7 +253,7 @@ describe("SPEC-104 frontend app shell and auth UI", () => {
     ).toBeInTheDocument();
   });
 
-  it("renders session shell and enables organization, project, and task navigation", async () => {
+  it("renders session shell with safe no-context project and task navigation", async () => {
     mockFetch(jsonResponse(user));
 
     renderRoute("/app");
@@ -238,12 +267,129 @@ describe("SPEC-104 frontend app shell and auth UI", () => {
       within(nav).getByRole("link", { name: /organizations/i }),
     ).toHaveAttribute("href", "/app/organizations");
     expect(
+      within(nav).getByRole("button", { name: /projects/i }),
+    ).toBeDisabled();
+    expect(within(nav).getByRole("button", { name: /tasks/i })).toBeDisabled();
+  });
+
+  it("keeps Organizations active by itself after opening the nav item", async () => {
+    mockFetch(
+      jsonResponse(user),
+      jsonResponse(organization),
+      jsonResponse(page([organization])),
+    );
+    const actor = userEvent.setup();
+
+    renderRoute(`/app/organizations/${organization.id}`);
+
+    const nav = await screen.findByRole("navigation", {
+      name: /primary navigation/i,
+    });
+    expect(
+      within(nav).getByRole("link", { name: /organizations/i }),
+    ).toHaveAttribute("aria-current", "page");
+    expect(
       within(nav).getByRole("link", { name: /projects/i }),
-    ).toHaveAttribute("href", "/app/organizations");
+    ).not.toHaveAttribute("aria-current");
+
+    await actor.click(
+      within(nav).getByRole("link", { name: /organizations/i }),
+    );
+
+    expect(
+      await screen.findByRole("heading", { name: "Organizations" }),
+    ).toBeInTheDocument();
+    expect(
+      within(nav).getByRole("link", { name: /organizations/i }),
+    ).toHaveAttribute("aria-current", "page");
+    expect(
+      within(nav).getByRole("button", { name: /projects/i }),
+    ).toBeDisabled();
+    expect(
+      within(nav).getByRole("button", { name: /tasks/i }),
+    ).not.toHaveAttribute("aria-current");
+  });
+
+  it("routes Projects to the active organization and marks only Projects active", async () => {
+    mockFetch(
+      jsonResponse(user),
+      jsonResponse(organization),
+      jsonResponse(page([])),
+    );
+    const actor = userEvent.setup();
+
+    renderRoute(`/app/organizations/${organization.id}`);
+
+    const nav = await screen.findByRole("navigation", {
+      name: /primary navigation/i,
+    });
+    await actor.click(within(nav).getByRole("link", { name: /projects/i }));
+
+    expect(
+      await screen.findByRole("heading", { name: "Projects" }),
+    ).toBeInTheDocument();
+    expect(
+      within(nav).getByRole("link", { name: /projects/i }),
+    ).toHaveAttribute("href", `/app/organizations/${organization.id}/projects`);
+    expect(
+      within(nav).getByRole("link", { name: /projects/i }),
+    ).toHaveAttribute("aria-current", "page");
+    expect(
+      within(nav).getByRole("link", { name: /organizations/i }),
+    ).not.toHaveAttribute("aria-current");
+    expect(
+      within(nav).getByRole("button", { name: /tasks/i }),
+    ).not.toHaveAttribute("aria-current");
+  });
+
+  it("routes Tasks to the current project task list and marks only Tasks active", async () => {
+    mockFetch(
+      jsonResponse(user),
+      jsonResponse(project),
+      jsonResponse(organization),
+      jsonResponse(page([])),
+      jsonResponse(page([])),
+    );
+    const actor = userEvent.setup();
+
+    renderRoute(`/app/projects/${project.id}`);
+
+    expect(
+      await screen.findByRole("heading", { name: project.name }),
+    ).toBeInTheDocument();
+
+    const nav = await screen.findByRole("navigation", {
+      name: /primary navigation/i,
+    });
+    expect(
+      within(nav).getByRole("link", { name: /projects/i }),
+    ).toHaveAttribute("href", `/app/organizations/${organization.id}/projects`);
+    expect(
+      within(nav).getByRole("link", { name: /projects/i }),
+    ).toHaveAttribute("aria-current", "page");
+    expect(
+      within(nav).getByRole("link", { name: /organizations/i }),
+    ).not.toHaveAttribute("aria-current");
+
+    await actor.click(within(nav).getByRole("link", { name: /tasks/i }));
+
+    expect(
+      await screen.findByRole("heading", { name: "Tasks" }),
+    ).toBeInTheDocument();
     expect(within(nav).getByRole("link", { name: /tasks/i })).toHaveAttribute(
       "href",
-      "/app/organizations",
+      `/app/projects/${project.id}/tasks`,
     );
+    expect(within(nav).getByRole("link", { name: /tasks/i })).toHaveAttribute(
+      "aria-current",
+      "page",
+    );
+    expect(
+      within(nav).getByRole("link", { name: /organizations/i }),
+    ).not.toHaveAttribute("aria-current");
+    expect(
+      within(nav).getByRole("link", { name: /projects/i }),
+    ).not.toHaveAttribute("aria-current");
   });
 
   it("logs out and returns to the landing page", async () => {

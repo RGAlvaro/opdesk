@@ -7,15 +7,123 @@ import {
   LogOut,
   UserRound,
 } from "lucide-react";
-import { NavLink, Outlet, useNavigate } from "react-router-dom";
+import {
+  Link,
+  NavLink,
+  Outlet,
+  useLocation,
+  useNavigate,
+} from "react-router-dom";
+import { ReactNode } from "react";
 
 import { useLogout, useSession } from "../features/auth/session";
+import { useProject } from "../features/projects/api";
+import { useTask } from "../features/tasks/api";
+
+type PrimarySection = "organizations" | "projects" | "tasks";
+
+const primaryNavBaseClass =
+  "flex w-full items-center gap-2 rounded-md px-3 py-2 text-left text-sm font-medium";
+
+/** Identify the active top-level workspace section from the current URL. */
+function activePrimarySection(pathname: string): PrimarySection | undefined {
+  if (/^\/app\/projects\/[^/]+\/tasks(\/|$)/.test(pathname)) {
+    return "tasks";
+  }
+  if (/^\/app\/tasks\/[^/]+(\/|$)/.test(pathname)) {
+    return "tasks";
+  }
+  if (/^\/app\/organizations\/[^/]+\/projects(\/|$)/.test(pathname)) {
+    return "projects";
+  }
+  if (/^\/app\/projects\/[^/]+(\/|$)/.test(pathname)) {
+    return "projects";
+  }
+  if (/^\/app\/organizations(\/|$)/.test(pathname)) {
+    return "organizations";
+  }
+  return undefined;
+}
+
+/** Read a named route identifier from known app-shell route patterns. */
+function routeId(pathname: string, pattern: RegExp) {
+  return pattern.exec(pathname)?.[1];
+}
+
+/** Render one contextual app-shell navigation entry with disabled support. */
+function PrimaryNavItem({
+  icon,
+  label,
+  section,
+  to,
+  activeSection,
+}: {
+  icon: ReactNode;
+  label: string;
+  section: PrimarySection;
+  to: string | undefined;
+  activeSection: PrimarySection | undefined;
+}) {
+  const isActive = activeSection === section;
+  const className = `${primaryNavBaseClass} ${
+    isActive ? "bg-brand text-white" : "text-ink hover:bg-surface"
+  }`;
+
+  if (!to) {
+    return (
+      <button
+        type="button"
+        className={`${primaryNavBaseClass} cursor-not-allowed text-muted opacity-65`}
+        aria-disabled="true"
+        disabled
+      >
+        {icon}
+        {label}
+      </button>
+    );
+  }
+
+  return (
+    <Link
+      to={to}
+      className={className}
+      aria-current={isActive ? "page" : undefined}
+    >
+      {icon}
+      {label}
+    </Link>
+  );
+}
 
 /** Render the protected layout and route outlet for signed-in users. */
 export function AppShell() {
   const { data: user } = useSession();
   const logout = useLogout();
   const navigate = useNavigate();
+  const location = useLocation();
+  const activeOrganizationId = routeId(
+    location.pathname,
+    /^\/app\/organizations\/([^/]+)/,
+  );
+  const routeProjectId = routeId(
+    location.pathname,
+    /^\/app\/projects\/([^/]+)/,
+  );
+  const routeTaskId = routeId(location.pathname, /^\/app\/tasks\/([^/]+)/);
+  const project = useProject(routeProjectId);
+  const task = useTask(routeTaskId);
+  const activeSection = activePrimarySection(location.pathname);
+  const activeProjectId = routeProjectId ?? task.data?.project_id;
+  const projectOrganizationId =
+    activeOrganizationId ??
+    project.data?.organization_id ??
+    task.data?.organization_id;
+  const projectsHref = projectOrganizationId
+    ? `/app/organizations/${projectOrganizationId}/projects`
+    : undefined;
+  const tasksHref = activeProjectId
+    ? `/app/projects/${activeProjectId}/tasks`
+    : undefined;
 
   /** End the session and return the browser to the public entry page. */
   async function handleLogout() {
@@ -80,45 +188,27 @@ export function AppShell() {
               Profile
             </NavLink>
             <div className="border-t border-line pt-2">
-              <NavLink
+              <PrimaryNavItem
+                icon={<Building2 aria-hidden="true" className="h-4 w-4" />}
+                label="Organizations"
+                section="organizations"
                 to="/app/organizations"
-                className={({ isActive }) =>
-                  `flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium ${
-                    isActive
-                      ? "bg-brand text-white"
-                      : "text-ink hover:bg-surface"
-                  }`
-                }
-              >
-                <Building2 aria-hidden="true" className="h-4 w-4" />
-                Organizations
-              </NavLink>
-              <NavLink
-                to="/app/organizations"
-                className={({ isActive }) =>
-                  `flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium ${
-                    isActive
-                      ? "bg-brand text-white"
-                      : "text-ink hover:bg-surface"
-                  }`
-                }
-              >
-                <FolderKanban aria-hidden="true" className="h-4 w-4" />
-                Projects
-              </NavLink>
-              <NavLink
-                to="/app/organizations"
-                className={({ isActive }) =>
-                  `flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium ${
-                    isActive
-                      ? "bg-brand text-white"
-                      : "text-ink hover:bg-surface"
-                  }`
-                }
-              >
-                <ListChecks aria-hidden="true" className="h-4 w-4" />
-                Tasks
-              </NavLink>
+                activeSection={activeSection}
+              />
+              <PrimaryNavItem
+                icon={<FolderKanban aria-hidden="true" className="h-4 w-4" />}
+                label="Projects"
+                section="projects"
+                to={projectsHref}
+                activeSection={activeSection}
+              />
+              <PrimaryNavItem
+                icon={<ListChecks aria-hidden="true" className="h-4 w-4" />}
+                label="Tasks"
+                section="tasks"
+                to={tasksHref}
+                activeSection={activeSection}
+              />
             </div>
           </nav>
         </aside>
