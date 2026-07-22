@@ -35,6 +35,30 @@ Known gaps:
 
 ## Entries
 
+### 2026-07-22 — SPEC-302 — PR merged and obsolete branch cleaned
+
+Role: Ingeniero de software
+Branch: main
+Commit/PR: merge `6f0a49b` / PR #9
+Status: Merged
+
+Summary:
+- Merged the review-approved `SPEC-302` navigation stabilization PR #9 into `main`.
+- Confirmed GitHub Actions `Verify / verify` passed before merge.
+- Deleted the remote `codex/spec-302-navigation-stabilization` branch through the PR merge flow.
+- Pruned remote refs and removed local obsolete merged branches whose upstreams were already gone.
+
+Validation:
+- command: GitHub Actions `Verify / verify`: PASS — PR #9 check completed successfully before merge.
+- command: `git branch -r --format='%(refname:short)'`: PASS — remote now lists only `origin/main`.
+
+Review:
+- decision: APPROVED — prior review entry approved `SPEC-302`; PR #9 CI passed before merge.
+
+Known gaps:
+- Public VPS/domain deployment remains an external launch step.
+- No Playwright E2E coverage was added; this remains a documented later frontend stabilization gap.
+
 ### 2026-07-22 — SPEC-302 — Navigation stabilization reviewed
 
 Role: Review agent

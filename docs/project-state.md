@@ -6,17 +6,17 @@ This file is the compact operational state for agents. Use it to orient quickly 
 
 ## Current Work
 
-- Active branch: `codex/spec-302-navigation-stabilization`
+- Active branch: `main`
 - Active spec: `SPEC-307`
-- Current state: `SPEC-302` is implemented and review approved locally, with publication to PR pending. `SPEC-307` is now Ready as a post-launch release automation spec for safe updates after the initial public deployment. Draft follow-up product specs capture member invites/project access (`SPEC-303`), Slack-like organization/project chat (`SPEC-304`), project clients/client tickets (`SPEC-305`), and in-app notifications (`SPEC-306`). `SPEC-201` remains integrated through PR #7.
+- Current state: `SPEC-302` is implemented, review approved, passed PR CI, and merged through PR #9. `SPEC-307` is Ready as a post-launch release automation spec for safe updates after the initial public deployment. Draft follow-up product specs capture member invites/project access (`SPEC-303`), Slack-like organization/project chat (`SPEC-304`), project clients/client tickets (`SPEC-305`), and in-app notifications (`SPEC-306`). `SPEC-201` remains integrated through PR #7.
 - Documentation checkpoint: agent operational memory was restructured on 2026-06-16 with this file, central touch-to-spec routing, per-spec scope/context blocks, and `ADR-005`; on 2026-06-24 the base workflow added review-gated memory checks and implementation-log scaffolding targets; `ADR-009` records the managed-sandbox GitHub CLI policy.
-- Recent validation recorded in `docs/implementation-log.md`: `SPEC-302` review validation passed `make test-frontend`, `make lint`, `make format-check`, `make typecheck`, `make memory-check SPEC=SPEC-302`, `git diff --check`, and `make smoke` on 2026-07-22.
-- Current validation baseline: local `codex/spec-302-navigation-stabilization` includes implemented and review-approved `SPEC-302` plus Draft `SPEC-303` to `SPEC-306`; the latest local checks for `SPEC-302` passed.
+- Recent validation recorded in `docs/implementation-log.md`: PR #9 passed GitHub Actions `Verify / verify` before merging on 2026-07-22; local `SPEC-302` review validation passed `make test-frontend`, `make lint`, `make format-check`, `make typecheck`, `make memory-check SPEC=SPEC-302`, `git diff --check`, and `make smoke` on 2026-07-22.
+- Current validation baseline: `main` includes merged `SPEC-302` plus Draft `SPEC-303` to `SPEC-306` and Ready `SPEC-307`; the latest PR CI and local checks for `SPEC-302` passed.
 
 ## Next Handoff
 
-- Next role: Ingeniero de software
-- Next likely integration work: publish the approved `SPEC-302` branch to PR/CI, execute the documented initial public deployment when launch work is prioritized, then implement `SPEC-307` release automation before routine post-launch updates.
+- Next role: Arquitecto de specs or Ingeniero de software
+- Next likely integration work: decide whether public deployment can proceed with `SPEC-302` only, execute the documented initial public deployment when launch work is prioritized, then implement `SPEC-307` release automation before routine post-launch updates.
 - Keep `SPEC-301` production docs aligned if future scheduled jobs or a Celery beat service are added.
 
 ## Implemented Specs
@@ -34,7 +34,7 @@ This file is the compact operational state for agents. Use it to orient quickly 
 | `SPEC-106` | Frontend projects and tasks UI | Project/task routes, forms, filters, pagination, assignment UI, frontend tests | Implemented and review approved |
 | `SPEC-201` | Background jobs and notifications | Redis/Celery worker, task assignment notification enqueueing, logging adapter, Compose wiring, `ADR-010` | Implemented, CI passed, and merged through PR #7 |
 | `SPEC-301` | Production deployment and operations | Production Compose, Caddy, CI, isolated smoke, deployment docs, tested backup/restore, `ADR-008` | Implemented and review approved |
-| `SPEC-302` | Predeployment UI stabilization | App shell navigation, organization/project/task frontend route tests | Implemented and review approved locally; PR/CI publication pending |
+| `SPEC-302` | Predeployment UI stabilization | App shell navigation, organization/project/task frontend route tests | Implemented, review approved, CI passed, and merged through PR #9 |
 
 ## Draft Specs
 
@@ -53,11 +53,10 @@ This file is the compact operational state for agents. Use it to orient quickly 
 
 ## Next Likely Work
 
-1. Publish the approved `SPEC-302` navigation stabilization branch to PR and confirm CI.
-2. Decide whether public deployment can proceed with `SPEC-302` only, or whether one or more product additions from `SPEC-303`/`SPEC-304`/`SPEC-305`/`SPEC-306` should be implemented first.
-3. Execute the documented VPS/domain deployment when public launch work is prioritized.
-4. Implement `SPEC-307` before depending on routine post-launch updates.
-5. Resolve open questions and mark the next chosen Draft product spec Ready before implementation.
+1. Decide whether public deployment can proceed with `SPEC-302` only, or whether one or more product additions from `SPEC-303`/`SPEC-304`/`SPEC-305`/`SPEC-306` should be implemented first.
+2. Execute the documented VPS/domain deployment when public launch work is prioritized.
+3. Implement `SPEC-307` before depending on routine post-launch updates.
+4. Resolve open questions and mark the next chosen Draft product spec Ready before implementation.
 
 ## Known Gaps
 
@@ -71,6 +70,7 @@ This file is the compact operational state for agents. Use it to orient quickly 
 ## Validation Baseline
 
 - Latest `SPEC-302` review validation: `make test-frontend`, `make lint`, `make format-check`, `make typecheck`, `make memory-check SPEC=SPEC-302`, `git diff --check`, and `make smoke` PASS on 2026-07-22.
+- Latest `SPEC-302` CI validation: GitHub Actions `Verify / verify` PASS on PR #9 before merge commit `6f0a49b` on 2026-07-22.
 - Latest `SPEC-201` CI validation: GitHub Actions `Verify / verify` PASS on PR #7 at merge commit `ad90534` on 2026-07-16.
 - Latest planning-spec CI validation: GitHub Actions `Verify / verify` PASS on PR #8 at merge commit `5c1a205` on 2026-07-17.
 - Latest recorded review-fix validation for `SPEC-201`: `make verify-no-db` PASS with 71 backend non-DB tests and 38 frontend tests, `make smoke` PASS with Redis `PONG` and worker running, and elevated `make migrations-check` PASS on 2026-07-08. A full `make verify` rerun on 2026-07-08 passed no-DB checks but failed at migrations before Compose PostgreSQL was started; the subsequent smoke plus elevated migration check covered the failed step.
