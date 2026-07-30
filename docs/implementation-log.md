@@ -39,7 +39,7 @@ Known gaps:
 
 Role: Review agent
 Branch: main
-Commit/PR: Pending local commit
+Commit/PR: `dec820c`
 Status: Reviewed
 
 Summary:
