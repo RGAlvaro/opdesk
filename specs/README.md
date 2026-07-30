@@ -43,7 +43,11 @@ Use this index for routing. Use `docs/project-state.md` for the compact current 
 | `SPEC-304` | Draft | Organization member chat with shared-project member ordering | `SPEC-102`, `SPEC-103`, `SPEC-303`, optionally `SPEC-306` | Chat persistence, chat APIs, organization chat UI |
 | `SPEC-305` | Draft | Project clients and client-created tickets | `SPEC-102`, `SPEC-103`, optionally `SPEC-303` | Client project access, ticket APIs, ticket UI, migrations |
 | `SPEC-306` | Draft | Persistent in-app notifications | `SPEC-201`, optionally `SPEC-303`, `SPEC-304` | Notification models, APIs, inbox UI, notification fan-out |
-| `SPEC-307` | Ready | Release automation and safe production updates after initial deployment | `SPEC-301`, initial public deployment | GitHub Actions/manual release workflow, pre-deploy backup, production migrations, post-deploy checks, rollback docs |
+| `SPEC-307` | Implemented | Release automation and safe production updates after initial deployment | `SPEC-301`, initial public deployment | GitHub Actions/manual release workflow, pre-deploy backup script, production migrations, post-deploy checks, rollback docs |
+| `SPEC-308` | Ready | Enriched profile, organization, project, and task metadata | `SPEC-101`, `SPEC-102`, `SPEC-103`, `SPEC-104`, `SPEC-105`, `SPEC-106` | User profile, organization metadata, project metadata, task metadata, migrations, frontend forms |
+| `SPEC-309` | Ready | Project-scoped task labels | `SPEC-103`, `SPEC-106`, `SPEC-308`, optionally `SPEC-303` | Label models/APIs, task label assignments, task filters, label UI, migrations |
+| `SPEC-310` | Ready | Production release changelog | `SPEC-307`, `SPEC-104` | `CHANGELOG.md`, release validation, public changelog route/link |
+| `SPEC-311` | Draft | Static public portfolio home for OpsDesk and future apps | `SPEC-104`, `SPEC-310` | Public `/` route, app cards, changelog link, frontend tests |
 
 Implementation order should usually follow spec dependencies:
 
@@ -51,7 +55,9 @@ Implementation order should usually follow spec dependencies:
 SPEC-010 -> SPEC-011 -> SPEC-101 -> SPEC-104 -> SPEC-002 -> SPEC-102 -> SPEC-103 -> SPEC-105 -> SPEC-106 -> SPEC-201 -> SPEC-302
 SPEC-303, SPEC-304, SPEC-305, and SPEC-306 are Draft follow-up product additions whose final order depends on invite, notification, chat, and client-ticket decisions.
 SPEC-301 starts after SPEC-010 and should evolve as backend, frontend, Redis, and worker services exist.
-SPEC-307 is Ready for post-launch release automation after the initial `SPEC-301` public deployment is executed.
+SPEC-307 is implemented for manual post-launch release automation after the initial `SPEC-301` public deployment is executed.
+SPEC-308 should be implemented before `SPEC-309` because task labels depend on the expanded project/task surfaces.
+SPEC-310 can be implemented after `SPEC-307`; `SPEC-311` should wait until the personal home-page copy questions are resolved.
 ```
 
 ## Agent Routing
@@ -88,3 +94,7 @@ Use this table to decide which feature spec to open before editing.
 | Project clients, client access, client-created tickets | `SPEC-305` |
 | In-app notifications, unread inbox, invitation notifications, missed chat notifications | `SPEC-306` |
 | GitHub Actions deployment workflows, release automation, post-launch production updates, pre-deploy backup, rollback docs | `SPEC-307` |
+| User profile metadata, email change with password confirmation, organization metadata, project metadata, task metadata, non-editable organization slugs | `SPEC-308` |
+| Project task labels, label colors/descriptions, task label assignment, label task filters | `SPEC-309` |
+| `CHANGELOG.md`, release notes, public changelog page/link, changelog validation in release workflows | `SPEC-310` |
+| Public `/` portfolio/app hub, OpsDesk app card, ERP coming-soon card, personal developer description | `SPEC-311` |

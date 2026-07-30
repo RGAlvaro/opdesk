@@ -2,7 +2,7 @@
 
 Status: Implemented
 Owner: Arquitecto de specs  
-Last updated: 2026-06-24
+Last updated: 2026-07-28
 
 ## Scope And Required Context
 
@@ -54,7 +54,8 @@ The backend can manage projects and tasks, but the frontend does not expose the 
 - Comments, attachments, activity history, or audit timeline.
 - Notifications or background jobs. Those belong to `SPEC-201`.
 - Bulk editing.
-- Saved views, custom fields, labels, or advanced search.
+- Saved views, custom fields, or advanced search.
+- Task labels. Labels belong to `SPEC-309`.
 - Changing backend project/task API behavior from `SPEC-103`.
 
 ## Dependencies

@@ -1,0 +1,168 @@
+name: Production Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      target_ref:
+        description: "Branch, tag, or commit SHA to deploy"
+        required: true
+        default: "main"
+      deploy_to_production:
+        description: "Set to true to run the remote production update"
+        required: true
+        type: boolean
+        default: false
+
+concurrency:
+  group: production-release
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: opdesk
+          POSTGRES_PASSWORD: opdesk_dev_password
+          POSTGRES_DB: opdesk
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U opdesk -d opdesk"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 10
+
+    steps:
+      - name: Check out target revision
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.target_ref }}
+
+      - name: Record target revision
+        id: revision
+        run: |
+          set -euo pipefail
+          target_sha="$(git rev-parse HEAD)"
+          echo "target_sha=${target_sha}" >> "${GITHUB_OUTPUT}"
+          {
+            echo "### Production release"
+            echo "- target_ref: \`${{ inputs.target_ref }}\`"
+            echo "- target_sha: \`${target_sha}\`"
+            echo "- deploy_to_production: \`${{ inputs.deploy_to_production }}\`"
+          } >> "${GITHUB_STEP_SUMMARY}"
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install Poetry
+        run: pipx install poetry==2.3.3
+
+      - name: Install backend dependencies
+        working-directory: backend
+        run: poetry install --no-interaction
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install frontend dependencies
+        working-directory: frontend
+        run: npm ci
+
+      - name: Run full verification
+        env:
+          LOCAL_DATABASE_URL: postgresql+psycopg://opdesk:opdesk_dev_password@localhost:5432/opdesk
+        run: make verify
+
+      - name: Build frontend assets
+        working-directory: frontend
+        run: npm run build
+
+      - name: Validate production Compose config
+        run: make prod-config
+
+      - name: Validate release workflow files
+        run: make release-workflow-check
+
+      - name: Stop before production deploy
+        if: ${{ inputs.deploy_to_production == false }}
+        run: |
+          {
+            echo "- validation: \`PASS\`"
+            echo "- remote_deploy: \`SKIPPED\`"
+          } >> "${GITHUB_STEP_SUMMARY}"
+
+      - name: Validate required production secrets
+        if: ${{ inputs.deploy_to_production }}
+        env:
+          PROD_SSH_HOST: ${{ secrets.PROD_SSH_HOST }}
+          PROD_SSH_USER: ${{ secrets.PROD_SSH_USER }}
+          PROD_SSH_PRIVATE_KEY: ${{ secrets.PROD_SSH_PRIVATE_KEY }}
+          PROD_PUBLIC_URL: ${{ secrets.PROD_PUBLIC_URL }}
+        run: |
+          set -euo pipefail
+          test -n "${PROD_SSH_HOST}"
+          test -n "${PROD_SSH_USER}"
+          test -n "${PROD_SSH_PRIVATE_KEY}"
+          test -n "${PROD_PUBLIC_URL}"
+
+      - name: Configure SSH
+        if: ${{ inputs.deploy_to_production }}
+        env:
+          PROD_SSH_HOST: ${{ secrets.PROD_SSH_HOST }}
+          PROD_SSH_PRIVATE_KEY: ${{ secrets.PROD_SSH_PRIVATE_KEY }}
+          PROD_SSH_PORT: ${{ secrets.PROD_SSH_PORT }}
+        run: |
+          set -euo pipefail
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "${PROD_SSH_PRIVATE_KEY}" > ~/.ssh/opdesk_prod
+          chmod 600 ~/.ssh/opdesk_prod
+          ssh-keyscan -p "${PROD_SSH_PORT:-22}" "${PROD_SSH_HOST}" >> ~/.ssh/known_hosts
+
+      - name: Upload release archive
+        if: ${{ inputs.deploy_to_production }}
+        env:
+          PROD_SSH_HOST: ${{ secrets.PROD_SSH_HOST }}
+          PROD_SSH_USER: ${{ secrets.PROD_SSH_USER }}
+          PROD_SSH_PORT: ${{ secrets.PROD_SSH_PORT }}
+          PROD_DEPLOY_ROOT: ${{ secrets.PROD_DEPLOY_ROOT }}
+          TARGET_SHA: ${{ steps.revision.outputs.target_sha }}
+        run: |
+          set -euo pipefail
+          deploy_root="${PROD_DEPLOY_ROOT:-/srv/opdesk}"
+          release_archive="opdesk-${TARGET_SHA}.tar.gz"
+          git archive --format=tar.gz --output="${release_archive}" HEAD
+          ssh -i ~/.ssh/opdesk_prod -p "${PROD_SSH_PORT:-22}" "${PROD_SSH_USER}@${PROD_SSH_HOST}" \
+            "mkdir -p '${deploy_root}/releases/${TARGET_SHA}' '${deploy_root}/uploads'"
+          scp -i ~/.ssh/opdesk_prod -P "${PROD_SSH_PORT:-22}" "${release_archive}" \
+            "${PROD_SSH_USER}@${PROD_SSH_HOST}:${deploy_root}/uploads/${release_archive}"
+          ssh -i ~/.ssh/opdesk_prod -p "${PROD_SSH_PORT:-22}" "${PROD_SSH_USER}@${PROD_SSH_HOST}" \
+            "tar -xzf '${deploy_root}/uploads/${release_archive}' -C '${deploy_root}/releases/${TARGET_SHA}'"
+
+      - name: Run remote production update
+        if: ${{ inputs.deploy_to_production }}
+        env:
+          PROD_SSH_HOST: ${{ secrets.PROD_SSH_HOST }}
+          PROD_SSH_USER: ${{ secrets.PROD_SSH_USER }}
+          PROD_SSH_PORT: ${{ secrets.PROD_SSH_PORT }}
+          PROD_DEPLOY_ROOT: ${{ secrets.PROD_DEPLOY_ROOT }}
+          PROD_PUBLIC_URL: ${{ secrets.PROD_PUBLIC_URL }}
+          TARGET_SHA: ${{ steps.revision.outputs.target_sha }}
+        run: |
+          set -euo pipefail
+          deploy_root="${PROD_DEPLOY_ROOT:-/srv/opdesk}"
+          ssh -i ~/.ssh/opdesk_prod -p "${PROD_SSH_PORT:-22}" "${PROD_SSH_USER}@${PROD_SSH_HOST}" \
+            "cd '${deploy_root}/releases/${TARGET_SHA}' && PROD_DEPLOY_ROOT='${deploy_root}' PROD_PUBLIC_URL='${PROD_PUBLIC_URL}' RELEASE_REF='${TARGET_SHA}' bash scripts/prod_release.sh"
+          {
+            echo "- validation: \`PASS\`"
+            echo "- remote_deploy: \`PASS\`"
+            echo "- deployed_sha: \`${TARGET_SHA}\`"
+          } >> "${GITHUB_STEP_SUMMARY}"

@@ -35,6 +35,177 @@ Known gaps:
 
 ## Entries
 
+### 2026-07-30 — SPEC-307 — Release automation re-reviewed
+
+Role: Review agent
+Branch: main
+Commit/PR: Pending local commit
+Status: Reviewed
+
+Summary:
+- Re-reviewed the manual production release workflow, VPS release script, release validation target, deployment docs, spec status, and project memory against `SPEC-307`.
+- Confirmed the previous blocking issue is fixed: production PostgreSQL and Redis are started only through `start_existing_service`, which requires existing containers and uses `docker compose start` before the pre-migration backup.
+- Confirmed release automation remains manual, validates before production SSH, archives the selected Git revision, creates a pre-migration PostgreSQL custom-format backup, runs Alembic, updates the production Compose stack, checks backend/frontend through Caddy, verifies Redis and worker state, and documents app rollback separately from database restore.
+
+Validation:
+- command: `make release-workflow-check`: PASS — release script syntax, workflow static guardrails, missing `PROD_PUBLIC_URL` failure guard, and pre-backup no-recreate guard passed.
+- command: `make memory-check SPEC=SPEC-307`: PASS — project memory mentions the active spec and required handoff sections.
+- command: `git diff --check`: PASS.
+- command: `make prod-config`: PASS — production Compose rendered with only Caddy host ports; PostgreSQL and Redis remain private.
+- command: `make verify-no-db`: PASS — backend/frontend lint, format, typecheck, 71 backend non-DB tests, and 41 frontend tests passed.
+- command: `make prod-data-smoke`: FAIL then PASS — sandboxed Docker socket access failed; elevated rerun passed isolated production migrations and backup/restore smoke for `opdesk-prod-smoke`.
+- command: `make prod-smoke`: PASS — elevated isolated production stack build/start and Caddy backend/frontend, Redis, and worker checks passed.
+- command: `make prod-down`: PASS — elevated isolated production-smoke stack stopped cleanly.
+
+Review:
+- decision: APPROVED
+
+Known gaps:
+- First real production workflow run remains pending until GitHub Actions secrets are configured.
+- The temporary `opdesk.51.255.202.88.sslip.io` hostname remains configured as a fallback.
+- The VPS still needs a controlled reboot for the pending Ubuntu kernel upgrade.
+
+### 2026-07-29 — SPEC-307 — Release pre-backup recreation fix
+
+Role: Ingeniero de software
+Branch: main
+Commit/PR: Pending
+Status: Implemented
+
+Summary:
+- Fixed the review-blocking release-order issue in `scripts/prod_release.sh`.
+- Replaced the pre-backup `docker compose up -d postgres redis` path with `start_existing_service`, which requires existing production data-service containers and uses `docker compose start` so Compose cannot create or recreate PostgreSQL or Redis before the backup.
+- Extended `scripts/validate_release_workflow.py` to require the safe data-service start guard and reject the unsafe `up -d postgres redis` fragment.
+
+Validation:
+- command: `make release-workflow-check`: PASS — release script syntax, workflow static guardrails, missing `PROD_PUBLIC_URL` failure guard, and pre-backup no-recreate guard passed.
+- command: `make prod-config`: PASS — production Compose rendered with only Caddy host ports; PostgreSQL and Redis remain private.
+- command: `git diff --check`: PASS.
+- command: `make prod-data-smoke`: PASS — elevated isolated production migrations and backup/restore smoke passed for `opdesk-prod-smoke`.
+- command: `make prod-smoke`: PASS — elevated isolated production stack build/start and Caddy backend/frontend, Redis, and worker checks passed.
+- command: `make prod-down`: PASS — elevated isolated production-smoke stack stopped cleanly.
+
+Review:
+- decision: N/A — review fix ready for re-review.
+
+Known gaps:
+- Re-review is pending.
+- First real production workflow run remains pending until review approval, merge, and GitHub Actions secrets are configured.
+
+### 2026-07-29 — SPEC-307 — Release automation reviewed
+
+Role: Review agent
+Branch: main
+Commit/PR: Pending
+Status: Reviewed
+
+Summary:
+- Reviewed the manual production release workflow, VPS release script, release validation target, deployment docs, spec status, and project memory against `SPEC-307`.
+- Confirmed the workflow is manual, records the selected revision, runs validation before SSH deployment, uses GitHub Actions secrets for production access, uploads a `git archive`, and documents rollback behavior.
+- Found one blocking release-order issue: the remote script can recreate PostgreSQL or Redis via `docker compose up -d postgres redis` before the required pre-deploy backup.
+
+Validation:
+- command: `make release-workflow-check`: PASS — release script syntax, workflow static guardrails, and missing `PROD_PUBLIC_URL` failure guard passed.
+- command: `make memory-check SPEC=SPEC-307`: PASS — project memory mentions the active spec and required handoff sections.
+- command: `git diff --check`: PASS.
+
+Review:
+- decision: CHANGES_REQUESTED
+
+Known gaps:
+- Change `scripts/prod_release.sh` so required data services are checked or started before backup without recreating/replacing existing production containers.
+- First real production workflow run remains pending until review approval, merge, and GitHub Actions secrets are configured.
+
+### 2026-07-29 — SPEC-307 — Release automation consolidation check
+
+Role: Ingeniero de software
+Branch: main
+Commit/PR: Pending
+Status: Implemented
+
+Summary:
+- Re-read `SPEC-307`, `SPEC-301`, release deployment docs, and deployment ADRs against the implemented manual release workflow and VPS release script.
+- Confirmed the workflow remains manually triggered, records the selected target revision, runs validation before SSH deployment, uploads a `git archive` of the selected revision, and delegates production backup/migration/update/checks to `scripts/prod_release.sh`.
+- Confirmed the release script validates production Compose config, starts data services before backup, writes a PostgreSQL custom-format backup before migrations, runs Alembic, rebuilds/starts the production stack, checks Caddy `/health`, frontend, Redis, and worker state, and writes a non-secret release manifest.
+
+Validation:
+- command: `make release-workflow-check`: PASS — release script syntax, workflow static guardrails, and missing `PROD_PUBLIC_URL` failure guard passed.
+- command: `make memory-check SPEC=SPEC-307`: PASS — project memory mentions the active spec and required handoff sections.
+- command: `git diff --check`: PASS.
+- command: `make verify-no-db`: PASS — lint, format, typecheck, 71 backend non-DB tests, and 41 frontend tests passed.
+- command: `make prod-config`: PASS — production Compose rendered with only Caddy host ports; PostgreSQL and Redis remain private.
+- command: `make smoke`: PASS — local Compose stack built/started; backend `/health`, Redis, worker, Adminer, and frontend checks passed.
+- command: `make migrations-check-compose`: PASS — Alembic upgrade/check passed inside the Compose backend container with no new operations detected.
+- command: `make verify`: FAIL — lint, format, typecheck, backend non-DB tests, and frontend tests passed; host-local `migrations-check` failed because WSL could not connect to PostgreSQL on `localhost`/`127.0.0.1:5432`.
+- command: `make prod-data-smoke`: FAIL then PASS — sandboxed Docker socket access failed; elevated rerun passed isolated production migrations and backup/restore smoke for `opdesk-prod-smoke`.
+- command: `make prod-smoke`: PASS — elevated isolated production stack build/start and Caddy backend/frontend, Redis, and worker checks passed.
+- command: `make prod-down`: PASS — elevated isolated production-smoke stack stopped cleanly.
+
+Review:
+- decision: N/A — consolidation and validation checkpoint; review still pending.
+
+Known gaps:
+- Host-local `make verify` still cannot complete `migrations-check` from WSL, but equivalent Compose migration validation passed with `make migrations-check-compose`.
+- First real production workflow run is pending until review/merge and GitHub Actions secrets are configured.
+
+### 2026-07-28 — SPEC-308/SPEC-309/SPEC-310/SPEC-311 — Product follow-up specs prepared
+
+Role: Arquitecto de specs
+Branch: main
+Commit/PR: Pending
+Status: Ready
+
+Summary:
+- Updated `SPEC-102`, `SPEC-105`, and `SPEC-001` so organization slugs are backend-generated, non-editable, and collision-safe with numeric suffixes.
+- Added Ready `SPEC-308` for enriched user profile metadata, password-confirmed email change, company metadata, project metadata, task metadata, task watchers, and non-editable organization slug behavior.
+- Added Ready `SPEC-309` for project-scoped task labels with name, color, description, creator, archived state, task assignment, and label filtering.
+- Added Ready `SPEC-310` for production-release-only `CHANGELOG.md` entries, `Added`/`Changed`/`Fixed` format, public changelog access, and release validation.
+- Added Draft `SPEC-311` for a static public portfolio home linking OpsDesk and a coming-soon ERP app; personal/developer copy remains an implementation-time question.
+- Updated the spec index, product vision, frontend landing/page notes, project/task UI routing notes, and project state with the new implementation order.
+
+Validation:
+- command: NOT RUN — spec/documentation-only change.
+- command: `make memory-check SPEC=SPEC-308`: PASS — project memory mentions the next Ready spec and implementation-log handoff sections.
+
+Review:
+- decision: N/A
+
+Known gaps:
+- `SPEC-311` remains Draft pending personal/developer description inputs and the final primary OpsDesk action route.
+- `SPEC-308`, `SPEC-309`, and `SPEC-310` are Ready but not implemented.
+
+### 2026-07-23 — SPEC-307 — Release automation implemented
+
+Role: Ingeniero de software
+Branch: main
+Commit/PR: Pending
+Status: Implemented
+
+Summary:
+- Added the manual GitHub Actions `Production Release` workflow with `target_ref` and `deploy_to_production` inputs so maintainers can run validation-only dry runs or explicit production updates.
+- Added `scripts/prod_release.sh` for the VPS-side update path: production Compose config validation, PostgreSQL custom-format backup before migrations, Alembic upgrade, Compose rebuild/start, Caddy `/health` and frontend checks, Redis `PING`, worker running-state check, release manifest, and rollback guidance on failure.
+- Added `scripts/validate_release_workflow.py` plus `make release-workflow-check` to validate workflow guardrails and missing required environment handling without production secrets.
+- Updated deployment docs, harness docs, spec index, and `SPEC-307` status for the implemented release automation path.
+
+Validation:
+- command: `make release-workflow-check`: PASS — shell syntax, workflow guardrail fragments, and missing `PROD_PUBLIC_URL` failure guard passed.
+- command: `make prod-config`: PASS — release script syntax and production Compose config rendered; PostgreSQL and Redis still have no public host ports.
+- command: `make verify`: FAIL — lint, format, typecheck, backend non-DB tests, and frontend tests passed; host-local `migrations-check` failed because PostgreSQL was not reachable from the host.
+- command: `make smoke`: PASS — local Compose stack built/started and health, Redis, worker, Adminer, and frontend checks passed.
+- command: `make migrations-check-compose`: PASS — Alembic upgrade/check passed inside the Compose backend container.
+- command: `make prod-data-smoke`: FAIL then PASS — sandboxed Docker socket access failed; elevated rerun passed isolated production migrations and backup/restore smoke for `opdesk-prod-smoke`.
+- command: `make prod-smoke`: PASS — elevated isolated production stack build/start and Caddy backend/frontend, Redis, and worker checks passed.
+- command: `make prod-down`: PASS — elevated isolated production-smoke stack stopped cleanly.
+- command: `git diff --check`: PASS.
+
+Review:
+- decision: N/A — implementation complete; review pending.
+
+Known gaps:
+- First real production workflow run is pending until the PR is reviewed/merged and GitHub Actions secrets are configured.
+- The temporary `opdesk.51.255.202.88.sslip.io` hostname remains configured as a fallback.
+- The VPS still needs a controlled reboot for the pending Ubuntu kernel upgrade.
+
 ### 2026-07-22 — SPEC-301 — Production domain configured
 
 Role: Ingeniero de software

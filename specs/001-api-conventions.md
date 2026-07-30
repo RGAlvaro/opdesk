@@ -2,7 +2,7 @@
 
 Status: Ready  
 Owner: Arquitecto de specs  
-Last updated: 2026-06-08
+Last updated: 2026-07-28
 
 ## Purpose
 
@@ -18,6 +18,7 @@ This spec defines cross-feature API conventions. Feature specs inherit these rul
 
 - Public resource identifiers are UUID strings.
 - Organization slugs may be exposed as human-readable fields but are not the default primary URL identifier for MVP endpoints.
+- Organization slugs are backend-owned unless a feature spec explicitly says clients may set them.
 - Tenant-scoped resources must validate organization membership before returning data.
 
 ## Timestamps

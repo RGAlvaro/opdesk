@@ -1,8 +1,8 @@
 # SPEC-307 — Release Automation And Safe Updates
 
-Status: Ready
+Status: Implemented
 Owner: Arquitecto de specs
-Last updated: 2026-07-22
+Last updated: 2026-07-23
 
 ## Scope And Required Context
 
@@ -147,6 +147,7 @@ Required commands:
 
 ```bash
 make verify
+make release-workflow-check
 make prod-config
 make prod-data-smoke
 make prod-smoke

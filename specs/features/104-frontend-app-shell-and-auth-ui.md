@@ -2,7 +2,7 @@
 
 Status: Implemented  
 Owner: Arquitecto de specs / Ingeniero de software  
-Last updated: 2026-06-16
+Last updated: 2026-07-28
 
 ## Scope And Required Context
 
@@ -50,6 +50,7 @@ The frontend must also establish the app shell that later specs can extend with 
 - Implement password reset, SSO, OAuth, two-factor auth, or invitation flows.
 - Build production deployment routing. Production integration belongs to `SPEC-301`.
 - Add analytics, billing, notifications, or background job UI.
+- Replace `/` with a static portfolio/app hub. That later public home belongs to `SPEC-311`.
 
 ## Dependencies
 
@@ -287,3 +288,4 @@ Harness updates required by implementation:
 - Use React Router route loaders or route guards only as UX; authorization remains backend-enforced.
 - Keep the shell extensible: organization switcher area, primary navigation, and page content slot should be easy to connect to `SPEC-102` and `SPEC-103` later.
 - Avoid adding mock organization/project/task datasets in production code.
+- If `SPEC-311` is implemented, it supersedes this spec's original OpsDesk-only public landing page while preserving login, signup, and authenticated app routing behavior.

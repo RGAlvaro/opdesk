@@ -104,6 +104,60 @@ make prod-smoke
 make prod-down
 ```
 
+## Production Releases
+
+Routine post-launch updates use the manual GitHub Actions workflow `Production Release`.
+It validates the selected revision before it can touch production, then uploads that exact
+Git commit as an archive to the VPS and runs `scripts/prod_release.sh` from the extracted
+release directory.
+
+Required repository secrets:
+
+| Secret | Purpose |
+|---|---|
+| `PROD_SSH_HOST` | VPS hostname or IP address. |
+| `PROD_SSH_USER` | SSH user with Docker access to the deployment directory. |
+| `PROD_SSH_PRIVATE_KEY` | Private key for the deploy user. |
+| `PROD_PUBLIC_URL` | Public origin checked through Caddy, for example `https://rgalvaro.es`. |
+| `PROD_SSH_PORT` | Optional SSH port; defaults to `22` when absent. |
+| `PROD_DEPLOY_ROOT` | Optional deployment root; defaults to `/srv/opdesk` when absent. |
+
+The workflow inputs are:
+
+| Input | Purpose |
+|---|---|
+| `target_ref` | Branch, tag, or commit SHA to deploy. |
+| `deploy_to_production` | Defaults to `false`; when false, the workflow runs validation only and skips SSH. |
+
+Before remote deployment, the workflow runs the verification baseline, frontend build,
+production Compose config validation, and release workflow validation. If any of those
+steps fail, no backup, migration, or production Compose update is attempted.
+
+The remote script expects the VPS to keep `.env.production` at the deploy root and the
+stable Compose project name `opdesk-prod`. It creates a PostgreSQL custom-format backup
+under `/srv/opdesk/backups`, runs Alembic migrations through the production backend
+environment, rebuilds/starts `docker-compose.prod.yml`, verifies `/health`, the frontend
+route, Redis `PING`, and the worker running state, then writes a non-secret release
+manifest to `/srv/opdesk/releases/latest-release.txt`.
+
+To validate the workflow path without production secrets, run the manual workflow with
+`deploy_to_production=false`. Locally, use:
+
+```bash
+make release-workflow-check
+```
+
+## App Rollback
+
+Application rollback does not automatically restore the database. To redeploy a previous
+application revision, run the `Production Release` workflow again with `target_ref` set to
+the previous known-good commit or tag and `deploy_to_production=true`.
+
+If a database restore is required, treat it as a separate destructive operator action:
+select the backup intentionally, stop `backend` and `worker`, run the restore command
+from the section below, and then start the stack again. Restoring a database backup can
+delete production data written after that backup was created.
+
 ## Backup
 
 Create a PostgreSQL custom-format backup. This format supports a clean, transactional restore

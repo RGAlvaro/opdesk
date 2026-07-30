@@ -2,7 +2,7 @@
 
 Status: Implemented  
 Owner: Arquitecto de specs  
-Last updated: 2026-06-24
+Last updated: 2026-07-28
 
 ## Scope And Required Context
 
@@ -42,7 +42,7 @@ OpsDesk users can authenticate, but the frontend does not let them create, selec
 - Let users list and open organizations where they are members.
 - Establish an active organization context for later project/task UI.
 - Show organization details and current user's role.
-- Let owners update organization name and slug.
+- Let owners update organization name while treating slug as backend-generated read-only metadata.
 - Let owners/admins list members.
 - Let owners manage non-owner member roles, remove non-owner members, transfer ownership, and permanently delete an organization when supported by the backend API.
 - Render permission-aware UI without relying on client checks for security.
@@ -105,7 +105,7 @@ Behavior:
 
 - Fetch `GET /api/v1/organizations` with API pagination.
 - Show loading, empty, error, and populated states.
-- Show organization name, slug, current user's role, and useful timestamps when available.
+- Show organization name, backend-generated slug, current user's role, and useful timestamps when available.
 - Provide a create organization action for every authenticated user.
 - Opening an organization routes to `/app/organizations/:organizationId`.
 - Empty state must guide the user to create an organization without implying invitations exist.
@@ -118,10 +118,10 @@ Behavior:
 
 - Submit to `POST /api/v1/organizations`.
 - Required field: `name`.
-- Optional field: `slug`.
+- No slug field is shown or submitted. The backend-generated slug from the response is displayed after creation.
 - On success, update organization list cache and navigate to the created organization detail route.
-- Render `400 invalid_organization` and `409 organization_slug_taken` near the form.
-- Do not generate a client-only permanent slug that can drift from the backend. Client-side slug preview is allowed only if clearly derived from the current input and overwritten by the response.
+- Render `400 invalid_organization` near the form.
+- Do not generate a client-only slug preview or submit slug data from the browser.
 
 ### Organization Detail
 
@@ -143,7 +143,7 @@ Route: `/app/organizations/:organizationId/settings`
 
 Behavior:
 
-- Owner can update `name` and `slug` through `PATCH /api/v1/organizations/{organization_id}`.
+- Owner can update `name` through `PATCH /api/v1/organizations/{organization_id}`. Slug is read-only in the UI.
 - Non-owner users should not see editable controls when role is known, but backend `403 insufficient_role` must still be handled.
 - On successful update, refresh organization detail/list cache.
 - Permanent deletion must require an explicit confirmation step including the organization name or slug.
@@ -188,7 +188,6 @@ Error handling:
 - `403 insufficient_role`: show a safe permission error without hiding the current organization shell.
 - `404 organization_not_found`: show not-found and route recovery to organization list.
 - `404 membership_not_found`: show a safe member-specific error and refresh the member list.
-- `409 organization_slug_taken`: show form-level or slug-field error.
 - `409 ownership_transfer_required`: explain that ownership must be transferred before that action.
 - `409 ownership_transfer_not_required`: explain that the selected user is already owner.
 
@@ -222,10 +221,10 @@ Expected responsibilities:
 
 - AC-1: Given an authenticated user with no organizations, when they open `/app/organizations`, then they see an empty state with a create organization action and no fake organizations.
 - AC-2: Given an authenticated user, when they create an organization with valid input, then the UI calls `POST /api/v1/organizations`, refreshes organization state, and navigates to the new organization detail.
-- AC-3: Given invalid organization input or a duplicate slug, when creation or update fails, then the UI displays the backend safe error without exposing internals.
+- AC-3: Given invalid organization input, when creation or update fails, then the UI displays the backend safe error without exposing internals.
 - AC-4: Given a user who belongs to multiple organizations, when they open the organization list, then only backend-returned organizations are shown with each current role.
 - AC-5: Given a member, when they open organization detail, then they see read-only organization context and no owner/admin-only controls.
-- AC-6: Given an owner, when they update organization name or slug with valid input, then the UI persists the update and refreshes displayed organization data.
+- AC-6: Given an owner, when they update organization name with valid input, then the UI persists the update, refreshes displayed organization data, and continues to show the backend-generated slug as read-only metadata.
 - AC-7: Given an owner, when they permanently delete an organization after confirmation, then the UI calls the delete endpoint, removes stale organization state, and returns to the organization list.
 - AC-8: Given an admin, when they open the members route, then they can view paginated members but cannot edit roles, remove members, transfer ownership, or delete the organization.
 - AC-9: Given an owner, when they update a non-owner member role, then the UI calls the role endpoint and refreshes the member list.
@@ -240,7 +239,7 @@ Expected responsibilities:
 Frontend tests:
 
 - Organization list loading, empty, error, and populated states.
-- Organization creation success and `invalid_organization`/`organization_slug_taken` errors.
+- Organization creation success and `invalid_organization` errors.
 - Organization detail role-aware controls for owner/admin/member.
 - Organization update success and `insufficient_role` error handling.
 - Deletion confirmation and success routing.

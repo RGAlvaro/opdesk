@@ -2,7 +2,7 @@
 
 Status: Ready  
 Owner: Arquitecto de specs  
-Last updated: 2026-06-07
+Last updated: 2026-07-28
 
 ## Product Summary
 
@@ -26,6 +26,7 @@ The project is also a professional portfolio artifact. It must demonstrate produ
 5. Comments and activity history.
 6. Notifications and background jobs.
 7. Admin/recruiter-friendly deployment and documentation.
+8. Public portfolio home that links OpsDesk and future apps without overstating unfinished products.
 
 ## MVP Boundary
 
@@ -54,6 +55,7 @@ The first public version should include:
 A recruiter should be able to inspect:
 
 - Public demo URL.
+- Public portfolio/app hub with a clear OpsDesk entry point.
 - Clear README with setup and architecture.
 - Dockerized local development.
 - FastAPI backend with PostgreSQL, Redis, migrations, tests, and CI.

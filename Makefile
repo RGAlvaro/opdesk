@@ -16,7 +16,7 @@ CELERY_RESULT_BACKEND ?= redis://redis:6379/1
 
 .PHONY: verify verify-no-db test test-backend test-backend-db lint format-check typecheck
 .PHONY: migrations-check migrations-check-compose smoke prod-config prod-smoke-project-check
-.PHONY: prod-data-smoke prod-smoke prod-down compose-up compose-down
+.PHONY: prod-data-smoke prod-smoke prod-down release-workflow-check compose-up compose-down
 .PHONY: test-frontend memory-check review-ready memory-entry
 
 verify: verify-no-db migrations-check
@@ -74,7 +74,13 @@ smoke:
 
 prod-config:
 	bash -n scripts/prod_data_smoke.sh
+	bash -n scripts/prod_release.sh
 	POSTGRES_PASSWORD="$(PROD_POSTGRES_PASSWORD)" PROD_DATABASE_URL="$(PROD_DATABASE_URL)" AUTH_SECRET_KEY="$(PROD_AUTH_SECRET_KEY)" CELERY_BROKER_URL="$(CELERY_BROKER_URL)" CELERY_RESULT_BACKEND="$(CELERY_RESULT_BACKEND)" CADDY_SITE_ADDRESS=":80" PROD_HTTP_PORT="$(PROD_HTTP_PORT)" PROD_HTTPS_PORT="$(PROD_HTTPS_PORT)" docker compose --project-name "$(PROD_COMPOSE_PROJECT)" -f docker-compose.prod.yml config
+
+release-workflow-check:
+	bash -n scripts/prod_release.sh
+	python3 scripts/validate_release_workflow.py
+	RELEASE_REF=test bash scripts/prod_release.sh >/tmp/opdesk-release-missing-env.out 2>&1; test "$$?" = "1"; grep -q "PROD_PUBLIC_URL" /tmp/opdesk-release-missing-env.out
 
 prod-smoke-project-check:
 	@case "$(PROD_COMPOSE_PROJECT)" in *-smoke) ;; *) echo "PROD_COMPOSE_PROJECT must end in -smoke for destructive smoke targets." >&2; exit 2 ;; esac
