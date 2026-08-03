@@ -1,6 +1,6 @@
 # Project State
 
-Last updated: 2026-07-30
+Last updated: 2026-08-03
 
 This file is the compact operational state for agents. Use it to orient quickly before reading detailed specs, ADRs, implementation history, or code.
 
@@ -8,15 +8,15 @@ This file is the compact operational state for agents. Use it to orient quickly 
 
 - Active branch: `main`
 - Active spec: `SPEC-307` reviewed; `SPEC-308`, `SPEC-309`, `SPEC-310`, and `SPEC-311` planning
-- Current state: `SPEC-307` release automation was re-reviewed and approved on 2026-07-30 after the pre-backup data-service recreation fix; first real workflow run remains pending until GitHub Actions production secrets are configured. Product follow-up planning on 2026-07-28 added Ready specs for enriched profile/company/project/task metadata (`SPEC-308`), project-scoped task labels (`SPEC-309`), and production release changelog (`SPEC-310`), plus Draft static portfolio home planning (`SPEC-311`). `SPEC-102`/`SPEC-105` now define organization slug as backend-generated and non-editable with numeric collision suffixing. Production is available at `https://rgalvaro.es/` and `https://www.rgalvaro.es/`; the temporary `https://opdesk.51.255.202.88.sslip.io/` hostname remains configured as a fallback.
+- Current state: `SPEC-307` release automation was re-reviewed and approved on 2026-07-30 after the pre-backup data-service recreation fix; GitHub Actions production secrets were configured on 2026-08-03 and the first manual workflow run is now pending. Product follow-up planning on 2026-07-28 added Ready specs for enriched profile/company/project/task metadata (`SPEC-308`), project-scoped task labels (`SPEC-309`), and production release changelog (`SPEC-310`), plus Draft static portfolio home planning (`SPEC-311`). `SPEC-102`/`SPEC-105` now define organization slug as backend-generated and non-editable with numeric collision suffixing. Production is available at `https://rgalvaro.es/` and `https://www.rgalvaro.es/`; the temporary `https://opdesk.51.255.202.88.sslip.io/` hostname remains configured as a fallback.
 - Documentation checkpoint: agent operational memory was restructured on 2026-06-16 with this file, central touch-to-spec routing, per-spec scope/context blocks, and `ADR-005`; on 2026-06-24 the base workflow added review-gated memory checks and implementation-log scaffolding targets; `ADR-009` records the managed-sandbox GitHub CLI policy.
-- Recent validation recorded in `docs/implementation-log.md`: `SPEC-307` re-review validation on 2026-07-30 passed `make release-workflow-check`, `make memory-check SPEC=SPEC-307`, `git diff --check`, `make prod-config`, `make verify-no-db`, elevated `make prod-data-smoke`, elevated `make prod-smoke`, and elevated `make prod-down`.
+- Recent validation recorded in `docs/implementation-log.md`: `SPEC-307` production release secrets were configured and verified on 2026-08-03 with `gh auth status` and `gh secret list --repo RGAlvaro/opdesk`; earlier 2026-07-30 re-review validation passed `make release-workflow-check`, `make memory-check SPEC=SPEC-307`, `git diff --check`, `make prod-config`, `make verify-no-db`, elevated `make prod-data-smoke`, elevated `make prod-smoke`, and elevated `make prod-down`.
 - Current validation baseline: `main` includes merged `SPEC-302`, reviewed-approved `SPEC-307`, Draft `SPEC-303` to `SPEC-306`, Ready `SPEC-308` to `SPEC-310`, and Draft `SPEC-311`; release automation checks and Docker-backed smoke checks passed on 2026-07-30 except the known host-local PostgreSQL migration connection limitation covered by prior `make migrations-check-compose` and elevated production-smoke migration validation.
 
 ## Next Handoff
 
 - Next role: Ingeniero de software for production release execution or `SPEC-308` implementation.
-- Next likely integration work: configure required GitHub Actions secrets and run the first manual `Production Release` workflow against `https://rgalvaro.es/`; then implement `SPEC-308`, followed by `SPEC-309` and `SPEC-310`. Resolve `SPEC-311` personal-copy and OpsDesk action-route questions before implementation.
+- Next likely integration work: run the first manual `Production Release` workflow against `https://rgalvaro.es/`, first with `deploy_to_production=false` and then with `deploy_to_production=true` if validation passes; then implement `SPEC-308`, followed by `SPEC-309` and `SPEC-310`. Resolve `SPEC-311` personal-copy and OpsDesk action-route questions before implementation.
 - Keep `SPEC-301` production docs aligned if future scheduled jobs or a Celery beat service are added.
 
 ## Implemented Specs
@@ -35,7 +35,7 @@ This file is the compact operational state for agents. Use it to orient quickly 
 | `SPEC-201` | Background jobs and notifications | Redis/Celery worker, task assignment notification enqueueing, logging adapter, Compose wiring, `ADR-010` | Implemented, CI passed, and merged through PR #7 |
 | `SPEC-301` | Production deployment and operations | Production Compose, Caddy, CI, isolated smoke, deployment docs, tested backup/restore, `ADR-008`, public VPS deployment | Implemented, review approved, and initially deployed to `https://rgalvaro.es/` |
 | `SPEC-302` | Predeployment UI stabilization | App shell navigation, organization/project/task frontend route tests | Implemented, review approved, CI passed, and merged through PR #9 |
-| `SPEC-307` | Release automation and safe production updates | Manual GitHub Actions release workflow, VPS release script, pre-deploy backup, migrations, post-deploy checks, rollback docs | Implemented locally and review approved; first real production workflow run pending |
+| `SPEC-307` | Release automation and safe production updates | Manual GitHub Actions release workflow, VPS release script, pre-deploy backup, migrations, post-deploy checks, rollback docs | Implemented locally and review approved; GitHub Actions production secrets configured; first real production workflow run pending |
 
 ## Draft Specs
 
@@ -57,7 +57,7 @@ This file is the compact operational state for agents. Use it to orient quickly 
 
 ## Next Likely Work
 
-1. Configure GitHub Actions production secrets and run one manual `Production Release` workflow for `SPEC-307`.
+1. Run one manual `Production Release` workflow for `SPEC-307`, first validation-only and then production deploy if validation passes.
 2. Implement `SPEC-308` enriched metadata and backend-owned organization slug behavior.
 3. Implement `SPEC-309` project-scoped task labels.
 4. Implement `SPEC-310` release changelog.
@@ -72,7 +72,7 @@ This file is the compact operational state for agents. Use it to orient quickly 
 - `SPEC-303`, `SPEC-304`, `SPEC-305`, and `SPEC-306` are Draft product additions with unresolved admin-invite permissions, project visibility, chat transport, client ticket form access, notification retention, and notification recipient rules.
 - `SPEC-311` is Draft because the public home still needs personal/developer description inputs and a final OpsDesk action route decision before implementation.
 - `SPEC-308`, `SPEC-309`, and `SPEC-310` are Ready but not implemented.
-- `SPEC-307` is implemented locally and review approved; GitHub Actions production secrets and the first real VPS workflow run are still pending.
+- `SPEC-307` is implemented locally and review approved; GitHub Actions production secrets are configured and the first real VPS workflow run is still pending.
 - Production is currently deployed at `https://rgalvaro.es/` and `https://www.rgalvaro.es/`; the temporary `https://opdesk.51.255.202.88.sslip.io/` hostname remains configured as a fallback.
 - The VPS reported a pending Ubuntu kernel upgrade after Docker installation; schedule a controlled reboot.
 - `SPEC-201` uses a log-only notification adapter; real email delivery, notification inbox UI, scheduled jobs, and persistent job audit remain outside this spec.

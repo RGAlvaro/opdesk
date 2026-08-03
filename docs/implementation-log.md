@@ -35,6 +35,31 @@ Known gaps:
 
 ## Entries
 
+### 2026-08-03 — SPEC-307 — Production release secrets configured
+
+Role: Ingeniero de software
+Branch: main
+Commit/PR: Pending
+Status: Implemented
+
+Summary:
+- Configured GitHub Actions repository secrets required by the manual `Production Release` workflow for `RGAlvaro/opdesk`.
+- Set `PROD_SSH_HOST`, `PROD_SSH_USER`, `PROD_SSH_PORT`, `PROD_SSH_PRIVATE_KEY`, `PROD_PUBLIC_URL`, and `PROD_DEPLOY_ROOT`.
+- Verified only secret names and update timestamps through GitHub CLI; secret values were not printed or committed.
+
+Validation:
+- command: `ssh -G opdesk-vps | rg '^(hostname|user|port|identityfile) '`: PASS — resolved deploy host metadata without printing private key contents.
+- command: `gh auth status`: PASS — authenticated as `RGAlvaro` with `repo` and `workflow` scopes.
+- command: `gh secret list --repo RGAlvaro/opdesk`: PASS — all six production release secrets are present.
+
+Review:
+- decision: N/A
+
+Known gaps:
+- First manual `Production Release` workflow run remains pending; run validation-only first with `deploy_to_production=false`, then deploy with `deploy_to_production=true` if validation passes.
+- The temporary `opdesk.51.255.202.88.sslip.io` hostname remains configured as a fallback.
+- The VPS still needs a controlled reboot for the pending Ubuntu kernel upgrade.
+
 ### 2026-07-30 — SPEC-307 — Release automation re-reviewed
 
 Role: Review agent
