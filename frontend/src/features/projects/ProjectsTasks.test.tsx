@@ -82,6 +82,19 @@ const memberUser = {
   is_active: true,
 };
 
+const label = {
+  id: "7e722880-69e0-478c-8521-5aa47949f1e8",
+  organization_id: ownerOrganization.id,
+  project_id: project.id,
+  name: "Urgent customer",
+  color: "#D92D20",
+  description: "Customer-facing work",
+  created_by_id: user.id,
+  archived_at: null,
+  created_at: "2026-06-21T11:00:00Z",
+  updated_at: "2026-06-21T11:00:00Z",
+};
+
 const task = {
   id: "2c871fbd-4941-4505-8359-193d7a2d967c",
   organization_id: ownerOrganization.id,
@@ -100,6 +113,7 @@ const task = {
   external_reference: "OPS-42",
   task_type: "operational",
   watcher_ids: [user.id],
+  labels: [label],
   created_by_id: user.id,
   created_at: "2026-06-22T10:00:00Z",
   updated_at: "2026-06-22T10:00:00Z",
@@ -178,8 +192,20 @@ function renderRoute(initialPath: string) {
 
 /** Queue deterministic fetch responses for a test case. */
 function mockFetch(...responses: Response[]) {
-  const fetchMock = vi.fn();
-  responses.forEach((response) => fetchMock.mockResolvedValueOnce(response));
+  const queuedResponses = [...responses];
+  const fetchMock = vi.fn((input: RequestInfo | URL) => {
+    const url = String(input);
+    if (url.includes(`/api/v1/projects/${project.id}/labels`)) {
+      return Promise.resolve(jsonResponse(page([label])));
+    }
+    const nextResponse = queuedResponses.shift();
+    if (nextResponse) {
+      return Promise.resolve(nextResponse);
+    }
+    return Promise.resolve(
+      apiError("unexpected_error", "Unexpected request.", 500),
+    );
+  });
   vi.stubGlobal("fetch", fetchMock);
   return fetchMock;
 }
@@ -328,6 +354,7 @@ describe("SPEC-106 frontend projects and tasks UI", () => {
       jsonResponse(ownerOrganization),
       jsonResponse(page([membership(user), membership(memberUser)])),
       jsonResponse(page([{ ...task, status: "done" }], 40)),
+      jsonResponse(page([{ ...task, status: "done" }], 40)),
       jsonResponse(
         page(
           [{ ...task, id: "next-task", title: "Follow up", status: "done" }],
@@ -354,12 +381,20 @@ describe("SPEC-106 frontend projects and tasks UI", () => {
         expect.objectContaining({ credentials: "include" }),
       ),
     );
+    await actor.selectOptions(screen.getByLabelText("Label"), label.id);
+
+    await waitFor(() =>
+      expect(fetchMock).toHaveBeenCalledWith(
+        `/api/v1/projects/${project.id}/tasks?status=done&label_id=${label.id}&limit=20&offset=0`,
+        expect.objectContaining({ credentials: "include" }),
+      ),
+    );
 
     await actor.click(screen.getByRole("button", { name: "Next" }));
 
     expect(await screen.findByText("Follow up")).toBeInTheDocument();
     expect(fetchMock).toHaveBeenCalledWith(
-      `/api/v1/projects/${project.id}/tasks?status=done&limit=20&offset=20`,
+      `/api/v1/projects/${project.id}/tasks?status=done&label_id=${label.id}&limit=20&offset=20`,
       expect.objectContaining({ credentials: "include" }),
     );
   });

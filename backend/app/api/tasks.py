@@ -9,15 +9,21 @@ from sqlalchemy.orm import Session
 
 from app.api.deps import get_current_user
 from app.db.session import get_db
-from app.models.project import Task
+from app.models.project import Task, TaskLabel
 from app.models.user import User
+from app.schemas.labels import TaskLabelRead
 from app.schemas.tasks import TaskCreateRequest, TaskListResponse, TaskRead, TaskUpdateRequest
+from app.services.labels import TaskLabelService
 from app.services.tasks import TaskService
 
 router = APIRouter(prefix="/api/v1", tags=["tasks"])
 
 
-def task_read(task: Task, watcher_ids: list[uuid.UUID] | None = None) -> TaskRead:
+def task_read(
+    task: Task,
+    watcher_ids: list[uuid.UUID] | None = None,
+    labels: list[TaskLabelRead] | None = None,
+) -> TaskRead:
     """Convert a persisted task into the public response contract."""
     return TaskRead(
         id=task.id,
@@ -37,6 +43,7 @@ def task_read(task: Task, watcher_ids: list[uuid.UUID] | None = None) -> TaskRea
         external_reference=task.external_reference,
         task_type=task.task_type,
         watcher_ids=watcher_ids or [],
+        labels=labels or [],
         created_by_id=task.created_by_id,
         created_at=task.created_at,
         updated_at=task.updated_at,
@@ -68,7 +75,12 @@ def create_task(
         watcher_ids=payload.watcher_ids,
     )
     service = TaskService(db)
-    return task_read(task, service.list_watcher_user_ids(task.id))
+    label_service = TaskLabelService(db)
+    return task_read(
+        task,
+        service.list_watcher_user_ids(task.id),
+        [task_label_read(label) for label in label_service.list_task_labels(task.id)],
+    )
 
 
 @router.get("/projects/{project_id}/tasks", response_model=TaskListResponse)
@@ -86,6 +98,7 @@ def list_tasks(
     task_type: str | None = None,
     watcher_id: uuid.UUID | None = None,
     external_reference: str | None = None,
+    label_id: uuid.UUID | None = None,
 ) -> TaskListResponse:
     """List project tasks using pagination and optional filters."""
     tasks, total = TaskService(db).list_tasks(
@@ -101,10 +114,20 @@ def list_tasks(
         task_type=task_type,
         watcher_id=watcher_id,
         external_reference=external_reference,
+        label_id=label_id,
     )
     service = TaskService(db)
+    label_service = TaskLabelService(db)
+    labels_by_task = label_service.list_labels_for_tasks([task.id for task in tasks])
     return TaskListResponse(
-        items=[task_read(task, service.list_watcher_user_ids(task.id)) for task in tasks],
+        items=[
+            task_read(
+                task,
+                service.list_watcher_user_ids(task.id),
+                [task_label_read(label) for label in labels_by_task.get(task.id, [])],
+            )
+            for task in tasks
+        ],
         total=total,
         limit=limit,
         offset=offset,
@@ -120,7 +143,12 @@ def get_task(
     """Return one task only when the actor belongs to its organization."""
     service = TaskService(db)
     task, _ = service.get_task(current_user, task_id)
-    return task_read(task, service.list_watcher_user_ids(task.id))
+    label_service = TaskLabelService(db)
+    return task_read(
+        task,
+        service.list_watcher_user_ids(task.id),
+        [task_label_read(label) for label in label_service.list_task_labels(task.id)],
+    )
 
 
 @router.patch("/tasks/{task_id}", response_model=TaskRead)
@@ -150,4 +178,25 @@ def update_task(
         fields_set=payload.model_fields_set,
     )
     service = TaskService(db)
-    return task_read(task, service.list_watcher_user_ids(task.id))
+    label_service = TaskLabelService(db)
+    return task_read(
+        task,
+        service.list_watcher_user_ids(task.id),
+        [task_label_read(label) for label in label_service.list_task_labels(task.id)],
+    )
+
+
+def task_label_read(label: TaskLabel) -> TaskLabelRead:
+    """Convert a task label model into the public nested task contract."""
+    return TaskLabelRead(
+        id=label.id,
+        organization_id=label.organization_id,
+        project_id=label.project_id,
+        name=label.name,
+        color=label.color,
+        description=label.description,
+        created_by_id=label.created_by_id,
+        archived_at=label.archived_at,
+        created_at=label.created_at,
+        updated_at=label.updated_at,
+    )

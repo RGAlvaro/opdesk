@@ -163,6 +163,23 @@ def create_task(
     return response.json()
 
 
+def create_label(
+    client: TestClient,
+    project_id: str,
+    *,
+    name: str = "Urgent customer",
+    color: str = "#D92D20",
+    description: str | None = "Customer-facing work",
+) -> dict[str, Any]:
+    """Create a project label through HTTP and return its response document."""
+    payload: dict[str, Any] = {"name": name, "color": color}
+    if description is not None:
+        payload["description"] = description
+    response = client.post(f"/api/v1/projects/{project_id}/labels", json=payload)
+    assert response.status_code == 201
+    return response.json()
+
+
 def organization_team(
     client: TestClient, session: Session
 ) -> tuple[dict[str, Any], User, User, User, User]:
@@ -455,6 +472,140 @@ def test_task_metadata_watchers_and_filters(
     assert body["total"] == 1
     assert body["items"][0]["id"] == matching["id"]
     assert other["id"] not in {item["id"] for item in body["items"]}
+
+
+def test_project_label_create_list_update_archive_and_duplicates(
+    api_client: tuple[TestClient, Session],
+) -> None:
+    """Project labels validate metadata and duplicate active names per project."""
+    client, session = api_client
+    organization, owner, _, _, _ = organization_team(client, session)
+    login_as(client, owner)
+    project = create_project(client, organization["id"])
+    other_project = create_project(client, organization["id"], "Second Project")
+
+    label = create_label(client, project["id"], name="  Urgent   customer  ", color="#d92d20")
+    duplicate = client.post(
+        f"/api/v1/projects/{project['id']}/labels",
+        json={"name": "urgent CUSTOMER", "color": "#36B37E"},
+    )
+    same_name_other_project = create_label(
+        client, other_project["id"], name="Urgent customer", color="#36B37E"
+    )
+    invalid_color = client.patch(
+        f"/api/v1/projects/{project['id']}/labels/{label['id']}",
+        json={"color": "red"},
+    )
+    updated = client.patch(
+        f"/api/v1/projects/{project['id']}/labels/{label['id']}",
+        json={"name": "Customer escalation", "description": ""},
+    )
+    archived = client.patch(
+        f"/api/v1/projects/{project['id']}/labels/{label['id']}",
+        json={"is_archived": True},
+    )
+    active_list = client.get(f"/api/v1/projects/{project['id']}/labels")
+    all_list = client.get(
+        f"/api/v1/projects/{project['id']}/labels",
+        params={"include_archived": "true"},
+    )
+
+    assert label["name"] == "Urgent customer"
+    assert label["color"] == "#D92D20"
+    assert_error(duplicate, 409, "label_name_taken")
+    assert same_name_other_project["project_id"] == other_project["id"]
+    assert_error(invalid_color, 400, "invalid_label")
+    assert updated.status_code == 200
+    assert updated.json()["name"] == "Customer escalation"
+    assert updated.json()["description"] is None
+    assert archived.status_code == 200
+    assert archived.json()["archived_at"] is not None
+    assert active_list.json()["total"] == 0
+    assert all_list.json()["total"] == 1
+
+
+def test_task_label_assignment_removal_permissions_and_filtering(
+    api_client: tuple[TestClient, Session],
+) -> None:
+    """Label assignment follows task update permission and powers label filters."""
+    client, session = api_client
+    organization, owner, _, member, _ = organization_team(client, session)
+    login_as(client, owner)
+    project = create_project(client, organization["id"])
+    label = create_label(client, project["id"])
+    assigned = create_task(client, project["id"], title="Assigned", assignee_id=member.id)
+    unassigned = create_task(client, project["id"], title="Unassigned")
+    login_as(client, member)
+
+    applied = client.post(
+        f"/api/v1/tasks/{assigned['id']}/labels",
+        json={"label_id": label["id"]},
+    )
+    duplicate = client.post(
+        f"/api/v1/tasks/{assigned['id']}/labels",
+        json={"label_id": label["id"]},
+    )
+    forbidden = client.post(
+        f"/api/v1/tasks/{unassigned['id']}/labels",
+        json={"label_id": label["id"]},
+    )
+    filtered = client.get(
+        f"/api/v1/projects/{project['id']}/tasks",
+        params={"label_id": label["id"]},
+    )
+    removed = client.delete(f"/api/v1/tasks/{assigned['id']}/labels/{label['id']}")
+    filtered_after_removal = client.get(
+        f"/api/v1/projects/{project['id']}/tasks",
+        params={"label_id": label["id"]},
+    )
+
+    assert applied.status_code == 200
+    assert applied.json()["labels"][0]["id"] == label["id"]
+    assert_error(duplicate, 409, "label_already_applied")
+    assert_error(forbidden, 403, "insufficient_role")
+    assert filtered.status_code == 200
+    assert filtered.json()["total"] == 1
+    assert filtered.json()["items"][0]["id"] == assigned["id"]
+    assert removed.status_code == 204
+    assert filtered_after_removal.json()["total"] == 0
+
+
+def test_task_label_assignment_rejects_cross_project_archived_and_hidden_labels(
+    api_client: tuple[TestClient, Session],
+) -> None:
+    """Task label assignment rejects unsafe label and tenant combinations."""
+    client, session = api_client
+    organization, owner, _, _, outsider = organization_team(client, session)
+    login_as(client, owner)
+    project = create_project(client, organization["id"])
+    other_project = create_project(client, organization["id"], "Other Project")
+    task = create_task(client, project["id"])
+    other_label = create_label(client, other_project["id"], name="Other", color="#36B37E")
+    archived_label = create_label(client, project["id"], name="Archived", color="#6554C0")
+    client.patch(
+        f"/api/v1/projects/{project['id']}/labels/{archived_label['id']}",
+        json={"is_archived": True},
+    )
+
+    cross_project = client.post(
+        f"/api/v1/tasks/{task['id']}/labels",
+        json={"label_id": other_label["id"]},
+    )
+    archived = client.post(
+        f"/api/v1/tasks/{task['id']}/labels",
+        json={"label_id": archived_label["id"]},
+    )
+    login_as(client, outsider)
+    hidden_labels = client.get(f"/api/v1/projects/{project['id']}/labels")
+    hidden_task = client.get(
+        f"/api/v1/projects/{project['id']}/tasks",
+        params={"label_id": archived_label["id"]},
+    )
+
+    assert_error(cross_project, 400, "invalid_label_assignment")
+    assert_error(archived, 400, "invalid_label_assignment")
+    assert_error(hidden_labels, 404, "project_not_found")
+    assert_error(hidden_task, 404, "project_not_found")
 
 
 def test_task_filters_and_pagination(api_client: tuple[TestClient, Session]) -> None:

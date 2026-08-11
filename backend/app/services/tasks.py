@@ -153,6 +153,7 @@ class TaskService:
         task_type: str | None,
         watcher_id: uuid.UUID | None,
         external_reference: str | None,
+        label_id: uuid.UUID | None,
     ) -> tuple[list[Task], int]:
         """List tasks for project members with documented filters."""
         project, _ = self._get_project_for_member(project_id, actor.id)
@@ -174,6 +175,7 @@ class TaskService:
                 code="invalid_task",
                 field="external_reference",
             ),
+            label_id=label_id,
         )
 
     def get_task(self, actor: User, task_id: uuid.UUID) -> tuple[Task, OrganizationMembership]:

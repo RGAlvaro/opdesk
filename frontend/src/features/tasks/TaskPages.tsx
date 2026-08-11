@@ -1,7 +1,7 @@
 // Route pages for task list, creation, detail, and updates.
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { ArrowLeft, CheckCircle2, Plus, Save } from "lucide-react";
+import { ArrowLeft, CheckCircle2, Plus, Save, Tag } from "lucide-react";
 import { useCallback, useEffect, useMemo } from "react";
 import { useForm } from "react-hook-form";
 import { useQueryClient } from "@tanstack/react-query";
@@ -26,8 +26,22 @@ import {
 } from "../organizations/types";
 import { ProjectHeader } from "../projects/ProjectPages";
 import { useProject } from "../projects/api";
-import { useCreateTask, useProjectTasks, useTask, useUpdateTask } from "./api";
-import { TaskFilters, TaskPriority, TaskStatus, TaskType } from "./types";
+import {
+  useApplyTaskLabel,
+  useCreateTask,
+  useProjectLabels,
+  useProjectTasks,
+  useRemoveTaskLabel,
+  useTask,
+  useUpdateTask,
+} from "./api";
+import {
+  TaskFilters,
+  TaskLabel,
+  TaskPriority,
+  TaskStatus,
+  TaskType,
+} from "./types";
 
 const taskStatuses = [
   "todo",
@@ -246,6 +260,9 @@ function filtersFromSearch(searchParams: URLSearchParams): TaskFilters {
             searchParams.get("external_reference") ?? undefined,
         }
       : {}),
+    ...(searchParams.get("label_id")
+      ? { label_id: searchParams.get("label_id") ?? undefined }
+      : {}),
   };
 }
 
@@ -290,6 +307,32 @@ function assigneeLabel(
     : assigneeId;
 }
 
+/** Render task label chips with archived labels visually subdued. */
+function TaskLabelChips({ labels }: { labels: TaskLabel[] }) {
+  if (labels.length === 0) {
+    return <span className="text-xs text-muted">No labels</span>;
+  }
+  return (
+    <div className="flex max-w-md flex-wrap gap-1">
+      {labels.map((label) => (
+        <span
+          key={label.id}
+          className={`inline-flex items-center gap-1 rounded-md bg-white px-2 py-1 text-xs font-semibold ${
+            label.archived_at ? "opacity-60" : ""
+          }`}
+        >
+          <span
+            aria-hidden="true"
+            className="h-2.5 w-2.5 rounded-sm"
+            style={{ backgroundColor: label.color }}
+          />
+          {label.name}
+        </span>
+      ))}
+    </div>
+  );
+}
+
 /** Link back to one project's task list with consistent styling. */
 function BackToProjectTasks({ projectId }: { projectId: string | undefined }) {
   return (
@@ -318,6 +361,7 @@ export function TaskListPage() {
     project.data?.organization_id,
     canManageAllTasks(organization.data?.role),
   );
+  const labels = useProjectLabels(projectId, true);
   const tasks = useProjectTasks(projectId, filters, pagination);
 
   /** Persist a filter value into the shareable route query string. */
@@ -404,6 +448,7 @@ export function TaskListPage() {
       <TaskFiltersPanel
         filters={filters}
         members={members.data?.items}
+        labels={labels.data?.items}
         onFilterChange={setFilter}
       />
 
@@ -426,6 +471,7 @@ export function TaskListPage() {
                   <th className="px-3 py-2 font-medium">Status</th>
                   <th className="px-3 py-2 font-medium">Priority</th>
                   <th className="px-3 py-2 font-medium">Assignee</th>
+                  <th className="px-3 py-2 font-medium">Labels</th>
                   <th className="px-3 py-2 font-medium">Due</th>
                   <th className="px-3 py-2 font-medium">Type</th>
                 </tr>
@@ -450,6 +496,9 @@ export function TaskListPage() {
                     <td className="px-3 py-3">{optionLabel(task.priority)}</td>
                     <td className="px-3 py-3">
                       {assigneeLabel(task.assignee_id, members.data?.items)}
+                    </td>
+                    <td className="px-3 py-3">
+                      <TaskLabelChips labels={task.labels} />
                     </td>
                     <td className="px-3 py-3">{formatDate(task.due_date)}</td>
                     <td className="rounded-r-md px-3 py-3">
@@ -476,10 +525,12 @@ export function TaskListPage() {
 function TaskFiltersPanel({
   filters,
   members,
+  labels,
   onFilterChange,
 }: {
   filters: TaskFilters;
   members: OrganizationMembership[] | undefined;
+  labels: TaskLabel[] | undefined;
   onFilterChange: (name: keyof TaskFilters, value: string) => void;
 }) {
   return (
@@ -566,6 +617,24 @@ function TaskFiltersPanel({
           value={filters.due_before ?? ""}
           onChange={(event) => onFilterChange("due_before", event.target.value)}
         />
+      </div>
+      <div>
+        <label htmlFor="filter_label" className="block text-sm font-medium">
+          Label
+        </label>
+        <select
+          id="filter_label"
+          className="mt-1 w-full rounded-md border border-line bg-white px-3 py-2"
+          value={filters.label_id ?? ""}
+          onChange={(event) => onFilterChange("label_id", event.target.value)}
+        >
+          <option value="">Any</option>
+          {labels?.map((label) => (
+            <option key={label.id} value={label.id}>
+              {label.archived_at ? `${label.name} (archived)` : label.name}
+            </option>
+          ))}
+        </select>
       </div>
       <div>
         <label htmlFor="filter_task_type" className="block text-sm font-medium">
@@ -981,7 +1050,13 @@ export function TaskDetailPage() {
     task.data?.organization_id,
     canUseMemberList,
   );
+  const labels = useProjectLabels(task.data?.project_id, true);
   const updateTask = useUpdateTask(taskId ?? "");
+  const applyTaskLabel = useApplyTaskLabel(taskId ?? "", task.data?.project_id);
+  const removeTaskLabel = useRemoveTaskLabel(
+    taskId ?? "",
+    task.data?.project_id,
+  );
   const form = useForm<TaskFormValues>({
     resolver: zodResolver(taskSchema),
     defaultValues: {
@@ -1155,6 +1230,12 @@ export function TaskDetailPage() {
               </dd>
             </div>
             <div>
+              <dt className="text-muted">Labels</dt>
+              <dd className="mt-1 font-medium">
+                <TaskLabelChips labels={task.data.labels} />
+              </dd>
+            </div>
+            <div>
               <dt className="text-muted">Created</dt>
               <dd className="font-medium">
                 {formatDateTime(task.data.created_at)}
@@ -1196,6 +1277,18 @@ export function TaskDetailPage() {
                   <ErrorNotice error={updateTask.error} />
                 </div>
               ) : null}
+              <TaskLabelAssignmentPanel
+                activeLabels={labels.data?.items.filter(
+                  (label) => label.archived_at === null,
+                )}
+                assignedLabels={task.data.labels}
+                isPending={
+                  applyTaskLabel.isPending || removeTaskLabel.isPending
+                }
+                onApply={(labelId) => applyTaskLabel.mutateAsync(labelId)}
+                onRemove={(labelId) => removeTaskLabel.mutateAsync(labelId)}
+                error={applyTaskLabel.error ?? removeTaskLabel.error}
+              />
             </>
           ) : (
             <p className="mt-4 text-sm text-muted">
@@ -1205,5 +1298,67 @@ export function TaskDetailPage() {
         </article>
       </div>
     </section>
+  );
+}
+
+/** Render active label assignment controls for editable task detail. */
+function TaskLabelAssignmentPanel({
+  activeLabels,
+  assignedLabels,
+  isPending,
+  onApply,
+  onRemove,
+  error,
+}: {
+  activeLabels: TaskLabel[] | undefined;
+  assignedLabels: TaskLabel[];
+  isPending: boolean;
+  onApply: (labelId: string) => Promise<unknown>;
+  onRemove: (labelId: string) => Promise<unknown>;
+  error: unknown;
+}) {
+  const assignedIds = new Set(assignedLabels.map((label) => label.id));
+  return (
+    <div className="mt-5 border-t border-line pt-4">
+      <h3 className="flex items-center gap-2 text-sm font-semibold">
+        <Tag aria-hidden="true" className="h-4 w-4" />
+        Labels
+      </h3>
+      <div className="mt-3 flex flex-wrap gap-2">
+        {activeLabels?.length === 0 ? (
+          <p className="text-sm text-muted">No active labels available.</p>
+        ) : null}
+        {activeLabels?.map((label) => {
+          const isAssigned = assignedIds.has(label.id);
+          return (
+            <button
+              key={label.id}
+              type="button"
+              disabled={isPending}
+              className={`inline-flex items-center gap-2 rounded-md border px-3 py-2 text-sm font-medium disabled:cursor-not-allowed disabled:opacity-70 ${
+                isAssigned
+                  ? "border-brand bg-green-50 text-brand"
+                  : "border-line hover:bg-surface"
+              }`}
+              onClick={() =>
+                void (isAssigned ? onRemove(label.id) : onApply(label.id))
+              }
+            >
+              <span
+                aria-hidden="true"
+                className="h-3 w-3 rounded-sm"
+                style={{ backgroundColor: label.color }}
+              />
+              {label.name}
+            </button>
+          );
+        })}
+      </div>
+      {error ? (
+        <div className="mt-4">
+          <ErrorNotice error={error} />
+        </div>
+      ) : null}
+    </div>
   );
 }

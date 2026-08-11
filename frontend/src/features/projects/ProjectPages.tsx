@@ -7,8 +7,9 @@ import {
   ClipboardList,
   FolderKanban,
   Save,
+  Tag,
 } from "lucide-react";
-import { useCallback, useEffect } from "react";
+import { FormEvent, useCallback, useEffect, useState } from "react";
 import { UseFormRegisterReturn, useForm } from "react-hook-form";
 import { useQueryClient } from "@tanstack/react-query";
 import {
@@ -37,6 +38,12 @@ import {
   useUpdateProject,
 } from "./api";
 import { Project, ProjectStatus, ProjectVisibility } from "./types";
+import {
+  useCreateProjectLabel,
+  useProjectLabels,
+  useUpdateProjectLabel,
+} from "../tasks/api";
+import { TaskLabel } from "../tasks/types";
 
 const projectStatuses = [
   "planned",
@@ -905,6 +912,7 @@ export function ProjectSettingsPage() {
           </p>
         ) : null}
       </div>
+      <ProjectLabelsPanel projectId={project.data.id} />
       <div className="rounded-md border border-line bg-white p-6">
         <h2 className="text-lg font-semibold">
           {project.data.is_archived ? "Unarchive project" : "Archive project"}
@@ -928,5 +936,142 @@ export function ProjectSettingsPage() {
         ) : null}
       </div>
     </section>
+  );
+}
+
+/** Render project label management controls for project team members. */
+function ProjectLabelsPanel({ projectId }: { projectId: string }) {
+  const labels = useProjectLabels(projectId, true);
+  const createLabel = useCreateProjectLabel(projectId);
+  const updateLabel = useUpdateProjectLabel(projectId);
+  const [name, setName] = useState("");
+  const [color, setColor] = useState("#2563EB");
+  const [description, setDescription] = useState("");
+
+  /** Persist a new label through the project labels API. */
+  async function onCreateLabel(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    await createLabel.mutateAsync({
+      name: name.trim(),
+      color,
+      description: description.trim() ? description.trim() : null,
+    });
+    setName("");
+    setColor("#2563EB");
+    setDescription("");
+  }
+
+  /** Toggle the archived state for one project label. */
+  async function onToggleArchive(label: TaskLabel) {
+    await updateLabel.mutateAsync({
+      labelId: label.id,
+      payload: { is_archived: label.archived_at === null },
+    });
+  }
+
+  return (
+    <div className="rounded-md border border-line bg-white p-6 shadow-panel">
+      <h2 className="text-lg font-semibold">Labels</h2>
+      <form
+        className="mt-4 grid gap-3 sm:grid-cols-[1fr_8rem] lg:grid-cols-[1fr_8rem_1fr_auto]"
+        onSubmit={onCreateLabel}
+      >
+        <div>
+          <label htmlFor="label_name" className="block text-sm font-medium">
+            Label name
+          </label>
+          <input
+            id="label_name"
+            type="text"
+            maxLength={60}
+            value={name}
+            onChange={(event) => setName(event.target.value)}
+            className="mt-1 w-full rounded-md border border-line px-3 py-2"
+          />
+        </div>
+        <div>
+          <label htmlFor="label_color" className="block text-sm font-medium">
+            Label color
+          </label>
+          <input
+            id="label_color"
+            type="color"
+            value={color}
+            onChange={(event) => setColor(event.target.value.toUpperCase())}
+            className="mt-1 h-10 w-full rounded-md border border-line px-2 py-1"
+          />
+        </div>
+        <div>
+          <label
+            htmlFor="label_description"
+            className="block text-sm font-medium"
+          >
+            Label description
+          </label>
+          <input
+            id="label_description"
+            type="text"
+            maxLength={500}
+            value={description}
+            onChange={(event) => setDescription(event.target.value)}
+            className="mt-1 w-full rounded-md border border-line px-3 py-2"
+          />
+        </div>
+        <button
+          type="submit"
+          disabled={createLabel.isPending || !name.trim()}
+          className="self-end inline-flex items-center justify-center gap-2 rounded-md bg-brand px-4 py-2 font-semibold text-white hover:bg-brand/90 disabled:cursor-not-allowed disabled:opacity-70"
+        >
+          <Tag aria-hidden="true" className="h-4 w-4" />
+          Add
+        </button>
+      </form>
+      {createLabel.isError ? (
+        <div className="mt-4">
+          <ErrorNotice error={createLabel.error} />
+        </div>
+      ) : null}
+      <div className="mt-5 space-y-2">
+        {labels.isLoading ? (
+          <p className="text-sm text-muted">Loading labels.</p>
+        ) : null}
+        {labels.data?.items.length === 0 ? (
+          <p className="text-sm text-muted">No labels yet.</p>
+        ) : null}
+        {labels.data?.items.map((label) => (
+          <div
+            key={label.id}
+            className="flex flex-col gap-3 rounded-md border border-line bg-surface p-3 sm:flex-row sm:items-center sm:justify-between"
+          >
+            <div className={label.archived_at ? "opacity-60" : undefined}>
+              <span className="inline-flex items-center gap-2 rounded-md bg-white px-2 py-1 text-sm font-semibold">
+                <span
+                  aria-hidden="true"
+                  className="h-3 w-3 rounded-sm"
+                  style={{ backgroundColor: label.color }}
+                />
+                {label.name}
+              </span>
+              {label.description ? (
+                <p className="mt-2 text-sm text-muted">{label.description}</p>
+              ) : null}
+            </div>
+            <button
+              type="button"
+              disabled={updateLabel.isPending}
+              className="inline-flex items-center justify-center rounded-md border border-line px-3 py-2 text-sm font-medium hover:bg-white disabled:cursor-not-allowed disabled:opacity-70"
+              onClick={() => void onToggleArchive(label)}
+            >
+              {label.archived_at ? "Restore" : "Archive"}
+            </button>
+          </div>
+        ))}
+      </div>
+      {updateLabel.isError ? (
+        <div className="mt-4">
+          <ErrorNotice error={updateLabel.error} />
+        </div>
+      ) : null}
+    </div>
   );
 }

@@ -35,6 +35,59 @@ Known gaps:
 
 ## Entries
 
+### 2026-08-11 — SPEC-309 — Project task labels review
+
+Role: Review agent
+Branch: main
+Commit/PR: Pending
+Status: Reviewed
+
+Summary:
+- Reviewed the local `SPEC-309` implementation against backend API, migration, frontend UI, tests, and project memory.
+- Backend label persistence, API behavior, task label assignment, task filtering, migration drift check, and backend tests are broadly aligned.
+- Requested changes because the frontend label management UI is only reachable for owner/admin project settings users, while `SPEC-309` requires project team members to create/manage labels, and required frontend coverage is missing for label management, color validation, task label assignment, and archived-label display.
+
+Validation:
+- command: `make test-backend`: PASS — 83 selected backend tests passed, 2 DB tests deselected.
+- command: `make test-frontend`: PASS — 41 frontend tests passed.
+- command: `make migrations-check`: PASS — Alembic upgraded to head and reported no new upgrade operations.
+- command: `make memory-check SPEC=SPEC-309`: PASS.
+- command: `git diff --check`: PASS.
+
+Review:
+- decision: CHANGES_REQUESTED
+
+Known gaps:
+- Frontend label management must be available to project team members, not only owner/admin project-settings users.
+- Frontend tests must cover label management UI, color validation, task label assignment, archived-label display, and label filter URL state.
+
+### 2026-08-11 — SPEC-309 — Project task labels implemented
+
+Role: Ingeniero de software
+Branch: main
+Commit/PR: Pending
+Status: Implemented
+
+Summary:
+- Added project-scoped task label persistence with migration `0007`, active-label case-insensitive uniqueness per project, archived-label state, and task-label assignment rows.
+- Added label APIs for project label list/create/update/archive and task label apply/remove, plus task responses and project task filtering by `label_id`.
+- Added backend API coverage for label metadata validation, duplicate handling, cross-project and archived-label assignment rejection, task update permissions, tenant isolation, and label filtering.
+- Added frontend label management in project settings, task label chips in list/detail, task label assignment controls, and URL-backed task filtering by label.
+
+Validation:
+- command: `make test-backend`: PASS — 83 selected backend tests passed, 2 DB tests deselected.
+- command: `make test-frontend`: PASS — 41 frontend tests passed.
+- command: `make lint`: PASS.
+- command: `make format-check`: PASS.
+- command: `make typecheck`: PASS.
+- command: `make migrations-check`: FAIL then PASS — first elevated run applied `0007` and exposed Alembic metadata drift for the partial label-name index; model metadata was updated and the elevated rerun reported no new upgrade operations.
+
+Review:
+- decision: N/A — implementation pending review.
+
+Known gaps:
+- Review approval is still pending.
+
 ### 2026-08-11 — Harness — GitHub Actions Node 24 action updates
 
 Role: Ingeniero de software

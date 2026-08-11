@@ -111,8 +111,20 @@ function renderRoute(initialPath: string) {
 
 /** Queue deterministic fetch responses for a test case. */
 function mockFetch(...responses: Response[]) {
-  const fetchMock = vi.fn();
-  responses.forEach((response) => fetchMock.mockResolvedValueOnce(response));
+  const queuedResponses = [...responses];
+  const fetchMock = vi.fn((input: RequestInfo | URL) => {
+    const url = String(input);
+    if (url.includes(`/api/v1/projects/${project.id}/labels`)) {
+      return Promise.resolve(jsonResponse(page([])));
+    }
+    const nextResponse = queuedResponses.shift();
+    if (nextResponse) {
+      return Promise.resolve(nextResponse);
+    }
+    return Promise.resolve(
+      apiError("unexpected_error", "Unexpected request.", 500),
+    );
+  });
   vi.stubGlobal("fetch", fetchMock);
   return fetchMock;
 }

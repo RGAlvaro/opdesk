@@ -219,3 +219,79 @@ class TaskWatcher(Base):
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), nullable=False, server_default=func.now()
     )
+
+
+class TaskLabel(Base):
+    """Persist a project-scoped label that can categorize project tasks."""
+
+    __tablename__ = "task_labels"
+    __table_args__ = (
+        Index("ix_task_labels_project_archived", "project_id", "archived_at"),
+        Index("ix_task_labels_organization_project", "organization_id", "project_id"),
+    )
+
+    id: Mapped[uuid.UUID] = mapped_column(Uuid, primary_key=True, default=uuid.uuid4)
+    organization_id: Mapped[uuid.UUID] = mapped_column(
+        Uuid, ForeignKey("organizations.id", ondelete="CASCADE"), nullable=False
+    )
+    project_id: Mapped[uuid.UUID] = mapped_column(
+        Uuid, ForeignKey("projects.id", ondelete="CASCADE"), nullable=False
+    )
+    name: Mapped[str] = mapped_column(String(60), nullable=False)
+    color: Mapped[str] = mapped_column(String(7), nullable=False)
+    description: Mapped[str | None] = mapped_column(Text, nullable=True)
+    created_by_id: Mapped[uuid.UUID] = mapped_column(
+        Uuid, ForeignKey("users.id", ondelete="RESTRICT"), nullable=False
+    )
+    archived_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, server_default=func.now()
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, server_default=func.now(), onupdate=func.now()
+    )
+
+
+class TaskLabelAssignment(Base):
+    """Persist one applied label on one task with actor attribution."""
+
+    __tablename__ = "task_label_assignments"
+    __table_args__ = (
+        UniqueConstraint("task_id", "label_id", name="uq_task_label_assignments_task_label"),
+        Index("ix_task_label_assignments_task_id", "task_id"),
+        Index("ix_task_label_assignments_label_id", "label_id"),
+        Index(
+            "ix_task_label_assignments_organization_project",
+            "organization_id",
+            "project_id",
+        ),
+    )
+
+    id: Mapped[uuid.UUID] = mapped_column(Uuid, primary_key=True, default=uuid.uuid4)
+    organization_id: Mapped[uuid.UUID] = mapped_column(
+        Uuid, ForeignKey("organizations.id", ondelete="CASCADE"), nullable=False
+    )
+    project_id: Mapped[uuid.UUID] = mapped_column(
+        Uuid, ForeignKey("projects.id", ondelete="CASCADE"), nullable=False
+    )
+    task_id: Mapped[uuid.UUID] = mapped_column(
+        Uuid, ForeignKey("tasks.id", ondelete="CASCADE"), nullable=False
+    )
+    label_id: Mapped[uuid.UUID] = mapped_column(
+        Uuid, ForeignKey("task_labels.id", ondelete="CASCADE"), nullable=False
+    )
+    applied_by_id: Mapped[uuid.UUID] = mapped_column(
+        Uuid, ForeignKey("users.id", ondelete="RESTRICT"), nullable=False
+    )
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, server_default=func.now()
+    )
+
+
+Index(
+    "uq_task_labels_active_project_name_lower",
+    TaskLabel.project_id,
+    func.lower(TaskLabel.name),
+    unique=True,
+    postgresql_where=TaskLabel.archived_at.is_(None),
+)

@@ -7,7 +7,14 @@ from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from app.models.organization import OrganizationMembership
-from app.models.project import Task, TaskPriority, TaskStatus, TaskType, TaskWatcher
+from app.models.project import (
+    Task,
+    TaskLabelAssignment,
+    TaskPriority,
+    TaskStatus,
+    TaskType,
+    TaskWatcher,
+)
 
 
 class TaskRepository:
@@ -73,6 +80,7 @@ class TaskRepository:
         task_type: TaskType | None = None,
         watcher_id: uuid.UUID | None = None,
         external_reference: str | None = None,
+        label_id: uuid.UUID | None = None,
     ) -> tuple[list[Task], int]:
         """List and count tasks for one project with optional filters."""
         filters = [
@@ -103,6 +111,13 @@ class TaskRepository:
             list_statement = list_statement.join(TaskWatcher, TaskWatcher.task_id == Task.id).where(
                 TaskWatcher.user_id == watcher_id
             )
+        if label_id is not None:
+            total_statement = total_statement.join(
+                TaskLabelAssignment, TaskLabelAssignment.task_id == Task.id
+            ).where(TaskLabelAssignment.label_id == label_id)
+            list_statement = list_statement.join(
+                TaskLabelAssignment, TaskLabelAssignment.task_id == Task.id
+            ).where(TaskLabelAssignment.label_id == label_id)
         total = self.db.scalar(total_statement) or 0
         tasks = list(
             self.db.scalars(

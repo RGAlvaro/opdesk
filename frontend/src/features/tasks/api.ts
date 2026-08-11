@@ -5,7 +5,15 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "../../shared/api";
 import { PaginationParams } from "../organizations/types";
 import { projectQueryKey } from "../projects/api";
-import { Task, TaskFilters, TaskListResponse, TaskPayload } from "./types";
+import {
+  Task,
+  TaskFilters,
+  TaskLabel,
+  TaskLabelListResponse,
+  TaskLabelPayload,
+  TaskListResponse,
+  TaskPayload,
+} from "./types";
 
 const tasksStaleTimeMs = 30_000;
 
@@ -26,6 +34,14 @@ export function projectTasksPrefixQueryKey(projectId: string) {
 /** Build a stable query key for one task detail response. */
 export function taskQueryKey(taskId: string) {
   return ["tasks", taskId] as const;
+}
+
+/** Build a stable query key for one project's label list. */
+export function projectLabelsQueryKey(
+  projectId: string,
+  includeArchived = false,
+) {
+  return ["projects", projectId, "labels", includeArchived] as const;
 }
 
 /** Convert task filters and pagination into backend query parameters. */
@@ -61,6 +77,15 @@ export function getTask(taskId: string) {
   return apiRequest<Task>(`/api/v1/tasks/${taskId}`);
 }
 
+/** Fetch one project's labels using backend pagination defaults. */
+export function listProjectLabels(projectId: string, includeArchived = false) {
+  return apiRequest<TaskLabelListResponse>(
+    `/api/v1/projects/${projectId}/labels?limit=100&offset=0&include_archived=${String(
+      includeArchived,
+    )}`,
+  );
+}
+
 /** Keep one project's filtered task list in React Query cache. */
 export function useProjectTasks(
   projectId: string | undefined,
@@ -83,6 +108,21 @@ export function useTask(taskId: string | undefined) {
     queryKey: taskId ? taskQueryKey(taskId) : ["tasks", "missing"],
     queryFn: () => getTask(taskId ?? ""),
     enabled: Boolean(taskId),
+    staleTime: tasksStaleTimeMs,
+  });
+}
+
+/** Keep one project's labels in React Query cache. */
+export function useProjectLabels(
+  projectId: string | undefined,
+  includeArchived = false,
+) {
+  return useQuery({
+    queryKey: projectId
+      ? projectLabelsQueryKey(projectId, includeArchived)
+      : ["projects", "missing", "labels", includeArchived],
+    queryFn: () => listProjectLabels(projectId ?? "", includeArchived),
+    enabled: Boolean(projectId),
     staleTime: tasksStaleTimeMs,
   });
 }
@@ -122,6 +162,102 @@ export function useUpdateTask(taskId: string) {
         queryKey: projectQueryKey(task.project_id),
       });
       queryClient.setQueryData(taskQueryKey(task.id), task);
+    },
+  });
+}
+
+/** Create a project label and refresh label-dependent task state. */
+export function useCreateProjectLabel(projectId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (payload: TaskLabelPayload) =>
+      apiRequest<TaskLabel>(`/api/v1/projects/${projectId}/labels`, {
+        method: "POST",
+        body: JSON.stringify(payload),
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ["projects", projectId, "labels"],
+      });
+      queryClient.invalidateQueries({
+        queryKey: projectTasksPrefixQueryKey(projectId),
+      });
+    },
+  });
+}
+
+/** Update label metadata or archive state and refresh dependent task state. */
+export function useUpdateProjectLabel(projectId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({
+      labelId,
+      payload,
+    }: {
+      labelId: string;
+      payload: TaskLabelPayload;
+    }) =>
+      apiRequest<TaskLabel>(`/api/v1/projects/${projectId}/labels/${labelId}`, {
+        method: "PATCH",
+        body: JSON.stringify(payload),
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ["projects", projectId, "labels"],
+      });
+      queryClient.invalidateQueries({
+        queryKey: projectTasksPrefixQueryKey(projectId),
+      });
+    },
+  });
+}
+
+/** Apply one label to a task and refresh task detail plus project lists. */
+export function useApplyTaskLabel(
+  taskId: string,
+  projectId: string | undefined,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (labelId: string) =>
+      apiRequest<Task>(`/api/v1/tasks/${taskId}/labels`, {
+        method: "POST",
+        body: JSON.stringify({ label_id: labelId }),
+      }),
+    onSuccess: (task) => {
+      queryClient.setQueryData(taskQueryKey(task.id), task);
+      queryClient.invalidateQueries({
+        queryKey: projectTasksPrefixQueryKey(task.project_id),
+      });
+    },
+    onSettled: () => {
+      if (projectId) {
+        queryClient.invalidateQueries({
+          queryKey: projectTasksPrefixQueryKey(projectId),
+        });
+      }
+    },
+  });
+}
+
+/** Remove one label from a task and refresh task detail plus project lists. */
+export function useRemoveTaskLabel(
+  taskId: string,
+  projectId: string | undefined,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (labelId: string) =>
+      apiRequest<void>(`/api/v1/tasks/${taskId}/labels/${labelId}`, {
+        method: "DELETE",
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: taskQueryKey(taskId) });
+      if (projectId) {
+        queryClient.invalidateQueries({
+          queryKey: projectTasksPrefixQueryKey(projectId),
+        });
+      }
     },
   });
 }

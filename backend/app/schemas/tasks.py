@@ -7,6 +7,7 @@ from decimal import Decimal
 from pydantic import BaseModel, Field
 
 from app.models.project import TaskPriority, TaskStatus, TaskType
+from app.schemas.labels import TaskLabelRead
 
 
 class TaskCreateRequest(BaseModel):
@@ -64,6 +65,7 @@ class TaskRead(BaseModel):
     external_reference: str | None
     task_type: TaskType
     watcher_ids: list[uuid.UUID] = Field(default_factory=list)
+    labels: list[TaskLabelRead] = Field(default_factory=list)
     created_by_id: uuid.UUID
     created_at: datetime
     updated_at: datetime
