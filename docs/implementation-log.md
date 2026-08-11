@@ -35,6 +35,32 @@ Known gaps:
 
 ## Entries
 
+### 2026-08-11 — SPEC-308 — Production release executed
+
+Role: Ingeniero de software
+Branch: main
+Commit/PR: `cb7692e`
+Status: Implemented
+
+Summary:
+- Confirmed the latest `main` CI passed after the SPEC-308 implementation and harness clarification commits.
+- Ran the manual `Production Release` workflow for `main` with production deploy enabled.
+- Confirmed the workflow deployed commit `cb7692e0d69f94f97e9883d6576c8719bfbbe8f5` successfully.
+- Ran public production smoke checks for backend health, frontend delivery, and unauthenticated API error shape.
+
+Validation:
+- command: `gh run list --repo RGAlvaro/opdesk --branch main --limit 10`: PASS — latest `Verify` run `31475622515` for `cb7692e` completed successfully.
+- command: `gh workflow run production-release.yml --repo RGAlvaro/opdesk --ref main -f target_ref=main -f deploy_to_production=true`: PASS — production release run `31476539204` completed successfully.
+- command: `curl -fsS https://rgalvaro.es/health`: PASS — returned `{"status":"ok"}`.
+- command: `curl -I -fsS https://rgalvaro.es/`: PASS — returned `HTTP/2 200`.
+- command: `curl -i -sS https://rgalvaro.es/api/v1/users/me`: PASS — returned `401 not_authenticated` with the expected API error envelope.
+
+Review:
+- decision: N/A — production deployment and smoke checkpoint after approved SPEC-308.
+
+Known gaps:
+- Authenticated browser smoke for profile, organization, project, and task metadata was not run because no production test credentials were available in this session.
+
 ### 2026-08-11 — Harness — Managed sandbox migration validation clarified
 
 Role: Arquitecto de specs
