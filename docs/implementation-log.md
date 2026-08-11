@@ -61,12 +61,16 @@ Validation:
 - command: `git diff --check`: PASS.
 - command: `make memory-check SPEC=SPEC-307`: PASS.
 - command: `make memory-check SPEC=SPEC-308`: PASS.
+- command: GitHub Actions `Verify` run `31500412344`: PASS — validated commit `94dbb54`.
+- command: GitHub Actions `Production Release` run `31500572299`: PASS — deployed commit `94dbb542e0fe71bcf223d0f576e8b5d4e52a4252` with corrected release script.
+- command: production release manifest check: PASS — recorded `backend_image_build=PASS`, `migrations=PASS`, and `compose_update=PASS`.
+- command: post-release production smoke: PASS — `https://rgalvaro.es/health` returned `{"status":"ok"}`, frontend returned `HTTP/2 200`, and production Alembic remained at `0006`.
 
 Review:
-- decision: N/A — production recovery and release automation fix ready for review/CI.
+- decision: N/A — production recovery and release automation fix deployed.
 
 Known gaps:
-- The release-order fix still needs commit, push, CI, and one production release run using the corrected script.
+- None.
 
 ### 2026-08-11 — SPEC-308 — Production release executed
 
