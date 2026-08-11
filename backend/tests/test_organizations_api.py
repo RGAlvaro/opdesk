@@ -174,21 +174,40 @@ def test_create_generates_slug_and_owner_membership(
     assert membership.role == MembershipRole.OWNER
 
 
-def test_duplicate_and_invalid_slugs_return_documented_errors(
+def test_duplicate_names_get_collision_safe_generated_slugs(
     api_client: tuple[TestClient, Session],
 ) -> None:
-    """Slug uniqueness and URL-safe validation use stable business errors."""
+    """Duplicate organization names receive backend-generated numeric slug suffixes."""
     client, session = api_client
     owner = create_user(client, session, "owner@example.com")
     login_as(client, owner)
-    first = client.post("/api/v1/organizations", json={"name": "Acme", "slug": "shared-slug"})
-
-    duplicate = client.post("/api/v1/organizations", json={"name": "Other", "slug": "shared-slug"})
-    invalid = client.post("/api/v1/organizations", json={"name": "Other", "slug": "Not URL Safe"})
+    first = client.post("/api/v1/organizations", json={"name": "Acme"})
+    duplicate = client.post("/api/v1/organizations", json={"name": "Acme"})
 
     assert first.status_code == 201
-    assert_error(duplicate, 409, "organization_slug_taken")
-    assert_error(invalid, 400, "invalid_organization")
+    assert duplicate.status_code == 201
+    assert first.json()["slug"] == "acme"
+    assert duplicate.json()["slug"] == "acme-2"
+
+
+def test_client_supplied_slug_is_rejected(api_client: tuple[TestClient, Session]) -> None:
+    """Organization create and update reject slug input because it is backend-owned."""
+    client, session = api_client
+    owner = create_user(client, session, "owner@example.com")
+    login_as(client, owner)
+    organization = create_organization(client)
+
+    create_response = client.post(
+        "/api/v1/organizations",
+        json={"name": "Other", "slug": "client-slug"},
+    )
+    update_response = client.patch(
+        f"/api/v1/organizations/{organization['id']}",
+        json={"slug": "client-slug"},
+    )
+
+    assert_error(create_response, 400, "invalid_organization")
+    assert_error(update_response, 400, "invalid_organization")
 
 
 def test_list_is_paginated_and_tenant_isolated(
@@ -229,17 +248,24 @@ def test_non_member_cannot_discover_organization(
     assert_error(response, 404, "organization_not_found")
 
 
-def test_owner_updates_organization_but_admin_cannot(
+def test_owner_updates_organization_metadata_but_admin_cannot(
     api_client: tuple[TestClient, Session],
 ) -> None:
-    """Only owners can update organization names and slugs."""
+    """Only owners can update organization names and company metadata."""
     client, session = api_client
     organization, owner, admin, _, _ = organization_team(client, session)
     login_as(client, owner)
 
     updated = client.patch(
         f"/api/v1/organizations/{organization['id']}",
-        json={"name": "Updated Ops", "slug": "updated-ops"},
+        json={
+            "name": "Updated Ops",
+            "employee_count": 42,
+            "industry": "Logistics",
+            "website": "https://example.com",
+            "contact_email": "CONTACT@EXAMPLE.COM",
+            "description": "  Regional operations team  ",
+        },
     )
     login_as(client, admin)
     forbidden = client.patch(
@@ -248,21 +274,28 @@ def test_owner_updates_organization_but_admin_cannot(
 
     assert updated.status_code == 200
     assert updated.json()["name"] == "Updated Ops"
-    assert updated.json()["slug"] == "updated-ops"
+    assert updated.json()["slug"] == organization["slug"]
+    assert updated.json()["employee_count"] == 42
+    assert updated.json()["industry"] == "Logistics"
+    assert updated.json()["website"] == "https://example.com"
+    assert updated.json()["contact_email"] == "contact@example.com"
+    assert updated.json()["description"] == "Regional operations team"
     assert_error(forbidden, 403, "insufficient_role")
 
 
-def test_update_rejects_duplicate_slug(api_client: tuple[TestClient, Session]) -> None:
-    """Owner updates cannot claim a slug already used by another organization."""
+def test_organization_metadata_validation(api_client: tuple[TestClient, Session]) -> None:
+    """Invalid organization metadata returns the documented business error."""
     client, session = api_client
     owner = create_user(client, session, "owner@example.com")
     login_as(client, owner)
-    first = create_organization(client, "First Org")
-    second = create_organization(client, "Second Org")
+    organization = create_organization(client)
 
-    response = client.patch(f"/api/v1/organizations/{second['id']}", json={"slug": first["slug"]})
+    response = client.patch(
+        f"/api/v1/organizations/{organization['id']}",
+        json={"employee_count": -1, "website": "ftp://example.com"},
+    )
 
-    assert_error(response, 409, "organization_slug_taken")
+    assert_error(response, 400, "invalid_organization")
 
 
 def test_admin_lists_members_with_safe_user_fields(
@@ -519,11 +552,9 @@ def test_only_owner_can_delete_organization_and_slug_is_reusable(
     assert membership_total == 0
     assert set(session.scalars(select(User.id))) == set(user_ids)
 
-    replacement = client.post(
-        "/api/v1/organizations",
-        json={"name": "Replacement Ops", "slug": organization["slug"]},
-    )
+    replacement = client.post("/api/v1/organizations", json={"name": organization["name"]})
     assert replacement.status_code == 201
+    assert replacement.json()["slug"] == organization["slug"]
 
 
 @pytest.mark.db

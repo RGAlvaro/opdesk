@@ -199,7 +199,52 @@ def test_owner_creates_project_and_member_cannot(
     assert created.status_code == 201
     assert created.json()["name"] == "Customer Onboarding"
     assert created.json()["organization_id"] == organization["id"]
+    assert created.json()["status"] == "active"
+    assert created.json()["visibility"] == "organization"
     assert_error(forbidden, 403, "insufficient_role")
+
+
+def test_project_metadata_create_update_and_validation(
+    api_client: tuple[TestClient, Session],
+) -> None:
+    """Project metadata validates dates, budget, visibility, and owner membership."""
+    client, session = api_client
+    organization, owner, _, member, outsider = organization_team(client, session)
+    login_as(client, owner)
+
+    created = client.post(
+        f"/api/v1/organizations/{organization['id']}/projects",
+        json={
+            "name": "Metadata Project",
+            "status": "planned",
+            "start_date": "2026-08-01",
+            "end_date": "2026-08-31",
+            "budget_amount": "1200.50",
+            "budget_currency": "eur",
+            "visibility": "project_members",
+            "project_owner_id": str(member.id),
+        },
+    )
+    invalid_dates = client.post(
+        f"/api/v1/organizations/{organization['id']}/projects",
+        json={"name": "Bad Dates", "start_date": "2026-09-01", "end_date": "2026-08-01"},
+    )
+    invalid_owner = client.patch(
+        f"/api/v1/projects/{created.json()['id']}",
+        json={"project_owner_id": str(outsider.id)},
+    )
+
+    assert created.status_code == 201
+    body = created.json()
+    assert body["status"] == "planned"
+    assert body["start_date"] == "2026-08-01"
+    assert body["end_date"] == "2026-08-31"
+    assert body["budget_amount"] == "1200.50"
+    assert body["budget_currency"] == "EUR"
+    assert body["visibility"] == "project_members"
+    assert body["project_owner_id"] == str(member.id)
+    assert_error(invalid_dates, 400, "invalid_project")
+    assert_error(invalid_owner, 400, "invalid_project")
 
 
 def test_non_member_cannot_discover_project(api_client: tuple[TestClient, Session]) -> None:
@@ -327,6 +372,89 @@ def test_status_transitions_set_and_clear_completed_at(
     assert done.json()["completed_at"] is not None
     assert reopened.status_code == 200
     assert reopened.json()["completed_at"] is None
+
+
+def test_task_blocked_reason_is_cleared_when_status_leaves_blocked(
+    api_client: tuple[TestClient, Session],
+) -> None:
+    """Blocked reason is stored only while the task status remains blocked."""
+    client, session = api_client
+    organization, owner, _, _, _ = organization_team(client, session)
+    login_as(client, owner)
+    project = create_project(client, organization["id"])
+    task = create_task(client, project["id"])
+
+    blocked = client.patch(
+        f"/api/v1/tasks/{task['id']}",
+        json={"status": "blocked", "blocked_reason": "Waiting on vendor"},
+    )
+    reopened = client.patch(f"/api/v1/tasks/{task['id']}", json={"status": "in_progress"})
+    invalid = client.patch(
+        f"/api/v1/tasks/{task['id']}",
+        json={"blocked_reason": "No status change"},
+    )
+
+    assert blocked.status_code == 200
+    assert blocked.json()["blocked_reason"] == "Waiting on vendor"
+    assert reopened.status_code == 200
+    assert reopened.json()["blocked_reason"] is None
+    assert_error(invalid, 400, "invalid_task")
+
+
+def test_task_metadata_watchers_and_filters(
+    api_client: tuple[TestClient, Session],
+) -> None:
+    """Task metadata and new list filters preserve pagination behavior."""
+    client, session = api_client
+    organization, owner, _, member, outsider = organization_team(client, session)
+    login_as(client, owner)
+    project = create_project(client, organization["id"])
+
+    matching_response = client.post(
+        f"/api/v1/projects/{project['id']}/tasks",
+        json={
+            "title": "Matching",
+            "estimated_hours": "3.50",
+            "actual_hours": "1.25",
+            "sort_order": 10,
+            "external_reference": "OPS-42",
+            "task_type": "operational",
+            "watcher_ids": [str(member.id)],
+        },
+    )
+    other = create_task(client, project["id"], title="Other")
+    invalid_watcher = client.patch(
+        f"/api/v1/tasks/{matching_response.json()['id']}",
+        json={"watcher_ids": [str(outsider.id)]},
+    )
+    invalid_effort = client.patch(
+        f"/api/v1/tasks/{matching_response.json()['id']}",
+        json={"actual_hours": "-1"},
+    )
+    filtered = client.get(
+        f"/api/v1/projects/{project['id']}/tasks",
+        params={
+            "task_type": "operational",
+            "watcher_id": str(member.id),
+            "external_reference": "OPS-42",
+        },
+    )
+
+    assert matching_response.status_code == 201
+    matching = matching_response.json()
+    assert matching["estimated_hours"] == "3.50"
+    assert matching["actual_hours"] == "1.25"
+    assert matching["sort_order"] == 10
+    assert matching["external_reference"] == "OPS-42"
+    assert matching["task_type"] == "operational"
+    assert matching["watcher_ids"] == [str(member.id)]
+    assert_error(invalid_watcher, 400, "invalid_task")
+    assert_error(invalid_effort, 400, "invalid_task")
+    assert filtered.status_code == 200
+    body = filtered.json()
+    assert body["total"] == 1
+    assert body["items"][0]["id"] == matching["id"]
+    assert other["id"] not in {item["id"] for item in body["items"]}
 
 
 def test_task_filters_and_pagination(api_client: tuple[TestClient, Session]) -> None:

@@ -3,17 +3,19 @@
 import logging
 import uuid
 from datetime import UTC, date, datetime
+from decimal import Decimal
 
 from sqlalchemy.orm import Session
 
 from app.api.errors import APIError
 from app.jobs.enqueue import enqueue_task_assignment_notification
 from app.models.organization import MembershipRole, OrganizationMembership
-from app.models.project import Project, Task, TaskPriority, TaskStatus
+from app.models.project import Project, Task, TaskPriority, TaskStatus, TaskType
 from app.models.user import User
 from app.repositories.organizations import OrganizationRepository
 from app.repositories.projects import ProjectRepository
 from app.repositories.tasks import TaskRepository
+from app.services.metadata import non_negative_decimal, optional_string
 
 logger = logging.getLogger(__name__)
 
@@ -48,6 +50,16 @@ def parse_task_priority(
         raise APIError(400, "invalid_task", "Task priority is invalid.") from exc
 
 
+def parse_task_type(value: str | None, *, default: TaskType | None = None) -> TaskType | None:
+    """Convert public task type text into the internal enum."""
+    if value is None:
+        return default
+    try:
+        return TaskType(value)
+    except ValueError as exc:
+        raise APIError(400, "invalid_task", "Task type is invalid.") from exc
+
+
 class TaskService:
     """Coordinate task persistence with tenant, role, and assignment rules."""
 
@@ -68,6 +80,13 @@ class TaskService:
         priority: str | None,
         assignee_id: uuid.UUID | None,
         due_date: date | None,
+        estimated_hours: Decimal | None,
+        actual_hours: Decimal | None,
+        sort_order: int | None,
+        blocked_reason: str | None,
+        external_reference: str | None,
+        task_type: str | None,
+        watcher_ids: list[uuid.UUID] | None,
     ) -> Task:
         """Create a task in a non-archived project after assignment validation."""
         project, membership = self._get_project_for_member(project_id, actor.id)
@@ -85,9 +104,34 @@ class TaskService:
             priority=parse_task_priority(priority, default=TaskPriority.MEDIUM),
             assignee_id=assignee_id,
             due_date=due_date,
+            estimated_hours=non_negative_decimal(
+                estimated_hours, code="invalid_task", field="estimated_hours"
+            ),
+            actual_hours=non_negative_decimal(
+                actual_hours, code="invalid_task", field="actual_hours"
+            ),
+            sort_order=sort_order,
+            external_reference=optional_string(
+                external_reference,
+                max_length=200,
+                code="invalid_task",
+                field="external_reference",
+            ),
+            task_type=parse_task_type(task_type, default=TaskType.INTERNAL),
             created_by_id=actor.id,
         )
+        self._apply_blocked_reason(task, blocked_reason, blocked_reason_provided=True)
+        normalized_watchers = self._validate_watcher_ids(project.organization_id, watcher_ids or [])
         self.tasks.add(task)
+        self.tasks.replace_watchers(task, normalized_watchers, actor.id)
+        if normalized_watchers:
+            logger.info(
+                "task watchers changed actor_id=%s organization_id=%s task_id=%s watcher_count=%s",
+                actor.id,
+                task.organization_id,
+                task.id,
+                len(normalized_watchers),
+            )
         self.db.commit()
         self.db.refresh(task)
         if task.assignee_id is not None:
@@ -106,6 +150,9 @@ class TaskService:
         priority: str | None,
         due_before: date | None,
         due_after: date | None,
+        task_type: str | None,
+        watcher_id: uuid.UUID | None,
+        external_reference: str | None,
     ) -> tuple[list[Task], int]:
         """List tasks for project members with documented filters."""
         project, _ = self._get_project_for_member(project_id, actor.id)
@@ -119,6 +166,14 @@ class TaskService:
             priority=parse_task_priority(priority),
             due_before=due_before,
             due_after=due_after,
+            task_type=parse_task_type(task_type),
+            watcher_id=watcher_id,
+            external_reference=optional_string(
+                external_reference,
+                max_length=200,
+                code="invalid_task",
+                field="external_reference",
+            ),
         )
 
     def get_task(self, actor: User, task_id: uuid.UUID) -> tuple[Task, OrganizationMembership]:
@@ -139,6 +194,13 @@ class TaskService:
         priority: str | None,
         assignee_id: uuid.UUID | None,
         due_date: date | None,
+        estimated_hours: Decimal | None,
+        actual_hours: Decimal | None,
+        sort_order: int | None,
+        blocked_reason: str | None,
+        external_reference: str | None,
+        task_type: str | None,
+        watcher_ids: list[uuid.UUID] | None,
         fields_set: set[str],
     ) -> Task:
         """Update a task after role, assignment, and transition checks."""
@@ -176,11 +238,50 @@ class TaskService:
                 )
         if "due_date" in fields_set:
             task.due_date = due_date
+        if "estimated_hours" in fields_set:
+            task.estimated_hours = non_negative_decimal(
+                estimated_hours, code="invalid_task", field="estimated_hours"
+            )
+        if "actual_hours" in fields_set:
+            task.actual_hours = non_negative_decimal(
+                actual_hours, code="invalid_task", field="actual_hours"
+            )
+        if "sort_order" in fields_set:
+            task.sort_order = sort_order
+        if "external_reference" in fields_set:
+            task.external_reference = optional_string(
+                external_reference,
+                max_length=200,
+                code="invalid_task",
+                field="external_reference",
+            )
+        if "task_type" in fields_set:
+            parsed_type = parse_task_type(task_type)
+            if parsed_type is None:
+                raise APIError(400, "invalid_task", "Task type is required.")
+            task.task_type = parsed_type
         if "status" in fields_set:
             parsed_status = parse_task_status(status)
             if parsed_status is None:
                 raise APIError(400, "invalid_task", "Task status is required.")
             self._apply_status_transition(task, parsed_status)
+        self._apply_blocked_reason(
+            task,
+            blocked_reason,
+            blocked_reason_provided="blocked_reason" in fields_set,
+        )
+        if "watcher_ids" in fields_set:
+            normalized_watchers = self._validate_watcher_ids(
+                task.organization_id, watcher_ids or []
+            )
+            self.tasks.replace_watchers(task, normalized_watchers, actor.id)
+            logger.info(
+                "task watchers changed actor_id=%s organization_id=%s task_id=%s watcher_count=%s",
+                actor.id,
+                task.organization_id,
+                task.id,
+                len(normalized_watchers),
+            )
 
         self.db.add(task)
         self.db.commit()
@@ -188,6 +289,10 @@ class TaskService:
         if assignment_changed and task.assignee_id is not None:
             enqueue_task_assignment_notification(task)
         return task
+
+    def list_watcher_user_ids(self, task_id: uuid.UUID) -> list[uuid.UUID]:
+        """Expose watcher identifiers for API response construction."""
+        return self.tasks.list_watcher_user_ids(task_id)
 
     def _get_project_for_member(
         self, project_id: uuid.UUID, user_id: uuid.UUID
@@ -210,6 +315,21 @@ class TaskService:
                 "Task assignee must be a member of the task organization.",
             )
         return membership
+
+    def _validate_watcher_ids(
+        self, organization_id: uuid.UUID, watcher_ids: list[uuid.UUID]
+    ) -> list[uuid.UUID]:
+        """Validate and de-duplicate watcher IDs inside the task organization."""
+        normalized: list[uuid.UUID] = []
+        seen: set[uuid.UUID] = set()
+        for watcher_id in watcher_ids:
+            if watcher_id in seen:
+                continue
+            seen.add(watcher_id)
+            if self.organizations.get_membership(organization_id, watcher_id) is None:
+                raise APIError(400, "invalid_task", "Task watchers must be organization members.")
+            normalized.append(watcher_id)
+        return normalized
 
     @staticmethod
     def _validate_create_assignment(
@@ -242,3 +362,18 @@ class TaskService:
             task.completed_at = datetime.now(UTC)
         elif previous_status == TaskStatus.DONE and new_status != TaskStatus.DONE:
             task.completed_at = None
+
+    @staticmethod
+    def _apply_blocked_reason(
+        task: Task, blocked_reason: str | None, *, blocked_reason_provided: bool
+    ) -> None:
+        """Keep blocker text only while a task remains in blocked status."""
+        if task.status != TaskStatus.BLOCKED:
+            if blocked_reason_provided and blocked_reason not in {None, ""}:
+                raise APIError(400, "invalid_task", "Blocked reason requires blocked status.")
+            task.blocked_reason = None
+            return
+        if blocked_reason_provided:
+            task.blocked_reason = optional_string(
+                blocked_reason, max_length=1000, code="invalid_task", field="blocked_reason"
+            )

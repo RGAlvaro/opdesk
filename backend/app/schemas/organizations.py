@@ -13,6 +13,20 @@ class OrganizationCreateRequest(BaseModel):
 
     name: str
     slug: str | None = None
+    employee_count: int | None = None
+    industry: str | None = None
+    website: str | None = None
+    contact_email: str | None = None
+    phone: str | None = None
+    address_line1: str | None = None
+    address_line2: str | None = None
+    city: str | None = None
+    region: str | None = None
+    postal_code: str | None = None
+    country: str | None = None
+    tax_id: str | None = None
+    logo_url: str | None = None
+    description: str | None = None
 
 
 class OrganizationUpdateRequest(BaseModel):
@@ -20,6 +34,20 @@ class OrganizationUpdateRequest(BaseModel):
 
     name: str | None = None
     slug: str | None = None
+    employee_count: int | None = None
+    industry: str | None = None
+    website: str | None = None
+    contact_email: str | None = None
+    phone: str | None = None
+    address_line1: str | None = None
+    address_line2: str | None = None
+    city: str | None = None
+    region: str | None = None
+    postal_code: str | None = None
+    country: str | None = None
+    tax_id: str | None = None
+    logo_url: str | None = None
+    description: str | None = None
 
 
 class OrganizationRead(BaseModel):
@@ -29,6 +57,20 @@ class OrganizationRead(BaseModel):
     name: str
     slug: str
     role: MembershipRole
+    employee_count: int | None
+    industry: str | None
+    website: str | None
+    contact_email: str | None
+    phone: str | None
+    address_line1: str | None
+    address_line2: str | None
+    city: str | None
+    region: str | None
+    postal_code: str | None
+    country: str | None
+    tax_id: str | None
+    logo_url: str | None
+    description: str | None
     created_at: datetime
     updated_at: datetime
 

@@ -1,8 +1,8 @@
 # SPEC-308 — Enriched Record Metadata
 
-Status: Ready
+Status: Implemented
 Owner: Arquitecto de specs
-Last updated: 2026-07-28
+Last updated: 2026-08-11
 
 ## Scope And Required Context
 

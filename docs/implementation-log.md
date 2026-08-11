@@ -35,6 +35,65 @@ Known gaps:
 
 ## Entries
 
+### 2026-08-11 — SPEC-308 — Enriched metadata implemented and review-fixed
+
+Role: Ingeniero de software / Review agent
+Branch: main
+Commit/PR: Pending
+Status: Reviewed
+
+Summary:
+- Added nullable backend metadata fields for users, organizations, projects, and tasks plus `task_watchers` persistence in migration `0006`.
+- Extended current-user profile APIs for profile metadata and password-confirmed email changes with duplicate-email protection.
+- Changed organization create/update behavior so public clients cannot submit `slug`; backend-generated slugs now use numeric collision suffixes.
+- Extended project/task APIs for metadata validation, project owner checks, task blocker clearing, task watchers, and `task_type`/`watcher_id`/`external_reference` task filters.
+- Added backend API tests for the new profile, organization, project, and task metadata behavior.
+- Review found and fixed the missing frontend slice: profile, organization, project, and task forms now expose the new metadata fields, organization slug is display-only, project owner/watchers use visible organization members, and route tests cover the updated contracts.
+
+Validation:
+- command: `python3 -m compileall backend/app`: PASS.
+- command: `make test-backend`: PASS — 80 non-DB backend tests passed, 2 DB tests deselected.
+- command: `make test-frontend`: PASS — 41 frontend tests passed.
+- command: `make lint`: PASS.
+- command: `make format-check`: PASS.
+- command: `make typecheck`: PASS.
+- command: `git diff --check`: PASS.
+- command: `make migrations-check`: FAIL — local PostgreSQL at `localhost:5432` was not reachable from this WSL environment.
+- command: `make migrations-check-compose`: PASS — Alembic upgraded through `0006` inside the Compose backend container and reported no new upgrade operations.
+
+Review:
+- decision: APPROVED
+
+Known gaps:
+- Host-local `make migrations-check` still cannot connect from this WSL environment, but equivalent Compose migration validation passed.
+
+### 2026-08-11 — SPEC-307 — First production release workflow executed
+
+Role: Ingeniero de software
+Branch: main
+Commit/PR: `a2dea58`
+Status: Implemented
+
+Summary:
+- Ran the first manual `Production Release` workflow for `RGAlvaro/opdesk` against `main`.
+- Ran validation-only first, then ran the production deploy after validation passed.
+- Confirmed the production deploy executed remote SSH release steps, rebuilt/recreated the application services, and passed backend, frontend, Redis, and worker checks.
+- Confirmed the public production domain still responds after deployment.
+
+Validation:
+- command: `gh auth status`: PASS — authenticated as `RGAlvaro` with `repo` and `workflow` scopes.
+- command: `gh workflow run production-release.yml --repo RGAlvaro/opdesk --ref main -f target_ref=main -f deploy_to_production=false`: PASS — run `31471833191` completed successfully; remote deploy was skipped.
+- command: `gh workflow run production-release.yml --repo RGAlvaro/opdesk --ref main -f target_ref=main -f deploy_to_production=true`: PASS — run `31472041900` completed successfully at `a2dea58a70bef2aec98ef318ea6acc796099230f`; remote production update step passed.
+- command: `curl -fsS https://rgalvaro.es/health`: PASS — returned `{"status":"ok"}`.
+- command: `curl -I -fsS https://rgalvaro.es/`: PASS — returned `HTTP/2 200`.
+
+Review:
+- decision: N/A
+
+Known gaps:
+- The temporary `opdesk.51.255.202.88.sslip.io` hostname remains configured as a fallback.
+- The VPS still needs a controlled reboot for the pending Ubuntu kernel upgrade.
+
 ### 2026-08-03 — SPEC-307 — Production release secrets configured
 
 Role: Ingeniero de software

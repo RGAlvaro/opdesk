@@ -27,7 +27,7 @@ import {
 import { ProjectHeader } from "../projects/ProjectPages";
 import { useProject } from "../projects/api";
 import { useCreateTask, useProjectTasks, useTask, useUpdateTask } from "./api";
-import { TaskFilters, TaskPriority, TaskStatus } from "./types";
+import { TaskFilters, TaskPriority, TaskStatus, TaskType } from "./types";
 
 const taskStatuses = [
   "todo",
@@ -44,6 +44,11 @@ const taskPriorities = [
   "urgent",
 ] as const satisfies readonly TaskPriority[];
 
+const taskTypes = [
+  "internal",
+  "operational",
+] as const satisfies readonly TaskType[];
+
 const taskSchema = z.object({
   title: z.string().trim().min(1, "Task title is required.").max(200),
   description: z.string().trim().optional(),
@@ -51,6 +56,13 @@ const taskSchema = z.object({
   priority: z.enum(taskPriorities),
   assignee_id: z.string().trim().optional(),
   due_date: z.string().trim().optional(),
+  estimated_hours: z.string().trim().optional(),
+  actual_hours: z.string().trim().optional(),
+  sort_order: z.string().trim().optional(),
+  blocked_reason: z.string().trim().max(1000).optional(),
+  external_reference: z.string().trim().max(200).optional(),
+  task_type: z.enum(taskTypes),
+  watcher_ids: z.array(z.string()).optional(),
 });
 
 type TaskFormValues = z.infer<typeof taskSchema>;
@@ -186,7 +198,10 @@ function formatDate(value: string | undefined | null) {
 }
 
 /** Convert enum-like values into short readable labels. */
-function optionLabel(value: string) {
+function optionLabel(value: string | null | undefined) {
+  if (!value) {
+    return "Not set";
+  }
   return value
     .split("_")
     .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
@@ -202,6 +217,7 @@ function canManageAllTasks(role: OrganizationRole | undefined) {
 function filtersFromSearch(searchParams: URLSearchParams): TaskFilters {
   const status = searchParams.get("status");
   const priority = searchParams.get("priority");
+  const taskType = searchParams.get("task_type");
   return {
     ...(taskStatuses.includes(status as TaskStatus)
       ? { status: status as TaskStatus }
@@ -218,6 +234,18 @@ function filtersFromSearch(searchParams: URLSearchParams): TaskFilters {
     ...(searchParams.get("due_after")
       ? { due_after: searchParams.get("due_after") ?? undefined }
       : {}),
+    ...(taskTypes.includes(taskType as TaskType)
+      ? { task_type: taskType as TaskType }
+      : {}),
+    ...(searchParams.get("watcher_id")
+      ? { watcher_id: searchParams.get("watcher_id") ?? undefined }
+      : {}),
+    ...(searchParams.get("external_reference")
+      ? {
+          external_reference:
+            searchParams.get("external_reference") ?? undefined,
+        }
+      : {}),
   };
 }
 
@@ -226,6 +254,11 @@ function taskPayload(values: TaskFormValues, includeStatus: boolean) {
   const description = values.description?.trim();
   const assigneeId = values.assignee_id?.trim();
   const dueDate = values.due_date?.trim();
+  const estimatedHours = values.estimated_hours?.trim();
+  const actualHours = values.actual_hours?.trim();
+  const sortOrder = values.sort_order?.trim();
+  const blockedReason = values.blocked_reason?.trim();
+  const externalReference = values.external_reference?.trim();
   return {
     title: values.title.trim(),
     description: description ? description : null,
@@ -233,6 +266,13 @@ function taskPayload(values: TaskFormValues, includeStatus: boolean) {
     ...(includeStatus && values.status ? { status: values.status } : {}),
     assignee_id: assigneeId ? assigneeId : null,
     due_date: dueDate ? dueDate : null,
+    estimated_hours: estimatedHours ? estimatedHours : null,
+    actual_hours: actualHours ? actualHours : null,
+    sort_order: sortOrder ? Number(sortOrder) : null,
+    blocked_reason: blockedReason ? blockedReason : null,
+    external_reference: externalReference ? externalReference : null,
+    task_type: values.task_type,
+    watcher_ids: values.watcher_ids ?? [],
   };
 }
 
@@ -387,6 +427,7 @@ export function TaskListPage() {
                   <th className="px-3 py-2 font-medium">Priority</th>
                   <th className="px-3 py-2 font-medium">Assignee</th>
                   <th className="px-3 py-2 font-medium">Due</th>
+                  <th className="px-3 py-2 font-medium">Type</th>
                 </tr>
               </thead>
               <tbody>
@@ -410,8 +451,9 @@ export function TaskListPage() {
                     <td className="px-3 py-3">
                       {assigneeLabel(task.assignee_id, members.data?.items)}
                     </td>
+                    <td className="px-3 py-3">{formatDate(task.due_date)}</td>
                     <td className="rounded-r-md px-3 py-3">
-                      {formatDate(task.due_date)}
+                      {optionLabel(task.task_type)}
                     </td>
                   </tr>
                 ))}
@@ -525,6 +567,59 @@ function TaskFiltersPanel({
           onChange={(event) => onFilterChange("due_before", event.target.value)}
         />
       </div>
+      <div>
+        <label htmlFor="filter_task_type" className="block text-sm font-medium">
+          Type
+        </label>
+        <select
+          id="filter_task_type"
+          className="mt-1 w-full rounded-md border border-line bg-white px-3 py-2"
+          value={filters.task_type ?? ""}
+          onChange={(event) => onFilterChange("task_type", event.target.value)}
+        >
+          <option value="">Any</option>
+          {taskTypes.map((taskType) => (
+            <option key={taskType} value={taskType}>
+              {optionLabel(taskType)}
+            </option>
+          ))}
+        </select>
+      </div>
+      <div>
+        <label htmlFor="filter_watcher" className="block text-sm font-medium">
+          Watcher
+        </label>
+        <select
+          id="filter_watcher"
+          className="mt-1 w-full rounded-md border border-line bg-white px-3 py-2"
+          value={filters.watcher_id ?? ""}
+          onChange={(event) => onFilterChange("watcher_id", event.target.value)}
+        >
+          <option value="">Any</option>
+          {members?.map((member) => (
+            <option key={member.user_id} value={member.user_id}>
+              {member.user.full_name}
+            </option>
+          ))}
+        </select>
+      </div>
+      <div>
+        <label
+          htmlFor="filter_external_reference"
+          className="block text-sm font-medium"
+        >
+          External reference
+        </label>
+        <input
+          id="filter_external_reference"
+          type="text"
+          className="mt-1 w-full rounded-md border border-line px-3 py-2"
+          value={filters.external_reference ?? ""}
+          onChange={(event) =>
+            onFilterChange("external_reference", event.target.value)
+          }
+        />
+      </div>
     </div>
   );
 }
@@ -551,6 +646,13 @@ export function TaskNewPage() {
       priority: "medium",
       assignee_id: "",
       due_date: "",
+      estimated_hours: "",
+      actual_hours: "",
+      sort_order: "",
+      blocked_reason: "",
+      external_reference: "",
+      task_type: "internal",
+      watcher_ids: [],
     },
   });
 
@@ -744,6 +846,116 @@ function TaskForm({
           {...form.register("due_date")}
         />
       </div>
+      <div className="grid gap-4 sm:grid-cols-2">
+        <div>
+          <label htmlFor="task_type" className="block text-sm font-medium">
+            Type
+          </label>
+          <select
+            id="task_type"
+            className="mt-1 w-full rounded-md border border-line bg-white px-3 py-2"
+            {...form.register("task_type")}
+          >
+            {taskTypes.map((taskType) => (
+              <option key={taskType} value={taskType}>
+                {optionLabel(taskType)}
+              </option>
+            ))}
+          </select>
+        </div>
+        <div>
+          <label
+            htmlFor="task_sort_order"
+            className="block text-sm font-medium"
+          >
+            Sort order
+          </label>
+          <input
+            id="task_sort_order"
+            type="number"
+            className="mt-1 w-full rounded-md border border-line px-3 py-2"
+            {...form.register("sort_order")}
+          />
+        </div>
+        <div>
+          <label
+            htmlFor="task_estimated_hours"
+            className="block text-sm font-medium"
+          >
+            Estimated hours
+          </label>
+          <input
+            id="task_estimated_hours"
+            type="number"
+            min="0"
+            step="0.25"
+            className="mt-1 w-full rounded-md border border-line px-3 py-2"
+            {...form.register("estimated_hours")}
+          />
+        </div>
+        <div>
+          <label
+            htmlFor="task_actual_hours"
+            className="block text-sm font-medium"
+          >
+            Actual hours
+          </label>
+          <input
+            id="task_actual_hours"
+            type="number"
+            min="0"
+            step="0.25"
+            className="mt-1 w-full rounded-md border border-line px-3 py-2"
+            {...form.register("actual_hours")}
+          />
+        </div>
+      </div>
+      <div>
+        <label
+          htmlFor="task_external_reference"
+          className="block text-sm font-medium"
+        >
+          External reference
+        </label>
+        <input
+          id="task_external_reference"
+          type="text"
+          className="mt-1 w-full rounded-md border border-line px-3 py-2"
+          {...form.register("external_reference")}
+        />
+      </div>
+      <div>
+        <label
+          htmlFor="task_blocked_reason"
+          className="block text-sm font-medium"
+        >
+          Blocked reason
+        </label>
+        <textarea
+          id="task_blocked_reason"
+          className="mt-1 min-h-20 w-full rounded-md border border-line px-3 py-2"
+          {...form.register("blocked_reason")}
+        />
+      </div>
+      {canAssignAny ? (
+        <div>
+          <label htmlFor="task_watchers" className="block text-sm font-medium">
+            Watchers
+          </label>
+          <select
+            id="task_watchers"
+            multiple
+            className="mt-1 min-h-28 w-full rounded-md border border-line bg-white px-3 py-2"
+            {...form.register("watcher_ids")}
+          >
+            {members?.map((member) => (
+              <option key={member.user_id} value={member.user_id}>
+                {member.user.full_name} ({member.user.email})
+              </option>
+            ))}
+          </select>
+        </div>
+      ) : null}
       <button
         type="submit"
         disabled={isPending}
@@ -779,6 +991,13 @@ export function TaskDetailPage() {
       priority: "medium",
       assignee_id: "",
       due_date: "",
+      estimated_hours: "",
+      actual_hours: "",
+      sort_order: "",
+      blocked_reason: "",
+      external_reference: "",
+      task_type: "internal",
+      watcher_ids: [],
     },
   });
 
@@ -791,6 +1010,14 @@ export function TaskDetailPage() {
         priority: task.data.priority,
         assignee_id: task.data.assignee_id ?? "",
         due_date: task.data.due_date ?? "",
+        estimated_hours: task.data.estimated_hours ?? "",
+        actual_hours: task.data.actual_hours ?? "",
+        sort_order:
+          task.data.sort_order === null ? "" : String(task.data.sort_order),
+        blocked_reason: task.data.blocked_reason ?? "",
+        external_reference: task.data.external_reference ?? "",
+        task_type: task.data.task_type,
+        watcher_ids: task.data.watcher_ids,
       });
     }
   }, [form, task.data]);
@@ -890,6 +1117,41 @@ export function TaskDetailPage() {
               <dt className="text-muted">Completed</dt>
               <dd className="font-medium">
                 {formatDateTime(task.data.completed_at)}
+              </dd>
+            </div>
+            <div>
+              <dt className="text-muted">Type</dt>
+              <dd className="font-medium">
+                {optionLabel(task.data.task_type)}
+              </dd>
+            </div>
+            <div>
+              <dt className="text-muted">Effort</dt>
+              <dd className="font-medium">
+                Estimated {task.data.estimated_hours ?? "0"}h / actual{" "}
+                {task.data.actual_hours ?? "0"}h
+              </dd>
+            </div>
+            <div>
+              <dt className="text-muted">External reference</dt>
+              <dd className="break-words font-medium">
+                {task.data.external_reference || "Not set"}
+              </dd>
+            </div>
+            <div>
+              <dt className="text-muted">Blocked reason</dt>
+              <dd className="break-words font-medium">
+                {task.data.blocked_reason || "Not blocked"}
+              </dd>
+            </div>
+            <div>
+              <dt className="text-muted">Watchers</dt>
+              <dd className="break-words font-medium">
+                {task.data.watcher_ids
+                  .map((watcherId) =>
+                    assigneeLabel(watcherId, members.data?.items),
+                  )
+                  .join(", ") || "None"}
               </dd>
             </div>
             <div>

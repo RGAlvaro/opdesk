@@ -9,7 +9,7 @@ import {
   Save,
 } from "lucide-react";
 import { useCallback, useEffect } from "react";
-import { useForm } from "react-hook-form";
+import { UseFormRegisterReturn, useForm } from "react-hook-form";
 import { useQueryClient } from "@tanstack/react-query";
 import {
   Link,
@@ -23,7 +23,9 @@ import { z } from "zod";
 import { ApiError, getErrorMessage } from "../../shared/api";
 import { sessionQueryKey } from "../auth/session";
 import { useOrganization } from "../organizations/api";
+import { useOrganizationMembers } from "../organizations/api";
 import {
+  OrganizationMembership,
   PaginatedResponse,
   PaginationParams,
   OrganizationRole,
@@ -34,11 +36,31 @@ import {
   useProject,
   useUpdateProject,
 } from "./api";
-import { Project } from "./types";
+import { Project, ProjectStatus, ProjectVisibility } from "./types";
+
+const projectStatuses = [
+  "planned",
+  "active",
+  "on_hold",
+  "completed",
+  "cancelled",
+] as const satisfies readonly ProjectStatus[];
+
+const projectVisibilities = [
+  "organization",
+  "project_members",
+] as const satisfies readonly ProjectVisibility[];
 
 const projectSchema = z.object({
   name: z.string().trim().min(1, "Project name is required.").max(160),
   description: z.string().trim().optional(),
+  status: z.enum(projectStatuses),
+  start_date: z.string().trim().optional(),
+  end_date: z.string().trim().optional(),
+  budget_amount: z.string().trim().optional(),
+  budget_currency: z.string().trim().max(3).optional(),
+  visibility: z.enum(projectVisibilities),
+  project_owner_id: z.string().trim().optional(),
 });
 
 type ProjectFormValues = z.infer<typeof projectSchema>;
@@ -163,6 +185,17 @@ function formatDateTime(value: string | undefined | null) {
   }).format(new Date(value));
 }
 
+/** Convert enum-like values into short readable labels. */
+function optionLabel(value: string | null | undefined) {
+  if (!value) {
+    return "Not set";
+  }
+  return value
+    .split("_")
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(" ");
+}
+
 /** Return true when the actor can manage project settings. */
 function canManageProjects(role: OrganizationRole | undefined) {
   return role === "owner" || role === "admin";
@@ -171,9 +204,19 @@ function canManageProjects(role: OrganizationRole | undefined) {
 /** Build the payload accepted by create and update project endpoints. */
 function projectPayload(values: ProjectFormValues) {
   const description = values.description?.trim();
+  const budgetAmount = values.budget_amount?.trim();
+  const budgetCurrency = values.budget_currency?.trim();
+  const projectOwnerId = values.project_owner_id?.trim();
   return {
     name: values.name.trim(),
     description: description ? description : null,
+    status: values.status,
+    start_date: values.start_date ? values.start_date : null,
+    end_date: values.end_date ? values.end_date : null,
+    budget_amount: budgetAmount ? budgetAmount : null,
+    budget_currency: budgetCurrency ? budgetCurrency.toUpperCase() : null,
+    visibility: values.visibility,
+    project_owner_id: projectOwnerId ? projectOwnerId : null,
   };
 }
 
@@ -343,10 +386,14 @@ export function ProjectNewPage() {
   const navigate = useNavigate();
   const handleAuthLoss = useFeatureAuthLoss();
   const organization = useOrganization(organizationId);
+  const members = useOrganizationMembers(
+    organizationId,
+    canManageProjects(organization.data?.role),
+  );
   const createProject = useCreateProject(organizationId ?? "");
   const form = useForm<ProjectFormValues>({
     resolver: zodResolver(projectSchema),
-    defaultValues: { name: "", description: "" },
+    defaultValues: projectFormDefaults(),
   });
 
   /** Persist a new project through the backend create endpoint. */
@@ -405,6 +452,7 @@ export function ProjectNewPage() {
           form={form}
           submitLabel="Create project"
           isPending={createProject.isPending}
+          members={members.data?.items}
           onSubmit={onSubmit}
         />
         {createProject.isError ? (
@@ -423,10 +471,12 @@ function ProjectForm({
   submitLabel,
   isPending,
   onSubmit,
+  members,
 }: {
   form: ReturnType<typeof useForm<ProjectFormValues>>;
   submitLabel: string;
   isPending: boolean;
+  members: OrganizationMembership[] | undefined;
   onSubmit: (values: ProjectFormValues) => Promise<void>;
 }) {
   return (
@@ -460,6 +510,95 @@ function ProjectForm({
           {...form.register("description")}
         />
       </div>
+      <div className="grid gap-4 sm:grid-cols-2">
+        <ProjectSelect
+          id="project_status"
+          label="Status"
+          registration={form.register("status")}
+          options={projectStatuses}
+        />
+        <ProjectSelect
+          id="project_visibility"
+          label="Visibility"
+          registration={form.register("visibility")}
+          options={projectVisibilities}
+        />
+        <div>
+          <label
+            htmlFor="project_start_date"
+            className="block text-sm font-medium"
+          >
+            Start date
+          </label>
+          <input
+            id="project_start_date"
+            type="date"
+            className="mt-1 w-full rounded-md border border-line px-3 py-2"
+            {...form.register("start_date")}
+          />
+        </div>
+        <div>
+          <label
+            htmlFor="project_end_date"
+            className="block text-sm font-medium"
+          >
+            End date
+          </label>
+          <input
+            id="project_end_date"
+            type="date"
+            className="mt-1 w-full rounded-md border border-line px-3 py-2"
+            {...form.register("end_date")}
+          />
+        </div>
+        <div>
+          <label
+            htmlFor="project_budget_amount"
+            className="block text-sm font-medium"
+          >
+            Budget amount
+          </label>
+          <input
+            id="project_budget_amount"
+            type="number"
+            min="0"
+            step="0.01"
+            className="mt-1 w-full rounded-md border border-line px-3 py-2"
+            {...form.register("budget_amount")}
+          />
+        </div>
+        <div>
+          <label
+            htmlFor="project_budget_currency"
+            className="block text-sm font-medium"
+          >
+            Budget currency
+          </label>
+          <input
+            id="project_budget_currency"
+            type="text"
+            className="mt-1 w-full rounded-md border border-line px-3 py-2 uppercase"
+            {...form.register("budget_currency")}
+          />
+        </div>
+        <div>
+          <label htmlFor="project_owner" className="block text-sm font-medium">
+            Project owner
+          </label>
+          <select
+            id="project_owner"
+            className="mt-1 w-full rounded-md border border-line bg-white px-3 py-2"
+            {...form.register("project_owner_id")}
+          >
+            <option value="">Unassigned</option>
+            {members?.map((member) => (
+              <option key={member.user_id} value={member.user_id}>
+                {member.user.full_name} ({member.user.email})
+              </option>
+            ))}
+          </select>
+        </div>
+      </div>
       <button
         type="submit"
         disabled={isPending}
@@ -469,6 +608,53 @@ function ProjectForm({
         {isPending ? "Saving" : submitLabel}
       </button>
     </form>
+  );
+}
+
+/** Default project metadata form values for create and settings screens. */
+function projectFormDefaults(): ProjectFormValues {
+  return {
+    name: "",
+    description: "",
+    status: "active",
+    start_date: "",
+    end_date: "",
+    budget_amount: "",
+    budget_currency: "",
+    visibility: "organization",
+    project_owner_id: "",
+  };
+}
+
+/** Render a project enum select with shared labels. */
+function ProjectSelect({
+  id,
+  label,
+  registration,
+  options,
+}: {
+  id: string;
+  label: string;
+  registration: UseFormRegisterReturn;
+  options: readonly string[];
+}) {
+  return (
+    <div>
+      <label htmlFor={id} className="block text-sm font-medium">
+        {label}
+      </label>
+      <select
+        id={id}
+        className="mt-1 w-full rounded-md border border-line bg-white px-3 py-2"
+        {...registration}
+      >
+        {options.map((option) => (
+          <option key={option} value={option}>
+            {optionLabel(option)}
+          </option>
+        ))}
+      </select>
+    </div>
   );
 }
 
@@ -517,6 +703,33 @@ export function ProjectDetailPage() {
               <dt className="text-muted">Description</dt>
               <dd className="break-words font-medium">
                 {project.data.description || "No description"}
+              </dd>
+            </div>
+            <div>
+              <dt className="text-muted">Status</dt>
+              <dd className="font-medium">
+                {optionLabel(project.data.status)}
+              </dd>
+            </div>
+            <div>
+              <dt className="text-muted">Visibility</dt>
+              <dd className="font-medium">
+                {optionLabel(project.data.visibility)}
+              </dd>
+            </div>
+            <div>
+              <dt className="text-muted">Dates</dt>
+              <dd className="font-medium">
+                {project.data.start_date || "Not set"} to{" "}
+                {project.data.end_date || "Not set"}
+              </dd>
+            </div>
+            <div>
+              <dt className="text-muted">Budget</dt>
+              <dd className="font-medium">
+                {project.data.budget_amount && project.data.budget_currency
+                  ? `${project.data.budget_amount} ${project.data.budget_currency}`
+                  : "Not set"}
               </dd>
             </div>
             <div>
@@ -580,10 +793,14 @@ export function ProjectSettingsPage() {
   const handleAuthLoss = useFeatureAuthLoss();
   const project = useProject(projectId);
   const organization = useOrganization(project.data?.organization_id);
+  const members = useOrganizationMembers(
+    project.data?.organization_id,
+    canManageProjects(organization.data?.role),
+  );
   const updateProject = useUpdateProject(projectId ?? "");
   const form = useForm<ProjectFormValues>({
     resolver: zodResolver(projectSchema),
-    defaultValues: { name: "", description: "" },
+    defaultValues: projectFormDefaults(),
   });
 
   useEffect(() => {
@@ -591,6 +808,13 @@ export function ProjectSettingsPage() {
       form.reset({
         name: project.data.name,
         description: project.data.description ?? "",
+        status: project.data.status,
+        start_date: project.data.start_date ?? "",
+        end_date: project.data.end_date ?? "",
+        budget_amount: project.data.budget_amount ?? "",
+        budget_currency: project.data.budget_currency ?? "",
+        visibility: project.data.visibility,
+        project_owner_id: project.data.project_owner_id ?? "",
       });
     }
   }, [form, project.data]);
@@ -669,6 +893,7 @@ export function ProjectSettingsPage() {
           form={form}
           submitLabel="Save project"
           isPending={updateProject.isPending}
+          members={members.data?.items}
           onSubmit={onSubmit}
         />
         {updateProject.isSuccess ? (

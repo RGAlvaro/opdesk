@@ -13,6 +13,12 @@ const user = {
   id: "8847c8bf-2dd2-48f7-a3d1-5b1008700e4e",
   email: "user@example.com",
   full_name: "User Name",
+  job_title: null,
+  phone: null,
+  timezone: null,
+  locale: null,
+  avatar_url: null,
+  bio: null,
   is_active: true,
   is_superuser: false,
   created_at: "2026-06-15T10:00:00Z",
@@ -24,6 +30,20 @@ const ownerOrganization = {
   name: "Acme Ops",
   slug: "acme-ops",
   role: "owner",
+  employee_count: 42,
+  industry: "Logistics",
+  website: "https://example.com",
+  contact_email: "ops@example.com",
+  phone: "+34 600 000 000",
+  address_line1: "Main street 1",
+  address_line2: null,
+  city: "Madrid",
+  region: "Madrid",
+  postal_code: "28001",
+  country: "Spain",
+  tax_id: "ES12345678",
+  logo_url: null,
+  description: "Regional operations team",
   created_at: "2026-06-20T10:00:00Z",
   updated_at: "2026-06-20T10:00:00Z",
 };
@@ -193,7 +213,6 @@ describe("SPEC-105 frontend organizations UI", () => {
     renderRoute("/app/organizations/new");
 
     await actor.type(await screen.findByLabelText("Name"), "Acme Ops");
-    await actor.type(screen.getByLabelText("Slug"), "acme-ops");
     await actor.click(
       screen.getByRole("button", { name: "Create organization" }),
     );
@@ -213,20 +232,19 @@ describe("SPEC-105 frontend organizations UI", () => {
   it("renders safe organization create errors", async () => {
     mockFetch(
       jsonResponse(user),
-      apiError("organization_slug_taken", "Organization slug is taken.", 409),
+      apiError("invalid_organization", "Website URL is invalid.", 400),
     );
     const actor = userEvent.setup();
 
     renderRoute("/app/organizations/new");
 
     await actor.type(await screen.findByLabelText("Name"), "Acme Ops");
-    await actor.type(screen.getByLabelText("Slug"), "acme-ops");
     await actor.click(
       screen.getByRole("button", { name: "Create organization" }),
     );
 
     expect(await screen.findByRole("alert")).toHaveTextContent(
-      "Organization slug is taken.",
+      "Website URL is invalid.",
     );
   });
 
@@ -251,7 +269,6 @@ describe("SPEC-105 frontend organizations UI", () => {
     const updatedOrganization = {
       ...ownerOrganization,
       name: "Updated Ops",
-      slug: "updated-ops",
     };
     const fetchMock = mockFetch(
       jsonResponse(user),
@@ -268,9 +285,6 @@ describe("SPEC-105 frontend organizations UI", () => {
     const name = await screen.findByLabelText("Name");
     await actor.clear(name);
     await actor.type(name, "Updated Ops");
-    const slug = screen.getByLabelText("Slug");
-    await actor.clear(slug);
-    await actor.type(slug, "updated-ops");
     await actor.click(
       screen.getByRole("button", { name: "Save organization" }),
     );
@@ -280,8 +294,8 @@ describe("SPEC-105 frontend organizations UI", () => {
     );
 
     await actor.type(
-      screen.getByLabelText(/type updated-ops to confirm/i),
-      "updated-ops",
+      screen.getByLabelText(/type acme-ops to confirm/i),
+      "acme-ops",
     );
     await actor.click(
       screen.getByRole("button", { name: "Delete organization" }),

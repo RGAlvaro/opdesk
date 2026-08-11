@@ -13,7 +13,7 @@ import {
   UsersRound,
 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { useForm } from "react-hook-form";
+import { UseFormRegisterReturn, useForm } from "react-hook-form";
 import { useQueryClient } from "@tanstack/react-query";
 import { Link, Navigate, useNavigate, useParams } from "react-router-dom";
 import { z } from "zod";
@@ -34,12 +34,41 @@ import {
 import {
   Organization,
   OrganizationMembership,
+  OrganizationPayload,
   OrganizationRole,
 } from "./types";
 
 const organizationSchema = z.object({
   name: z.string().trim().min(1, "Organization name is required.").max(120),
-  slug: z.string().trim().max(120).optional(),
+  employee_count: z.string().trim().optional(),
+  industry: z.string().trim().max(120).optional(),
+  website: z
+    .string()
+    .trim()
+    .url("Website URL must be valid.")
+    .optional()
+    .or(z.literal("")),
+  contact_email: z
+    .string()
+    .trim()
+    .email("Contact email must be valid.")
+    .optional()
+    .or(z.literal("")),
+  phone: z.string().trim().max(40).optional(),
+  address_line1: z.string().trim().max(160).optional(),
+  address_line2: z.string().trim().max(160).optional(),
+  city: z.string().trim().max(120).optional(),
+  region: z.string().trim().max(120).optional(),
+  postal_code: z.string().trim().max(40).optional(),
+  country: z.string().trim().max(120).optional(),
+  tax_id: z.string().trim().max(80).optional(),
+  logo_url: z
+    .string()
+    .trim()
+    .url("Logo URL must be valid.")
+    .optional()
+    .or(z.literal("")),
+  description: z.string().trim().max(2000).optional(),
 });
 
 const settingsSchema = organizationSchema.extend({
@@ -124,12 +153,38 @@ function formatDateTime(value: string | undefined) {
 }
 
 /** Build the payload accepted by create and update organization endpoints. */
-function organizationPayload(values: OrganizationFormValues) {
-  const slug = values.slug?.trim();
+function organizationPayload(
+  values: OrganizationFormValues,
+): OrganizationPayload {
   return {
     name: values.name.trim(),
-    ...(slug ? { slug } : {}),
+    employee_count: optionalNumber(values.employee_count),
+    industry: optionalText(values.industry),
+    website: optionalText(values.website),
+    contact_email: optionalText(values.contact_email),
+    phone: optionalText(values.phone),
+    address_line1: optionalText(values.address_line1),
+    address_line2: optionalText(values.address_line2),
+    city: optionalText(values.city),
+    region: optionalText(values.region),
+    postal_code: optionalText(values.postal_code),
+    country: optionalText(values.country),
+    tax_id: optionalText(values.tax_id),
+    logo_url: optionalText(values.logo_url),
+    description: optionalText(values.description),
   };
+}
+
+/** Convert blank optional form fields into null for backend normalization. */
+function optionalText(value: string | undefined) {
+  const trimmed = value?.trim() ?? "";
+  return trimmed ? trimmed : null;
+}
+
+/** Convert optional numeric inputs into numbers or null. */
+function optionalNumber(value: string | undefined) {
+  const trimmed = value?.trim() ?? "";
+  return trimmed ? Number(trimmed) : null;
 }
 
 /** Render a small status pill for owner/admin/member roles. */
@@ -244,7 +299,7 @@ export function OrganizationNewPage() {
   const createOrganization = useCreateOrganization();
   const form = useForm<OrganizationFormValues>({
     resolver: zodResolver(organizationSchema),
-    defaultValues: { name: "", slug: "" },
+    defaultValues: organizationFormDefaults(),
   });
 
   /** Persist a new organization through the backend create endpoint. */
@@ -314,22 +369,106 @@ function OrganizationForm({
           </p>
         ) : null}
       </div>
+      <div className="grid gap-4 sm:grid-cols-2">
+        <OrganizationInput
+          id="organization_employee_count"
+          label="Employee count"
+          type="number"
+          min="0"
+          registration={form.register("employee_count")}
+          error={form.formState.errors.employee_count?.message}
+        />
+        <OrganizationInput
+          id="organization_industry"
+          label="Industry"
+          registration={form.register("industry")}
+          error={form.formState.errors.industry?.message}
+        />
+        <OrganizationInput
+          id="organization_website"
+          label="Website"
+          type="url"
+          registration={form.register("website")}
+          error={form.formState.errors.website?.message}
+        />
+        <OrganizationInput
+          id="organization_contact_email"
+          label="Contact email"
+          type="email"
+          registration={form.register("contact_email")}
+          error={form.formState.errors.contact_email?.message}
+        />
+        <OrganizationInput
+          id="organization_phone"
+          label="Phone"
+          registration={form.register("phone")}
+          error={form.formState.errors.phone?.message}
+        />
+        <OrganizationInput
+          id="organization_tax_id"
+          label="Tax ID"
+          registration={form.register("tax_id")}
+          error={form.formState.errors.tax_id?.message}
+        />
+        <OrganizationInput
+          id="organization_logo_url"
+          label="Logo URL"
+          type="url"
+          registration={form.register("logo_url")}
+          error={form.formState.errors.logo_url?.message}
+        />
+        <OrganizationInput
+          id="organization_country"
+          label="Country"
+          registration={form.register("country")}
+          error={form.formState.errors.country?.message}
+        />
+        <OrganizationInput
+          id="organization_address_line1"
+          label="Address line 1"
+          registration={form.register("address_line1")}
+          error={form.formState.errors.address_line1?.message}
+        />
+        <OrganizationInput
+          id="organization_address_line2"
+          label="Address line 2"
+          registration={form.register("address_line2")}
+          error={form.formState.errors.address_line2?.message}
+        />
+        <OrganizationInput
+          id="organization_city"
+          label="City"
+          registration={form.register("city")}
+          error={form.formState.errors.city?.message}
+        />
+        <OrganizationInput
+          id="organization_region"
+          label="Region"
+          registration={form.register("region")}
+          error={form.formState.errors.region?.message}
+        />
+        <OrganizationInput
+          id="organization_postal_code"
+          label="Postal code"
+          registration={form.register("postal_code")}
+          error={form.formState.errors.postal_code?.message}
+        />
+      </div>
       <div>
         <label
-          htmlFor="organization_slug"
+          htmlFor="organization_description"
           className="block text-sm font-medium"
         >
-          Slug
+          Description
         </label>
-        <input
-          id="organization_slug"
-          type="text"
-          className="mt-1 w-full rounded-md border border-line px-3 py-2"
-          {...form.register("slug")}
+        <textarea
+          id="organization_description"
+          className="mt-1 min-h-24 w-full rounded-md border border-line px-3 py-2"
+          {...form.register("description")}
         />
-        {form.formState.errors.slug ? (
+        {form.formState.errors.description ? (
           <p className="mt-1 text-sm text-accent">
-            {form.formState.errors.slug.message}
+            {form.formState.errors.description.message}
           </p>
         ) : null}
       </div>
@@ -342,6 +481,60 @@ function OrganizationForm({
         {isPending ? "Saving" : submitLabel}
       </button>
     </form>
+  );
+}
+
+/** Default organization metadata form state shared by create and settings. */
+function organizationFormDefaults(): OrganizationFormValues {
+  return {
+    name: "",
+    employee_count: "",
+    industry: "",
+    website: "",
+    contact_email: "",
+    phone: "",
+    address_line1: "",
+    address_line2: "",
+    city: "",
+    region: "",
+    postal_code: "",
+    country: "",
+    tax_id: "",
+    logo_url: "",
+    description: "",
+  };
+}
+
+/** Render one organization metadata input with consistent validation output. */
+function OrganizationInput({
+  id,
+  label,
+  registration,
+  error,
+  type = "text",
+  min,
+}: {
+  id: string;
+  label: string;
+  registration: UseFormRegisterReturn;
+  error: string | undefined;
+  type?: string;
+  min?: string;
+}) {
+  return (
+    <div>
+      <label htmlFor={id} className="block text-sm font-medium">
+        {label}
+      </label>
+      <input
+        id={id}
+        type={type}
+        min={min}
+        className="mt-1 w-full rounded-md border border-line px-3 py-2"
+        {...registration}
+      />
+      {error ? <p className="mt-1 text-sm text-accent">{error}</p> : null}
+    </div>
   );
 }
 
@@ -388,6 +581,38 @@ export function OrganizationDetailPage() {
             <div>
               <dt className="text-muted">Slug</dt>
               <dd className="font-medium">{organization.data.slug}</dd>
+            </div>
+            <div>
+              <dt className="text-muted">Industry</dt>
+              <dd className="font-medium">
+                {organization.data.industry || "Not set"}
+              </dd>
+            </div>
+            <div>
+              <dt className="text-muted">Website</dt>
+              <dd className="break-words font-medium">
+                {organization.data.website || "Not set"}
+              </dd>
+            </div>
+            <div>
+              <dt className="text-muted">Contact email</dt>
+              <dd className="break-words font-medium">
+                {organization.data.contact_email || "Not set"}
+              </dd>
+            </div>
+            <div>
+              <dt className="text-muted">Location</dt>
+              <dd className="font-medium">
+                {[organization.data.city, organization.data.country]
+                  .filter(Boolean)
+                  .join(", ") || "Not set"}
+              </dd>
+            </div>
+            <div>
+              <dt className="text-muted">Description</dt>
+              <dd className="break-words font-medium">
+                {organization.data.description || "No description"}
+              </dd>
             </div>
             <div>
               <dt className="text-muted">Created</dt>
@@ -469,14 +694,30 @@ export function OrganizationSettingsPage() {
   const deleteOrganization = useDeleteOrganization(organizationId ?? "");
   const form = useForm<SettingsFormValues>({
     resolver: zodResolver(settingsSchema),
-    defaultValues: { name: "", slug: "", confirm_delete: "" },
+    defaultValues: { ...organizationFormDefaults(), confirm_delete: "" },
   });
 
   useEffect(() => {
     if (organization.data) {
       form.reset({
         name: organization.data.name,
-        slug: organization.data.slug,
+        employee_count:
+          organization.data.employee_count === null
+            ? ""
+            : String(organization.data.employee_count),
+        industry: organization.data.industry ?? "",
+        website: organization.data.website ?? "",
+        contact_email: organization.data.contact_email ?? "",
+        phone: organization.data.phone ?? "",
+        address_line1: organization.data.address_line1 ?? "",
+        address_line2: organization.data.address_line2 ?? "",
+        city: organization.data.city ?? "",
+        region: organization.data.region ?? "",
+        postal_code: organization.data.postal_code ?? "",
+        country: organization.data.country ?? "",
+        tax_id: organization.data.tax_id ?? "",
+        logo_url: organization.data.logo_url ?? "",
+        description: organization.data.description ?? "",
         confirm_delete: "",
       });
     }
@@ -548,6 +789,9 @@ export function OrganizationSettingsPage() {
       <OrganizationHeader organization={organization.data} />
       <div className="rounded-md border border-line bg-white p-6 shadow-panel">
         <h2 className="text-lg font-semibold">Settings</h2>
+        <p className="mt-2 text-sm text-muted">
+          Slug: <span className="font-medium">{organization.data.slug}</span>
+        </p>
         <OrganizationForm
           form={form}
           submitLabel="Save organization"

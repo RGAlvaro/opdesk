@@ -27,5 +27,17 @@ def update_me(
     db: Annotated[Session, Depends(get_db)],
 ) -> UserRead:
     """Update mutable fields on the authenticated user's own profile."""
-    user = UserService(db).update_profile(current_user, payload.full_name)
+    user = UserService(db).update_profile(
+        current_user,
+        full_name=payload.full_name,
+        email=payload.email,
+        current_password=payload.current_password,
+        job_title=payload.job_title,
+        phone=payload.phone,
+        timezone=payload.timezone,
+        locale=payload.locale,
+        avatar_url=payload.avatar_url,
+        bio=payload.bio,
+        fields_set=payload.model_fields_set,
+    )
     return UserRead.model_validate(user)

@@ -576,6 +576,88 @@ def test_api_users_me_updates_only_current_profile(
     assert response.json()["full_name"] == "Updated Name"
 
 
+def test_api_users_me_updates_profile_metadata(
+    api_client: tuple[TestClient, Session],
+) -> None:
+    """The profile API stores optional SPEC-308 metadata and normalizes blanks."""
+    client, _ = api_client
+    api_register_user(client)
+    client.post("/api/v1/auth/login", json=api_login_payload())
+
+    response = client.patch(
+        "/api/v1/users/me",
+        json={
+            "job_title": "  Operations Manager  ",
+            "phone": " +34 600 000 000 ",
+            "timezone": "Europe/Madrid",
+            "locale": "es_ES",
+            "avatar_url": "https://example.com/avatar.png",
+            "bio": "  Keeps the workflow moving.  ",
+        },
+    )
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["job_title"] == "Operations Manager"
+    assert body["phone"] == "+34 600 000 000"
+    assert body["timezone"] == "Europe/Madrid"
+    assert body["locale"] == "es-ES"
+    assert body["avatar_url"] == "https://example.com/avatar.png"
+    assert body["bio"] == "Keeps the workflow moving."
+
+
+def test_api_users_me_changes_email_with_current_password(
+    api_client: tuple[TestClient, Session],
+) -> None:
+    """Email changes require the current password and store normalized email."""
+    client, _ = api_client
+    api_register_user(client)
+    client.post("/api/v1/auth/login", json=api_login_payload())
+
+    response = client.patch(
+        "/api/v1/users/me",
+        json={"email": " NEW@Example.COM ", "current_password": "Example1234"},
+    )
+
+    assert response.status_code == 200
+    assert response.json()["email"] == "new@example.com"
+
+
+def test_api_users_me_rejects_email_change_without_valid_password(
+    api_client: tuple[TestClient, Session],
+) -> None:
+    """Missing or invalid password confirmation leaves the email unchanged."""
+    client, _ = api_client
+    api_register_user(client)
+    client.post("/api/v1/auth/login", json=api_login_payload())
+
+    response = client.patch("/api/v1/users/me", json={"email": "new@example.com"})
+    after = client.get("/api/v1/users/me")
+
+    assert_error_response(response, 403, "invalid_current_password")
+    assert after.json()["email"] == "user@example.com"
+
+
+def test_api_users_me_rejects_duplicate_email_change(
+    api_client: tuple[TestClient, Session],
+) -> None:
+    """Email changes enforce case-insensitive uniqueness across accounts."""
+    client, _ = api_client
+    api_register_user(client, api_register_payload(email="first@example.com"))
+    api_register_user(client, api_register_payload(email="taken@example.com"))
+    client.post(
+        "/api/v1/auth/login",
+        json=api_login_payload(email="first@example.com"),
+    )
+
+    response = client.patch(
+        "/api/v1/users/me",
+        json={"email": "TAKEN@example.com", "current_password": "Example1234"},
+    )
+
+    assert_error_response(response, 409, "email_already_registered")
+
+
 def test_users_me_rejects_invalid_profile(db_session: Session, settings: Settings) -> None:
     """Service-level profile update rejects invalid names."""
     register_user(db_session)
@@ -598,5 +680,18 @@ def test_api_users_me_rejects_invalid_profile(api_client: tuple[TestClient, Sess
     client.post("/api/v1/auth/login", json=api_login_payload())
 
     response = client.patch("/api/v1/users/me", json={"full_name": ""})
+
+    assert_error_response(response, 400, "invalid_profile")
+
+
+def test_api_users_me_rejects_invalid_profile_metadata(
+    api_client: tuple[TestClient, Session],
+) -> None:
+    """Invalid profile metadata returns the documented profile error."""
+    client, _ = api_client
+    api_register_user(client)
+    client.post("/api/v1/auth/login", json=api_login_payload())
+
+    response = client.patch("/api/v1/users/me", json={"avatar_url": "ftp://example.com/me.png"})
 
     assert_error_response(response, 400, "invalid_profile")

@@ -35,6 +35,20 @@ def organization_read(
         name=organization.name,
         slug=organization.slug,
         role=membership.role,
+        employee_count=organization.employee_count,
+        industry=organization.industry,
+        website=organization.website,
+        contact_email=organization.contact_email,
+        phone=organization.phone,
+        address_line1=organization.address_line1,
+        address_line2=organization.address_line2,
+        city=organization.city,
+        region=organization.region,
+        postal_code=organization.postal_code,
+        country=organization.country,
+        tax_id=organization.tax_id,
+        logo_url=organization.logo_url,
+        description=organization.description,
         created_at=organization.created_at,
         updated_at=organization.updated_at,
     )
@@ -61,7 +75,10 @@ def create_organization(
 ) -> OrganizationRead:
     """Create a tenant workspace owned by the authenticated user."""
     organization, membership = OrganizationService(db).create_organization(
-        current_user, payload.name, payload.slug
+        current_user,
+        name=payload.name,
+        fields_set=payload.model_fields_set,
+        metadata=payload.model_dump(),
     )
     return organization_read(organization, membership)
 
@@ -105,7 +122,11 @@ def update_organization(
 ) -> OrganizationRead:
     """Update organization identity fields when the actor is an owner."""
     organization, membership = OrganizationService(db).update_organization(
-        current_user, organization_id, payload.name, payload.slug
+        current_user,
+        organization_id,
+        payload.name,
+        fields_set=payload.model_fields_set,
+        metadata=payload.model_dump(),
     )
     return organization_read(organization, membership)
 

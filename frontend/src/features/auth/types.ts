@@ -5,6 +5,12 @@ export type User = {
   id: string;
   email: string;
   full_name: string;
+  job_title: string | null;
+  phone: string | null;
+  timezone: string | null;
+  locale: string | null;
+  avatar_url: string | null;
+  bio: string | null;
   is_active: boolean;
   is_superuser: boolean;
   created_at: string;

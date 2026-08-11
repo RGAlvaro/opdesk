@@ -44,7 +44,7 @@ Use this index for routing. Use `docs/project-state.md` for the compact current 
 | `SPEC-305` | Draft | Project clients and client-created tickets | `SPEC-102`, `SPEC-103`, optionally `SPEC-303` | Client project access, ticket APIs, ticket UI, migrations |
 | `SPEC-306` | Draft | Persistent in-app notifications | `SPEC-201`, optionally `SPEC-303`, `SPEC-304` | Notification models, APIs, inbox UI, notification fan-out |
 | `SPEC-307` | Implemented | Release automation and safe production updates after initial deployment | `SPEC-301`, initial public deployment | GitHub Actions/manual release workflow, pre-deploy backup script, production migrations, post-deploy checks, rollback docs |
-| `SPEC-308` | Ready | Enriched profile, organization, project, and task metadata | `SPEC-101`, `SPEC-102`, `SPEC-103`, `SPEC-104`, `SPEC-105`, `SPEC-106` | User profile, organization metadata, project metadata, task metadata, migrations, frontend forms |
+| `SPEC-308` | Implemented | Enriched profile, organization, project, and task metadata | `SPEC-101`, `SPEC-102`, `SPEC-103`, `SPEC-104`, `SPEC-105`, `SPEC-106` | User profile, organization metadata, project metadata, task metadata, migrations, frontend forms |
 | `SPEC-309` | Ready | Project-scoped task labels | `SPEC-103`, `SPEC-106`, `SPEC-308`, optionally `SPEC-303` | Label models/APIs, task label assignments, task filters, label UI, migrations |
 | `SPEC-310` | Ready | Production release changelog | `SPEC-307`, `SPEC-104` | `CHANGELOG.md`, release validation, public changelog route/link |
 | `SPEC-311` | Draft | Static public portfolio home for OpsDesk and future apps | `SPEC-104`, `SPEC-310` | Public `/` route, app cards, changelog link, frontend tests |

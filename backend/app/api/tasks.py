@@ -17,7 +17,7 @@ from app.services.tasks import TaskService
 router = APIRouter(prefix="/api/v1", tags=["tasks"])
 
 
-def task_read(task: Task) -> TaskRead:
+def task_read(task: Task, watcher_ids: list[uuid.UUID] | None = None) -> TaskRead:
     """Convert a persisted task into the public response contract."""
     return TaskRead(
         id=task.id,
@@ -30,6 +30,13 @@ def task_read(task: Task) -> TaskRead:
         assignee_id=task.assignee_id,
         due_date=task.due_date,
         completed_at=task.completed_at,
+        estimated_hours=task.estimated_hours,
+        actual_hours=task.actual_hours,
+        sort_order=task.sort_order,
+        blocked_reason=task.blocked_reason,
+        external_reference=task.external_reference,
+        task_type=task.task_type,
+        watcher_ids=watcher_ids or [],
         created_by_id=task.created_by_id,
         created_at=task.created_at,
         updated_at=task.updated_at,
@@ -52,8 +59,16 @@ def create_task(
         priority=payload.priority,
         assignee_id=payload.assignee_id,
         due_date=payload.due_date,
+        estimated_hours=payload.estimated_hours,
+        actual_hours=payload.actual_hours,
+        sort_order=payload.sort_order,
+        blocked_reason=payload.blocked_reason,
+        external_reference=payload.external_reference,
+        task_type=payload.task_type,
+        watcher_ids=payload.watcher_ids,
     )
-    return task_read(task)
+    service = TaskService(db)
+    return task_read(task, service.list_watcher_user_ids(task.id))
 
 
 @router.get("/projects/{project_id}/tasks", response_model=TaskListResponse)
@@ -68,6 +83,9 @@ def list_tasks(
     priority: str | None = None,
     due_before: date | None = None,
     due_after: date | None = None,
+    task_type: str | None = None,
+    watcher_id: uuid.UUID | None = None,
+    external_reference: str | None = None,
 ) -> TaskListResponse:
     """List project tasks using pagination and optional filters."""
     tasks, total = TaskService(db).list_tasks(
@@ -80,9 +98,13 @@ def list_tasks(
         priority=priority,
         due_before=due_before,
         due_after=due_after,
+        task_type=task_type,
+        watcher_id=watcher_id,
+        external_reference=external_reference,
     )
+    service = TaskService(db)
     return TaskListResponse(
-        items=[task_read(task) for task in tasks],
+        items=[task_read(task, service.list_watcher_user_ids(task.id)) for task in tasks],
         total=total,
         limit=limit,
         offset=offset,
@@ -96,8 +118,9 @@ def get_task(
     db: Annotated[Session, Depends(get_db)],
 ) -> TaskRead:
     """Return one task only when the actor belongs to its organization."""
-    task, _ = TaskService(db).get_task(current_user, task_id)
-    return task_read(task)
+    service = TaskService(db)
+    task, _ = service.get_task(current_user, task_id)
+    return task_read(task, service.list_watcher_user_ids(task.id))
 
 
 @router.patch("/tasks/{task_id}", response_model=TaskRead)
@@ -117,6 +140,14 @@ def update_task(
         priority=payload.priority,
         assignee_id=payload.assignee_id,
         due_date=payload.due_date,
+        estimated_hours=payload.estimated_hours,
+        actual_hours=payload.actual_hours,
+        sort_order=payload.sort_order,
+        blocked_reason=payload.blocked_reason,
+        external_reference=payload.external_reference,
+        task_type=payload.task_type,
+        watcher_ids=payload.watcher_ids,
         fields_set=payload.model_fields_set,
     )
-    return task_read(task)
+    service = TaskService(db)
+    return task_read(task, service.list_watcher_user_ids(task.id))

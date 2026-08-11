@@ -22,8 +22,41 @@ export type Organization = {
   name: string;
   slug: string;
   role: OrganizationRole;
+  employee_count: number | null;
+  industry: string | null;
+  website: string | null;
+  contact_email: string | null;
+  phone: string | null;
+  address_line1: string | null;
+  address_line2: string | null;
+  city: string | null;
+  region: string | null;
+  postal_code: string | null;
+  country: string | null;
+  tax_id: string | null;
+  logo_url: string | null;
+  description: string | null;
   created_at: string;
   updated_at: string;
+};
+
+/** Payload accepted by organization create and update mutations. */
+export type OrganizationPayload = {
+  name?: string;
+  employee_count?: number | null;
+  industry?: string | null;
+  website?: string | null;
+  contact_email?: string | null;
+  phone?: string | null;
+  address_line1?: string | null;
+  address_line2?: string | null;
+  city?: string | null;
+  region?: string | null;
+  postal_code?: string | null;
+  country?: string | null;
+  tax_id?: string | null;
+  logo_url?: string | null;
+  description?: string | null;
 };
 
 /** Safe user fields embedded inside membership responses. */

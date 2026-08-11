@@ -7,6 +7,7 @@ import {
   MembershipListResponse,
   Organization,
   OrganizationListResponse,
+  OrganizationPayload,
   OrganizationRole,
 } from "./types";
 
@@ -80,7 +81,7 @@ export function useOrganizationMembers(
 export function useCreateOrganization() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (payload: { name: string; slug?: string }) =>
+    mutationFn: (payload: OrganizationPayload) =>
       apiRequest<Organization>("/api/v1/organizations", {
         method: "POST",
         body: JSON.stringify(payload),
@@ -99,7 +100,7 @@ export function useCreateOrganization() {
 export function useUpdateOrganization(organizationId: string) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (payload: { name?: string; slug?: string }) =>
+    mutationFn: (payload: OrganizationPayload) =>
       apiRequest<Organization>(`/api/v1/organizations/${organizationId}`, {
         method: "PATCH",
         body: JSON.stringify(payload),

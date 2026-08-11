@@ -4,6 +4,7 @@ import logging
 import re
 import unicodedata
 import uuid
+from typing import Any
 
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from sqlalchemy.orm import Session
@@ -13,6 +14,7 @@ from app.models.organization import MembershipRole, Organization, OrganizationMe
 from app.models.user import User
 from app.repositories.organizations import OrganizationRepository
 from app.repositories.users import UserRepository
+from app.services.metadata import optional_email, optional_string, optional_url
 
 logger = logging.getLogger(__name__)
 SLUG_PATTERN = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
@@ -54,15 +56,21 @@ class OrganizationService:
         self.users = UserRepository(db)
 
     def create_organization(
-        self, actor: User, name: str, slug: str | None
+        self,
+        actor: User,
+        *,
+        name: str,
+        fields_set: set[str],
+        metadata: dict[str, Any],
     ) -> tuple[Organization, OrganizationMembership]:
         """Create an organization and its owner membership atomically."""
+        if "slug" in fields_set:
+            raise APIError(400, "invalid_organization", "Organization slug is backend-generated.")
         normalized_name = normalize_organization_name(name)
-        normalized_slug = generate_slug(normalized_name) if slug is None else validate_slug(slug)
-        if self.organizations.get_by_slug(normalized_slug) is not None:
-            self._raise_slug_conflict()
+        normalized_slug = self._generate_unique_slug(normalized_name)
 
         organization = Organization(name=normalized_name, slug=normalized_slug)
+        self._apply_metadata(organization, metadata, fields_set)
         try:
             self.organizations.add_organization(organization)
             membership = self.organizations.add_membership(
@@ -78,7 +86,7 @@ class OrganizationService:
         except IntegrityError as exc:
             self.db.rollback()
             raise APIError(
-                409, "organization_slug_taken", "Organization slug is already in use."
+                400, "invalid_organization", "Organization could not be created."
             ) from exc
         return organization, membership
 
@@ -102,22 +110,22 @@ class OrganizationService:
         actor: User,
         organization_id: uuid.UUID,
         name: str | None,
-        slug: str | None,
+        fields_set: set[str],
+        metadata: dict[str, Any],
     ) -> tuple[Organization, OrganizationMembership]:
         """Apply valid owner-only organization name or slug changes."""
         organization, membership = self.get_organization(actor, organization_id)
         self._require_role(membership, {MembershipRole.OWNER})
-        if name is None and slug is None:
+        if "slug" in fields_set:
+            raise APIError(400, "invalid_organization", "Organization slug is backend-generated.")
+        if not fields_set:
             raise APIError(400, "invalid_organization", "At least one field must be updated.")
 
         if name is not None:
             organization.name = normalize_organization_name(name)
-        if slug is not None:
-            normalized_slug = validate_slug(slug)
-            existing = self.organizations.get_by_slug(normalized_slug)
-            if existing is not None and existing.id != organization.id:
-                self._raise_slug_conflict()
-            organization.slug = normalized_slug
+        if "name" in fields_set and name is None:
+            raise APIError(400, "invalid_organization", "Name is required.")
+        self._apply_metadata(organization, metadata, fields_set)
 
         try:
             self.db.add(organization)
@@ -128,7 +136,71 @@ class OrganizationService:
             raise APIError(
                 409, "organization_slug_taken", "Organization slug is already in use."
             ) from exc
+        if fields_set - {"name"}:
+            logger.info(
+                "organization metadata updated actor_id=%s organization_id=%s",
+                actor.id,
+                organization.id,
+            )
         return organization, membership
+
+    def _generate_unique_slug(self, name: str) -> str:
+        """Generate a slug with numeric suffixes until it is globally available."""
+        base_slug = generate_slug(name)
+        candidate = base_slug
+        suffix = 2
+        while self.organizations.get_by_slug(candidate) is not None:
+            suffix_text = f"-{suffix}"
+            candidate = f"{base_slug[: 120 - len(suffix_text)]}{suffix_text}"
+            suffix += 1
+        return candidate
+
+    @staticmethod
+    def _apply_metadata(
+        organization: Organization, metadata: dict[str, Any], fields_set: set[str]
+    ) -> None:
+        """Normalize optional organization metadata fields onto the model."""
+        if "employee_count" in fields_set:
+            employee_count = metadata["employee_count"]
+            if employee_count is not None and int(employee_count) < 0:
+                raise APIError(400, "invalid_organization", "Employee count must be non-negative.")
+            organization.employee_count = employee_count
+        text_fields = {
+            "industry": 120,
+            "phone": 40,
+            "address_line1": 160,
+            "address_line2": 160,
+            "city": 120,
+            "region": 120,
+            "postal_code": 40,
+            "country": 120,
+            "tax_id": 80,
+            "description": 2000,
+        }
+        for field, max_length in text_fields.items():
+            if field in fields_set:
+                setattr(
+                    organization,
+                    field,
+                    optional_string(
+                        metadata[field],
+                        max_length=max_length,
+                        code="invalid_organization",
+                        field=field,
+                    ),
+                )
+        if "website" in fields_set:
+            organization.website = optional_url(
+                metadata["website"], code="invalid_organization", field="website"
+            )
+        if "logo_url" in fields_set:
+            organization.logo_url = optional_url(
+                metadata["logo_url"], code="invalid_organization", field="logo_url"
+            )
+        if "contact_email" in fields_set:
+            organization.contact_email = optional_email(
+                metadata["contact_email"], code="invalid_organization", field="contact_email"
+            )
 
     def list_members(
         self, actor: User, organization_id: uuid.UUID, limit: int, offset: int

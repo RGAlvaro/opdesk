@@ -12,6 +12,12 @@ class UserRead(BaseModel):
     id: uuid.UUID
     email: str
     full_name: str
+    job_title: str | None
+    phone: str | None
+    timezone: str | None
+    locale: str | None
+    avatar_url: str | None
+    bio: str | None
     is_active: bool
     is_superuser: bool
     created_at: datetime
@@ -23,7 +29,15 @@ class UserRead(BaseModel):
 class UserUpdateRequest(BaseModel):
     """Request body for updating the current user's profile."""
 
-    full_name: str
+    full_name: str | None = None
+    email: str | None = None
+    current_password: str | None = None
+    job_title: str | None = None
+    phone: str | None = None
+    timezone: str | None = None
+    locale: str | None = None
+    avatar_url: str | None = None
+    bio: str | None = None
 
 
 class RegisterRequest(BaseModel):

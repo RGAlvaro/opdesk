@@ -1,9 +1,12 @@
 """Pydantic contracts for project API operations."""
 
 import uuid
-from datetime import datetime
+from datetime import date, datetime
+from decimal import Decimal
 
 from pydantic import BaseModel
+
+from app.models.project import ProjectStatus, ProjectVisibility
 
 
 class ProjectCreateRequest(BaseModel):
@@ -11,6 +14,13 @@ class ProjectCreateRequest(BaseModel):
 
     name: str
     description: str | None = None
+    status: str | None = None
+    start_date: date | None = None
+    end_date: date | None = None
+    budget_amount: Decimal | None = None
+    budget_currency: str | None = None
+    visibility: str | None = None
+    project_owner_id: uuid.UUID | None = None
 
 
 class ProjectUpdateRequest(BaseModel):
@@ -19,6 +29,13 @@ class ProjectUpdateRequest(BaseModel):
     name: str | None = None
     description: str | None = None
     is_archived: bool | None = None
+    status: str | None = None
+    start_date: date | None = None
+    end_date: date | None = None
+    budget_amount: Decimal | None = None
+    budget_currency: str | None = None
+    visibility: str | None = None
+    project_owner_id: uuid.UUID | None = None
 
 
 class ProjectRead(BaseModel):
@@ -29,6 +46,13 @@ class ProjectRead(BaseModel):
     name: str
     description: str | None
     is_archived: bool
+    status: ProjectStatus
+    start_date: date | None
+    end_date: date | None
+    budget_amount: Decimal | None
+    budget_currency: str | None
+    visibility: ProjectVisibility
+    project_owner_id: uuid.UUID | None
     created_at: datetime
     updated_at: datetime
 

@@ -7,7 +7,7 @@ from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from app.models.organization import OrganizationMembership
-from app.models.project import Task, TaskPriority, TaskStatus
+from app.models.project import Task, TaskPriority, TaskStatus, TaskType, TaskWatcher
 
 
 class TaskRepository:
@@ -22,6 +22,12 @@ class TaskRepository:
         self.db.add(task)
         self.db.flush()
         return task
+
+    def add_watcher(self, watcher: TaskWatcher) -> TaskWatcher:
+        """Stage and flush one task watcher subscription."""
+        self.db.add(watcher)
+        self.db.flush()
+        return watcher
 
     def get_by_id(self, organization_id: uuid.UUID, task_id: uuid.UUID) -> Task | None:
         """Return a task only inside the supplied organization."""
@@ -64,6 +70,9 @@ class TaskRepository:
         priority: TaskPriority | None = None,
         due_before: date | None = None,
         due_after: date | None = None,
+        task_type: TaskType | None = None,
+        watcher_id: uuid.UUID | None = None,
+        external_reference: str | None = None,
     ) -> tuple[list[Task], int]:
         """List and count tasks for one project with optional filters."""
         filters = [
@@ -80,15 +89,52 @@ class TaskRepository:
             filters.append(Task.due_date <= due_before)
         if due_after is not None:
             filters.append(Task.due_date >= due_after)
+        if task_type is not None:
+            filters.append(Task.task_type == task_type)
+        if external_reference is not None:
+            filters.append(Task.external_reference == external_reference)
 
-        total = self.db.scalar(select(func.count(Task.id)).where(*filters)) or 0
+        total_statement = select(func.count(Task.id)).where(*filters)
+        list_statement = select(Task).where(*filters)
+        if watcher_id is not None:
+            total_statement = total_statement.join(
+                TaskWatcher, TaskWatcher.task_id == Task.id
+            ).where(TaskWatcher.user_id == watcher_id)
+            list_statement = list_statement.join(TaskWatcher, TaskWatcher.task_id == Task.id).where(
+                TaskWatcher.user_id == watcher_id
+            )
+        total = self.db.scalar(total_statement) or 0
         tasks = list(
             self.db.scalars(
-                select(Task)
-                .where(*filters)
-                .order_by(Task.created_at, Task.id)
-                .limit(limit)
-                .offset(offset)
+                list_statement.order_by(Task.created_at, Task.id).limit(limit).offset(offset)
             )
         )
         return tasks, total
+
+    def list_watcher_user_ids(self, task_id: uuid.UUID) -> list[uuid.UUID]:
+        """Return watcher user identifiers for one task in creation order."""
+        return list(
+            self.db.scalars(
+                select(TaskWatcher.user_id)
+                .where(TaskWatcher.task_id == task_id)
+                .order_by(TaskWatcher.created_at, TaskWatcher.id)
+            )
+        )
+
+    def replace_watchers(
+        self, task: Task, watcher_ids: list[uuid.UUID], added_by_id: uuid.UUID
+    ) -> None:
+        """Replace task watcher rows with a validated set of users."""
+        existing = list(self.db.scalars(select(TaskWatcher).where(TaskWatcher.task_id == task.id)))
+        for watcher in existing:
+            self.db.delete(watcher)
+        for watcher_id in watcher_ids:
+            self.add_watcher(
+                TaskWatcher(
+                    organization_id=task.organization_id,
+                    project_id=task.project_id,
+                    task_id=task.id,
+                    user_id=watcher_id,
+                    added_by_id=added_by_id,
+                )
+            )

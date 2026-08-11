@@ -29,6 +29,13 @@ def project_read(project: Project) -> ProjectRead:
         name=project.name,
         description=project.description,
         is_archived=project.is_archived,
+        status=project.status,
+        start_date=project.start_date,
+        end_date=project.end_date,
+        budget_amount=project.budget_amount,
+        budget_currency=project.budget_currency,
+        visibility=project.visibility,
+        project_owner_id=project.project_owner_id,
         created_at=project.created_at,
         updated_at=project.updated_at,
     )
@@ -45,7 +52,17 @@ def create_project(
 ) -> ProjectRead:
     """Create a project when the actor can manage the organization."""
     project = ProjectService(db).create_project(
-        current_user, organization_id, payload.name, payload.description
+        current_user,
+        organization_id,
+        name=payload.name,
+        description=payload.description,
+        status=payload.status,
+        start_date=payload.start_date,
+        end_date=payload.end_date,
+        budget_amount=payload.budget_amount,
+        budget_currency=payload.budget_currency,
+        visibility=payload.visibility,
+        project_owner_id=payload.project_owner_id,
     )
     return project_read(project)
 
@@ -93,6 +110,13 @@ def update_project(
         name=payload.name,
         description=payload.description,
         is_archived=payload.is_archived,
+        status=payload.status,
+        start_date=payload.start_date,
+        end_date=payload.end_date,
+        budget_amount=payload.budget_amount,
+        budget_currency=payload.budget_currency,
+        visibility=payload.visibility,
+        project_owner_id=payload.project_owner_id,
         fields_set=payload.model_fields_set,
     )
     return project_read(project)
