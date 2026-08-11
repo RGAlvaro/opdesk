@@ -50,12 +50,13 @@ Validation:
 - command: `make release-workflow-check`: PASS.
 - command: `git diff --check`: PASS.
 - command: `make memory-check SPEC=SPEC-307`: PASS.
+- command: GitHub Actions `Verify` run `31516781996`: PASS — validated `b21024f` without the prior Node 20 deprecation annotation.
 
 Review:
 - decision: N/A — CI harness warning cleanup.
 
 Known gaps:
-- Commit, push, and GitHub Actions `Verify` run remain pending.
+- None.
 
 ### 2026-08-11 — SPEC-307 — Production migration drift guard added
 

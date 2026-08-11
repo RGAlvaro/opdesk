@@ -13,7 +13,7 @@ This file is the compact operational state for agents. Use it to orient quickly 
 - Recent validation recorded in `docs/implementation-log.md`: `SPEC-308` passed `python3 -m compileall backend/app`, `make test-backend`, `make test-frontend`, `make lint`, `make format-check`, `make typecheck`, `make migrations-check`, `make migrations-check-compose`, and `git diff --check` on 2026-08-11.
 - Current validation baseline: `main` includes merged `SPEC-302`, reviewed-approved and production-executed `SPEC-307`, Draft `SPEC-303` to `SPEC-306`, implemented/review-approved and production-deployed `SPEC-308`, Ready `SPEC-309` to `SPEC-310`, and Draft `SPEC-311`; the `SPEC-308` backend/frontend/migration/authenticated-production-smoke baseline passed on 2026-08-11.
 - Harness note: managed-sandbox agents should run migration validation targets with elevated execution from the first attempt because host PostgreSQL TCP access and the Docker socket can be blocked by the sandbox even when services are healthy.
-- CI harness note: GitHub official actions were updated to `@v6` in `verify.yml` and `production-release.yml` to remove Node 20 deprecation warnings; the first remote `Verify` run for that change is pending.
+- CI harness note: GitHub official actions were updated to `@v6` in `verify.yml` and `production-release.yml`; GitHub Actions `Verify` run `31516781996` passed without the prior Node 20 deprecation annotation.
 
 ## Next Handoff
 
