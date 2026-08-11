@@ -15,6 +15,7 @@ readonly manifest_dir="${PROD_MANIFEST_DIR:-${deploy_root}/releases}"
 readonly timestamp="$(date -u +%Y%m%d-%H%M%S)"
 readonly backup_file="${backup_dir}/opdesk-${timestamp}-${safe_release_ref:0:32}.dump"
 readonly manifest_file="${manifest_dir}/latest-release.txt"
+alembic_current=""
 
 compose=(
   docker compose
@@ -95,6 +96,16 @@ add_summary "backend_image_build=PASS"
 "${compose[@]}" run --rm backend poetry run alembic upgrade head \
   || fail_with_rollback "Production Alembic migrations failed; app containers were not updated."
 add_summary "migrations=PASS"
+
+"${compose[@]}" run --rm backend poetry run alembic check \
+  || fail_with_rollback "Production Alembic drift check failed; app containers were not updated."
+add_summary "migration_drift_check=PASS"
+
+alembic_current="$("${compose[@]}" run --rm backend poetry run alembic current 2>/dev/null | tail -n 1)"
+if [[ -z "${alembic_current}" ]]; then
+  fail_with_rollback "Production Alembic current revision check returned no output."
+fi
+add_summary "alembic_current=${alembic_current}"
 
 "${compose[@]}" up -d --build || fail_with_rollback "Production Compose update failed after migrations."
 add_summary "compose_update=PASS"

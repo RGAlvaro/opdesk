@@ -69,6 +69,8 @@ def main() -> None:
         "start_existing_service redis",
         "data_services_started=PASS",
         "backend_image_build=PASS",
+        "migration_drift_check=PASS",
+        'add_summary "alembic_current=',
     ]:
         if fragment not in release_script:
             raise SystemExit(f"{RELEASE_SCRIPT_PATH}: missing required fragment: {fragment}")
@@ -81,6 +83,10 @@ def main() -> None:
             "backend_image_build=PASS",
             "poetry run alembic upgrade head",
             "migrations=PASS",
+            "poetry run alembic check",
+            "migration_drift_check=PASS",
+            "poetry run alembic current",
+            'add_summary "alembic_current=',
             "up -d --build",
             "compose_update=PASS",
         ],

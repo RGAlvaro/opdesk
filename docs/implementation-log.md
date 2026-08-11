@@ -35,6 +35,30 @@ Known gaps:
 
 ## Entries
 
+### 2026-08-11 — SPEC-307 — Production migration drift guard added
+
+Role: Ingeniero de software
+Branch: main
+Commit/PR: Pending
+Status: Implemented
+
+Summary:
+- Hardened `scripts/prod_release.sh` so production releases run `alembic check` after `alembic upgrade head` and before replacing app containers.
+- Added release-manifest evidence for `migration_drift_check=PASS` and `alembic_current=...`.
+- Hardened `scripts/validate_release_workflow.py` so static release validation enforces upgrade, drift check, current revision capture, and Compose update order.
+
+Validation:
+- command: `make release-workflow-check`: PASS.
+- command: `make prod-config`: PASS.
+- command: `git diff --check`: PASS.
+- command: `make memory-check SPEC=SPEC-307`: PASS.
+
+Review:
+- decision: N/A — release harness hardening ready for CI and production release validation.
+
+Known gaps:
+- Commit, push, CI, and one production release run using the new drift guard remain pending.
+
 ### 2026-08-11 — SPEC-307/SPEC-308 — Production migration recovery and release-order fix
 
 Role: Ingeniero de software
