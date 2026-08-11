@@ -52,12 +52,16 @@ Validation:
 - command: `make prod-config`: PASS.
 - command: `git diff --check`: PASS.
 - command: `make memory-check SPEC=SPEC-307`: PASS.
+- command: GitHub Actions `Verify` run `31501963103`: PASS — validated commit `5a36d8e`.
+- command: GitHub Actions `Production Release` run `31502139076`: PASS — deployed commit `5a36d8e10d9469c2b1d505b1f4da90a54c0add0f`.
+- command: production release manifest check: PASS — recorded `backend_image_build=PASS`, `migrations=PASS`, `migration_drift_check=PASS`, `alembic_current=0006 (head)`, and `compose_update=PASS`.
+- command: post-release production smoke: PASS — `https://rgalvaro.es/health` returned `{"status":"ok"}` and frontend returned `HTTP/2 200`.
 
 Review:
-- decision: N/A — release harness hardening ready for CI and production release validation.
+- decision: N/A — release harness hardening deployed.
 
 Known gaps:
-- Commit, push, CI, and one production release run using the new drift guard remain pending.
+- None.
 
 ### 2026-08-11 — SPEC-307/SPEC-308 — Production migration recovery and release-order fix
 
