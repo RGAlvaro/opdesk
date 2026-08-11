@@ -2,7 +2,7 @@
 
 Status: Ready  
 Owner: Review agent  
-Last updated: 2026-07-07
+Last updated: 2026-08-11
 
 This file defines validation commands for local development and review. Feature specs may require a subset or add feature-specific checks.
 
@@ -44,7 +44,7 @@ Expected meaning:
 | `make lint` | Backend and frontend lint |
 | `make format-check` | Formatting checks without modifying files |
 | `make typecheck` | Backend and frontend type checks where configured |
-| `make migrations-check` | Alembic migration consistency |
+| `make migrations-check` | Alembic migration consistency from the host Python environment against host-published PostgreSQL |
 | `make migrations-check-compose` | Alembic migration consistency from inside the Docker Compose backend container |
 | `make smoke` | Docker/local service startup and health checks, including Redis and worker once background jobs exist |
 | `make prod-config` | Render and validate the production Compose definition with safe placeholder secrets |
@@ -67,9 +67,12 @@ they do not write project history automatically because validation evidence and 
 factual.
 
 In managed sandbox environments, commands that access host-published PostgreSQL ports or the Docker
-socket may need elevated execution permissions. This is an environment access constraint, not a
-project validation shortcut. When that happens, rerun the same target with the required permissions
-and record both the sandbox failure and the elevated result.
+socket must be treated as outside-sandbox validation from the first attempt. Run
+`make migrations-check` elevated when validating the host `LOCAL_DATABASE_URL`; run
+`make migrations-check-compose` elevated when validating through Compose networking. A sandboxed
+`psycopg.OperationalError` such as `connection is bad: no error details available`, a blocked
+`/dev/tcp` probe, or Docker socket `permission denied` is an environment access constraint, not
+migration evidence. Record the elevated result as the validation result.
 
 ## Initial Backend Direct Commands
 
@@ -160,6 +163,27 @@ make migrations-check-compose
 This runs Alembic inside the backend container, where the configured `DATABASE_URL` resolves
 `postgres:5432` through Compose networking. It is equivalent in coverage to `make migrations-check`
 for migration upgrade/drift validation, but it requires Docker Compose access.
+
+## Managed Sandbox Migration Checks
+
+For agent runs inside a managed sandbox, do not use a first sandboxed `make migrations-check`
+failure as feature evidence. The target needs host TCP access to the PostgreSQL port published by
+Compose, and the sandbox may block that access even when PostgreSQL is healthy. Request elevated
+execution for:
+
+```bash
+make migrations-check
+```
+
+If host PostgreSQL is genuinely unavailable but Docker Compose is running, request elevated
+execution for:
+
+```bash
+make migrations-check-compose
+```
+
+Either passing target satisfies Alembic upgrade/drift coverage; prefer recording both when both are
+available.
 
 ## Minimum Review Evidence
 

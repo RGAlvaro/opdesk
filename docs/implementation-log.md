@@ -35,6 +35,28 @@ Known gaps:
 
 ## Entries
 
+### 2026-08-11 — Harness — Managed sandbox migration validation clarified
+
+Role: Arquitecto de specs
+Branch: main
+Commit/PR: Pending
+Status: Ready
+
+Summary:
+- Updated `specs/harness/local-validation.md` so managed-sandbox agents treat host PostgreSQL and Docker Compose migration checks as outside-sandbox validation from the first attempt.
+- Documented that sandboxed psycopg TCP failures or Docker socket permission errors are environment access constraints, not migration evidence.
+- Clarified that either elevated `make migrations-check` or elevated `make migrations-check-compose` satisfies Alembic upgrade/drift coverage, with both preferred when available.
+
+Validation:
+- command: `make memory-check SPEC=SPEC-308`: PASS.
+- command: `git diff --check`: PASS.
+
+Review:
+- decision: N/A — harness documentation clarification.
+
+Known gaps:
+- None.
+
 ### 2026-08-11 — SPEC-308 — Enriched metadata implemented and review-fixed
 
 Role: Ingeniero de software / Review agent
