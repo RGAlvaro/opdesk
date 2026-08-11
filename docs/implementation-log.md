@@ -35,6 +35,39 @@ Known gaps:
 
 ## Entries
 
+### 2026-08-11 — SPEC-307/SPEC-308 — Production migration recovery and release-order fix
+
+Role: Ingeniero de software
+Branch: main
+Commit/PR: Pending
+Status: Implemented
+
+Summary:
+- Investigated authenticated production smoke failure after `POST /api/v1/auth/register` returned `500`.
+- Confirmed production backend logs showed `users.job_title` was missing and production `alembic_version` was still `0005`.
+- Applied pending production migration `0006` manually through the already-built backend image, restoring schema compatibility for SPEC-308.
+- Root-caused the release automation bug: `scripts/prod_release.sh` ran Alembic before building the new backend image, so migrations from the new release were unavailable during the migration step.
+- Updated `scripts/prod_release.sh` to build the backend image after backup and before Alembic, without recreating application containers before migrations.
+- Hardened `scripts/validate_release_workflow.py` so release validation checks the safety-critical order: backup, backend build, migrations, Compose update.
+- Ran authenticated production smoke for profile, organization, project, task metadata, task watchers, and task metadata filters.
+- Deleted the smoke organizations and all smoke users created during validation.
+
+Validation:
+- command: production `alembic upgrade head` through `docker compose run --rm backend`: PASS — upgraded production from `0005` to `0006`.
+- command: production authenticated API smoke: PASS — register, login, profile metadata update, organization metadata create/delete, project metadata create, task metadata/watchers create, blocked reason update, and task metadata filters passed.
+- command: production smoke cleanup: PASS — deleted smoke organization slugs and smoke users created during validation.
+- command: `make release-workflow-check`: PASS.
+- command: `make prod-config`: PASS.
+- command: `git diff --check`: PASS.
+- command: `make memory-check SPEC=SPEC-307`: PASS.
+- command: `make memory-check SPEC=SPEC-308`: PASS.
+
+Review:
+- decision: N/A — production recovery and release automation fix ready for review/CI.
+
+Known gaps:
+- The release-order fix still needs commit, push, CI, and one production release run using the corrected script.
+
 ### 2026-08-11 — SPEC-308 — Production release executed
 
 Role: Ingeniero de software

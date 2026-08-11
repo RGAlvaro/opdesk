@@ -88,6 +88,10 @@ add_summary "data_services_started=PASS"
   >"${backup_file}" || fail_with_rollback "Production PostgreSQL backup failed before migrations."
 add_summary "backup=PASS ${backup_file}"
 
+"${compose[@]}" build backend \
+  || fail_with_rollback "Production backend image build failed before migrations."
+add_summary "backend_image_build=PASS"
+
 "${compose[@]}" run --rm backend poetry run alembic upgrade head \
   || fail_with_rollback "Production Alembic migrations failed; app containers were not updated."
 add_summary "migrations=PASS"

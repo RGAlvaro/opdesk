@@ -21,6 +21,18 @@ def reject_contains(path: Path, content: str, needle: str) -> None:
         raise SystemExit(f"{path}: unsafe fragment present: {needle}")
 
 
+def require_order(path: Path, content: str, fragments: list[str]) -> None:
+    """Ensure release steps keep their safety-critical ordering."""
+    previous_index = -1
+    for fragment in fragments:
+        index = content.find(fragment)
+        if index == -1:
+            raise SystemExit(f"{path}: missing required fragment: {fragment}")
+        if index <= previous_index:
+            raise SystemExit(f"{path}: fragment out of order: {fragment}")
+        previous_index = index
+
+
 def main() -> None:
     """Check the manual deployment workflow for SPEC-307 guardrails."""
     content = WORKFLOW_PATH.read_text(encoding="utf-8")
@@ -56,9 +68,23 @@ def main() -> None:
         "start_existing_service postgres",
         "start_existing_service redis",
         "data_services_started=PASS",
+        "backend_image_build=PASS",
     ]:
         if fragment not in release_script:
             raise SystemExit(f"{RELEASE_SCRIPT_PATH}: missing required fragment: {fragment}")
+    require_order(
+        RELEASE_SCRIPT_PATH,
+        release_script,
+        [
+            "backup=PASS",
+            "build backend",
+            "backend_image_build=PASS",
+            "poetry run alembic upgrade head",
+            "migrations=PASS",
+            "up -d --build",
+            "compose_update=PASS",
+        ],
+    )
     reject_contains(RELEASE_SCRIPT_PATH, release_script, "up -d postgres redis")
     print(f"{WORKFLOW_PATH}: release workflow static validation passed")
 
