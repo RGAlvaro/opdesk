@@ -58,14 +58,14 @@ Validation:
 - command: `make format-check`: PASS.
 - command: `make typecheck`: PASS.
 - command: `git diff --check`: PASS.
-- command: `make migrations-check`: FAIL — local PostgreSQL at `localhost:5432` was not reachable from this WSL environment.
+- command: `make migrations-check`: PASS outside sandbox — Alembic upgraded through `0006` against host-local PostgreSQL and reported no new upgrade operations.
 - command: `make migrations-check-compose`: PASS — Alembic upgraded through `0006` inside the Compose backend container and reported no new upgrade operations.
 
 Review:
 - decision: APPROVED
 
 Known gaps:
-- Host-local `make migrations-check` still cannot connect from this WSL environment, but equivalent Compose migration validation passed.
+- None.
 
 ### 2026-08-11 — SPEC-307 — First production release workflow executed
 
