@@ -35,6 +35,28 @@ Known gaps:
 
 ## Entries
 
+### 2026-08-11 — Harness — GitHub Actions Node 24 action updates
+
+Role: Ingeniero de software
+Branch: main
+Commit/PR: Pending
+Status: Implemented
+
+Summary:
+- Updated GitHub official actions in `verify.yml` and `production-release.yml` to Node 24-compatible major versions.
+- Replaced `actions/checkout@v4`, `actions/setup-python@v5`, and `actions/setup-node@v4` with their `@v6` releases in both workflows.
+
+Validation:
+- command: `make release-workflow-check`: PASS.
+- command: `git diff --check`: PASS.
+- command: `make memory-check SPEC=SPEC-307`: PASS.
+
+Review:
+- decision: N/A — CI harness warning cleanup.
+
+Known gaps:
+- Commit, push, and GitHub Actions `Verify` run remain pending.
+
 ### 2026-08-11 — SPEC-307 — Production migration drift guard added
 
 Role: Ingeniero de software
