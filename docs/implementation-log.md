@@ -35,6 +35,36 @@ Known gaps:
 
 ## Entries
 
+### 2026-08-12 — SPEC-310 — Release changelog reviewed
+
+Role: Review agent
+Branch: agent/spec-310-release-changelog
+Commit/PR: 1fe6784
+Status: Reviewed
+
+Summary:
+- Reviewed the `SPEC-310` implementation against changelog format, public unauthenticated rendering, production workflow changelog enforcement, docs, tests, and project memory.
+- Confirmed `CHANGELOG.md` is root-scoped, newest-first, uses only populated `Added`, `Changed`, and `Fixed` sections, and contains no secret-like content.
+- Confirmed the manual production workflow validates the requested `changelog_entry` before production secrets, SSH configuration, archive upload, or remote deploy steps.
+- Confirmed `/changelog` renders the repository changelog content as bundled static frontend content and is covered by a public route/link test.
+
+Validation:
+- command: `make release-workflow-check`: PASS.
+- command: `make test-frontend`: PASS — 46 frontend tests passed.
+- command: `make lint`: PASS.
+- command: `make format-check`: PASS.
+- command: `make typecheck`: PASS.
+- command: `make memory-check SPEC=SPEC-310`: PASS.
+- command: `git diff --check main...HEAD`: PASS.
+- command: `cd frontend && npm run build`: PASS.
+- command: `python3 scripts/validate_changelog.py --entry "2099-01-01 - Missing Release"`: EXPECTED FAIL — missing changelog entry exits non-zero before deploy use.
+
+Review:
+- decision: APPROVED
+
+Known gaps:
+- None.
+
 ### 2026-08-12 — SPEC-310 — Release changelog implemented
 
 Role: Ingeniero de software
