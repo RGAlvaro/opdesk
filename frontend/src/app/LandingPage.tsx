@@ -37,6 +37,12 @@ export function LandingPage() {
                 <ArrowRight aria-hidden="true" className="h-5 w-5" />
               </Link>
             </div>
+            <Link
+              to="/changelog"
+              className="mt-5 inline-flex text-sm font-semibold text-brand hover:text-brand/80"
+            >
+              Read release notes
+            </Link>
           </div>
 
           <div className="rounded-md border border-line bg-white p-6 shadow-panel">

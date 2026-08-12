@@ -26,6 +26,7 @@ make prod-config
 make prod-data-smoke
 make prod-smoke
 make prod-down
+make changelog-check
 make release-workflow-check
 make memory-check SPEC=SPEC-XXX
 make review-ready SPEC=SPEC-XXX
@@ -51,7 +52,8 @@ Expected meaning:
 | `make prod-data-smoke` | Apply production migrations and prove backup/restore against the isolated production-smoke database |
 | `make prod-smoke` | Run the data smoke, build/start the isolated production stack, and check frontend/backend through Caddy |
 | `make prod-down` | Stop the isolated production-smoke stack without deleting its database volume |
-| `make release-workflow-check` | Validate the manual production release workflow, release script syntax, and missing-env failure guard |
+| `make changelog-check` | Validate root `CHANGELOG.md` structure, newest-first release entries, allowed sections, bullets, and secret-like content guards |
+| `make release-workflow-check` | Validate the manual production release workflow, release script syntax, changelog guardrails, and missing-env failure guard |
 | `make memory-check SPEC=SPEC-XXX` | Checks that `docs/project-state.md` and `docs/implementation-log.md` mention the active spec and include required log sections before review handoff |
 | `make review-ready SPEC=SPEC-XXX` | Alias for the current memory readiness check; feature specs still define the validation commands that must also pass |
 | `make memory-entry SPEC=SPEC-XXX` | Prints a paste-ready implementation-log template without inventing validation evidence |

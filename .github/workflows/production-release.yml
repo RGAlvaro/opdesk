@@ -12,6 +12,10 @@ on:
         required: true
         type: boolean
         default: false
+      changelog_entry:
+        description: "CHANGELOG.md entry heading for production deploys, for example '2026-08-12 - Production Release'"
+        required: false
+        default: ""
 
 concurrency:
   group: production-release
@@ -91,6 +95,15 @@ jobs:
 
       - name: Validate release workflow files
         run: make release-workflow-check
+
+      - name: Validate production changelog entry
+        if: ${{ inputs.deploy_to_production }}
+        env:
+          CHANGELOG_ENTRY: ${{ inputs.changelog_entry }}
+        run: |
+          set -euo pipefail
+          test -n "${CHANGELOG_ENTRY}"
+          python3 scripts/validate_changelog.py --entry "${CHANGELOG_ENTRY}"
 
       - name: Stop before production deploy
         if: ${{ inputs.deploy_to_production == false }}

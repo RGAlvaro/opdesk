@@ -128,10 +128,12 @@ The workflow inputs are:
 |---|---|
 | `target_ref` | Branch, tag, or commit SHA to deploy. |
 | `deploy_to_production` | Defaults to `false`; when false, the workflow runs validation only and skips SSH. |
+| `changelog_entry` | Required when `deploy_to_production=true`; must match a `CHANGELOG.md` heading such as `2026-08-12 - Production Release`. |
 
 Before remote deployment, the workflow runs the verification baseline, frontend build,
-production Compose config validation, and release workflow validation. If any of those
-steps fail, no backup, migration, or production Compose update is attempted.
+production Compose config validation, release workflow validation, and, for real deploys,
+the required changelog entry check. If any of those steps fail, no backup, migration, or
+production Compose update is attempted.
 
 The remote script expects the VPS to keep `.env.production` at the deploy root and the
 stable Compose project name `opdesk-prod`. It creates a PostgreSQL custom-format backup
@@ -146,6 +148,10 @@ To validate the workflow path without production secrets, run the manual workflo
 ```bash
 make release-workflow-check
 ```
+
+Use `CHANGELOG.md` for user-facing `Added`, `Changed`, and `Fixed` release notes only.
+Keep deployment evidence, rollback notes, run IDs, and private operational detail in
+`docs/implementation-log.md`.
 
 ## App Rollback
 

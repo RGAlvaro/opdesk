@@ -26,6 +26,7 @@ import {
   TaskNewPage,
 } from "../features/tasks/TaskPages";
 import { AppShell } from "./AppShell";
+import { ChangelogPage } from "./ChangelogPage";
 import { DashboardPage } from "./DashboardPage";
 import { LandingPage } from "./LandingPage";
 
@@ -57,6 +58,7 @@ export function AppRouter() {
           </PublicOnlyRoute>
         }
       />
+      <Route path="/changelog" element={<ChangelogPage />} />
       <Route
         path="/app"
         element={
