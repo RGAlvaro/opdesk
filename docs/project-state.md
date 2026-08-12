@@ -6,19 +6,19 @@ This file is the compact operational state for agents. Use it to orient quickly 
 
 ## Current Work
 
-- Active branch: `agent/spec-311-public-portfolio-home`
-- Active spec: `SPEC-311` review approved locally.
-- Current state: `SPEC-307` release automation was re-reviewed and approved on 2026-07-30 after the pre-backup data-service recreation fix; GitHub Actions production secrets were configured on 2026-08-03 and the first manual workflow execution completed successfully on 2026-08-11, first validation-only and then with production deploy enabled. `SPEC-308` was implemented, review-fixed, deployed to production, and smoke-checked on 2026-08-11 with migration `0006`, profile/email-change APIs, backend-owned organization slug suffixing, project/task metadata APIs, task watchers, frontend metadata forms/display states, and backend/frontend tests. `SPEC-309` was merged to `main` on 2026-08-12 with migration `0007`, project-scoped task label APIs, task label assignments, `label_id` task filtering, frontend label management/filtering/display, and backend/frontend tests. `SPEC-310` is implemented and review-approved locally with root `CHANGELOG.md`, changelog format validation, production workflow changelog-entry enforcement before secrets/SSH, public `/changelog` route, landing-page release-notes link, frontend route coverage, deployment docs, and harness docs. `SPEC-311` is implemented and review-approved locally on top of `SPEC-310` with a static public portfolio home, recruiter-facing developer copy, OpsDesk available app card, ERP coming-soon card with no fake link, changelog navigation, generated portfolio hub bitmap asset, and frontend tests. An authenticated production smoke exposed a release-order bug where Alembic ran before the new backend image was built; production was manually recovered to `0006`, authenticated SPEC-308 smoke passed, and `scripts/prod_release.sh` now builds the backend image after backup and before migrations. Production is available at `https://rgalvaro.es/` and `https://www.rgalvaro.es/`; the temporary `https://opdesk.51.255.202.88.sslip.io/` hostname remains configured as a fallback.
+- Active branch: `main`
+- Active spec: merge follow-up complete for `SPEC-310` and `SPEC-311`.
+- Current state: `SPEC-307` release automation was re-reviewed and approved on 2026-07-30 after the pre-backup data-service recreation fix; GitHub Actions production secrets were configured on 2026-08-03 and the first manual workflow execution completed successfully on 2026-08-11, first validation-only and then with production deploy enabled. `SPEC-308` was implemented, review-fixed, deployed to production, and smoke-checked on 2026-08-11 with migration `0006`, profile/email-change APIs, backend-owned organization slug suffixing, project/task metadata APIs, task watchers, frontend metadata forms/display states, and backend/frontend tests. `SPEC-309` was merged to `main` on 2026-08-12 with migration `0007`, project-scoped task label APIs, task label assignments, `label_id` task filtering, frontend label management/filtering/display, and backend/frontend tests. `SPEC-310` was merged to `main` through PR #11 on 2026-08-12 with root `CHANGELOG.md`, changelog format validation, production workflow changelog-entry enforcement before secrets/SSH, public `/changelog` route, landing-page release-notes link, frontend route coverage, deployment docs, and harness docs. `SPEC-311` was merged to `main` through PR #12 on 2026-08-12 with a static public portfolio home, recruiter-facing developer copy, OpsDesk available app card, ERP coming-soon card with no fake link, changelog navigation, generated portfolio hub bitmap asset, and frontend tests. An authenticated production smoke exposed a release-order bug where Alembic ran before the new backend image was built; production was manually recovered to `0006`, authenticated SPEC-308 smoke passed, and `scripts/prod_release.sh` now builds the backend image after backup and before migrations. Production is available at `https://rgalvaro.es/` and `https://www.rgalvaro.es/`; the temporary `https://opdesk.51.255.202.88.sslip.io/` hostname remains configured as a fallback.
 - Documentation checkpoint: agent operational memory was restructured on 2026-06-16 with this file, central touch-to-spec routing, per-spec scope/context blocks, and `ADR-005`; on 2026-06-24 the base workflow added review-gated memory checks and implementation-log scaffolding targets; `ADR-009` records the managed-sandbox GitHub CLI policy.
-- Recent validation recorded in `docs/implementation-log.md`: `SPEC-311` review validation passed `make test-frontend`, `make lint`, `make format-check`, `make typecheck`, `make memory-check SPEC=SPEC-311`, `make smoke`, `cd frontend && npm run build`, and `git diff --check agent/spec-310-release-changelog...HEAD` on 2026-08-12.
-- Current validation baseline: `main` includes merged `SPEC-302`, reviewed-approved and production-executed `SPEC-307`, Draft `SPEC-303` to `SPEC-306`, implemented/review-approved and production-deployed `SPEC-308`, merged/review-approved `SPEC-309`, locally implemented/review-approved `SPEC-310`, and locally implemented/review-approved `SPEC-311`; the `SPEC-311` frontend and smoke review baseline passed on 2026-08-12.
+- Recent validation recorded in `docs/implementation-log.md`: `SPEC-310` PR #11 and `SPEC-311` PR #12 were merged on 2026-08-12 after clean GitHub merge state and successful `Verify` workflows on the merge commits; local `main` fast-forwarded to `af9535e`, and local/remote feature branches were deleted.
+- Current validation baseline: `main` includes merged `SPEC-302`, reviewed-approved and production-executed `SPEC-307`, Draft `SPEC-303` to `SPEC-306`, implemented/review-approved and production-deployed `SPEC-308`, merged/review-approved `SPEC-309`, merged/review-approved `SPEC-310`, and merged/review-approved `SPEC-311`; the `SPEC-310` and `SPEC-311` GitHub `Verify` workflows passed on their 2026-08-12 merge commits.
 - Harness note: managed-sandbox agents should run migration validation targets with elevated execution from the first attempt because host PostgreSQL TCP access and the Docker socket can be blocked by the sandbox even when services are healthy.
 - CI harness note: GitHub official actions were updated to `@v6` in `verify.yml` and `production-release.yml`; GitHub Actions `Verify` run `31516781996` passed without the prior Node 20 deprecation annotation.
 
 ## Next Handoff
 
-- Next role: Ingeniero de software for merge/integration.
-- Next likely integration work: merge `SPEC-310`, then merge `SPEC-311`.
+- Next role: Arquitecto de specs or Ingeniero de software for the next selected spec.
+- Next likely integration work: choose the next Ready spec or refine the Draft product additions before implementation.
 - Keep `SPEC-301` production docs aligned if future scheduled jobs or a Celery beat service are added.
 
 ## Implemented Specs
@@ -40,8 +40,8 @@ This file is the compact operational state for agents. Use it to orient quickly 
 | `SPEC-307` | Release automation and safe production updates | Manual GitHub Actions release workflow, VPS release script, pre-deploy backup, migrations, post-deploy checks, rollback docs | Implemented, review approved, production secrets configured, and first manual production workflow execution passed |
 | `SPEC-308` | Enriched profile, organization, project, and task metadata | User profile/email change, organization/project/task metadata, task watchers, migration `0006`, frontend metadata forms | Implemented, review approved, and production deployed on 2026-08-11 |
 | `SPEC-309` | Project-scoped task labels | Label models/APIs, task label assignments, task filters, label UI, migration `0007` | Implemented, review approved, and merged to `main` |
-| `SPEC-310` | Production release changelog | `CHANGELOG.md`, changelog validation, public changelog route/link | Implemented and review approved locally |
-| `SPEC-311` | Static public portfolio home | Public `/` route, OpsDesk app card, ERP coming-soon card, changelog link | Implemented and review approved locally |
+| `SPEC-310` | Production release changelog | `CHANGELOG.md`, changelog validation, public changelog route/link | Implemented, review approved, CI passed, and merged through PR #11 |
+| `SPEC-311` | Static public portfolio home | Public `/` route, OpsDesk app card, ERP coming-soon card, changelog link | Implemented, review approved, CI passed, and merged through PR #12 |
 
 ## Draft Specs
 
@@ -54,18 +54,15 @@ This file is the compact operational state for agents. Use it to orient quickly 
 
 ## Next Likely Work
 
-1. Merge `SPEC-310`.
-2. Merge `SPEC-311`.
-3. Decide when to remove the temporary `opdesk.51.255.202.88.sslip.io` fallback hostname.
-4. Schedule a controlled VPS reboot for the pending Ubuntu kernel upgrade.
+1. Select or ready the next product spec after `SPEC-311`.
+2. Decide when to remove the temporary `opdesk.51.255.202.88.sslip.io` fallback hostname.
+3. Schedule a controlled VPS reboot for the pending Ubuntu kernel upgrade.
 
 ## Known Gaps
 
 - `SPEC-104` has no Playwright E2E tests yet; the spec intentionally recommends adding them after the frontend/local server harness stabilizes.
 - `SPEC-106` has route-level/component coverage but still has no Playwright E2E critical path; the spec recommends adding Playwright after organization/project/task UI stabilizes.
 - `SPEC-303`, `SPEC-304`, `SPEC-305`, and `SPEC-306` are Draft product additions with unresolved admin-invite permissions, project visibility, chat transport, client ticket form access, notification retention, and notification recipient rules.
-- `SPEC-311` is implemented and review-approved locally but not merged.
-- `SPEC-310` is implemented and review-approved locally but not merged.
 - `SPEC-307` is implemented, review approved, and the first real VPS workflow run passed on 2026-08-11.
 - Production is currently deployed at `https://rgalvaro.es/` and `https://www.rgalvaro.es/`; the temporary `https://opdesk.51.255.202.88.sslip.io/` hostname remains configured as a fallback.
 - The VPS reported a pending Ubuntu kernel upgrade after Docker installation; schedule a controlled reboot.
@@ -73,6 +70,7 @@ This file is the compact operational state for agents. Use it to orient quickly 
 
 ## Validation Baseline
 
+- Latest merge validation: `SPEC-311` PR #12 merged to `main` as `af9535e` on 2026-08-12, GitHub Actions `Verify` run `31581961980` PASS, local `main` fast-forwarded to `af9535e`, and local/remote `agent/spec-311-public-portfolio-home` branch deletion PASS. `SPEC-310` PR #11 merged to `main` as `f0849fe` on 2026-08-12, GitHub Actions `Verify` run `31581706174` PASS, and local/remote `agent/spec-310-release-changelog` branch deletion PASS.
 - Latest `SPEC-311` review validation: `make test-frontend` PASS with 47 frontend tests; `make lint` PASS; `make format-check` PASS; `make typecheck` PASS; `make memory-check SPEC=SPEC-311` PASS; `make smoke` PASS with Docker/local backend health, Redis, worker, Adminer, and Vite frontend checks; `cd frontend && npm run build` PASS; `git diff --check agent/spec-310-release-changelog...HEAD` PASS on 2026-08-12.
 - Latest `SPEC-310` review validation: `make release-workflow-check` PASS; `make test-frontend` PASS with 46 frontend tests; `make lint` PASS; `make format-check` PASS; `make typecheck` PASS; `make memory-check SPEC=SPEC-310` PASS; `git diff --check main...HEAD` PASS; `cd frontend && npm run build` PASS; `python3 scripts/validate_changelog.py --entry "2099-01-01 - Missing Release"` EXPECTED FAIL on 2026-08-12.
 - Latest `SPEC-309` re-review validation: `make test-frontend` PASS with 45 frontend tests; `make test-backend` PASS with 83 selected backend tests and 2 deselected DB tests; `make lint` PASS; `make format-check` PASS; `make typecheck` PASS; `make memory-check SPEC=SPEC-309` PASS; `git diff --check` PASS on 2026-08-12. Earlier `SPEC-309` migration validation: elevated `make migrations-check` initially FAIL after applying `0007` because Alembic metadata lacked the new partial label-name index, then PASS after the model index was added and Alembic reported no new upgrade operations on 2026-08-11.

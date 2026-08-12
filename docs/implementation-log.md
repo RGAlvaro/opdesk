@@ -35,6 +35,56 @@ Known gaps:
 
 ## Entries
 
+### 2026-08-12 — SPEC-311 — Public portfolio home merged
+
+Role: Ingeniero de software
+Branch: main
+Commit/PR: PR #12 https://github.com/RGAlvaro/opdesk/pull/12, merge commit af9535e
+Status: Merged
+
+Summary:
+- Marked PR #12 ready after the `SPEC-311` review approval, retargeted it from the merged `SPEC-310` branch to `main`, and merged it with a clean GitHub merge state.
+- Fast-forwarded local `main` to `af9535e`.
+- Deleted the merged local and remote `agent/spec-311-public-portfolio-home` branches.
+
+Validation:
+- command: GitHub PR #12 merge-state check: PASS — merge state `CLEAN` before merge.
+- command: GitHub Actions `Verify` run `31581961980`: PASS — merge commit `af9535e23e9a46d01332dda0eadd07a917a40e5b`.
+- command: `git pull --ff-only origin main`: PASS — local `main` fast-forwarded through `af9535e`.
+- command: `git branch -d agent/spec-311-public-portfolio-home`: PASS.
+- command: `git push origin --delete agent/spec-311-public-portfolio-home`: PASS.
+
+Review:
+- decision: APPROVED — merged after approved review.
+
+Known gaps:
+- None.
+
+### 2026-08-12 — SPEC-310 — Release changelog merged
+
+Role: Ingeniero de software
+Branch: main
+Commit/PR: PR #11 https://github.com/RGAlvaro/opdesk/pull/11, merge commit f0849fe
+Status: Merged
+
+Summary:
+- Marked PR #11 ready after the `SPEC-310` review approval and merged it to `main` with a clean GitHub merge state.
+- Fast-forwarded local `main` through the merge commit before the dependent `SPEC-311` merge.
+- Deleted the merged local and remote `agent/spec-310-release-changelog` branches.
+
+Validation:
+- command: GitHub PR #11 merge-state check: PASS — merge state `CLEAN` before merge.
+- command: GitHub Actions `Verify` run `31581706174`: PASS — merge commit `f0849fe2c16c4c6ee07c39d4d6aaaf3d967a0a4a`.
+- command: `git pull --ff-only origin main`: PASS — local `main` fast-forwarded through `f0849fe`.
+- command: `git branch -d agent/spec-310-release-changelog`: PASS.
+- command: `git push origin --delete agent/spec-310-release-changelog`: PASS.
+
+Review:
+- decision: APPROVED — merged after approved review.
+
+Known gaps:
+- None.
+
 ### 2026-08-12 — SPEC-311 — Public portfolio home reviewed
 
 Role: Review agent
