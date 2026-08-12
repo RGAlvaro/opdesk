@@ -35,6 +35,35 @@ Known gaps:
 
 ## Entries
 
+### 2026-08-12 — SPEC-311 — Public portfolio home reviewed
+
+Role: Review agent
+Branch: agent/spec-311-public-portfolio-home
+Commit/PR: 86f03ed
+Status: Reviewed
+
+Summary:
+- Reviewed the `SPEC-311` implementation against the public portfolio home, OpsDesk available card, ERP coming-soon card, changelog navigation, static/no-backend rendering, existing auth route behavior, generated visual asset, tests, and project memory.
+- Confirmed `/` is now public without session bootstrap, while `/login`, `/signup`, and `/app` keep the existing auth guard behavior.
+- Confirmed the ERP card is clearly marked `Coming soon` and exposes no fake app navigation.
+- Confirmed the generated portfolio bitmap has no legible text, logos, or fake product claims and builds into the frontend production bundle.
+
+Validation:
+- command: `make test-frontend`: PASS — 47 frontend tests passed.
+- command: `make lint`: PASS.
+- command: `make format-check`: PASS.
+- command: `make typecheck`: PASS.
+- command: `make memory-check SPEC=SPEC-311`: PASS.
+- command: `make smoke`: PASS — Docker/local backend health, Redis, worker, Adminer, and Vite frontend checks passed.
+- command: `cd frontend && npm run build`: PASS.
+- command: `git diff --check agent/spec-310-release-changelog...HEAD`: PASS.
+
+Review:
+- decision: APPROVED
+
+Known gaps:
+- None.
+
 ### 2026-08-12 — SPEC-311 — Public portfolio home implemented
 
 Role: Ingeniero de software
