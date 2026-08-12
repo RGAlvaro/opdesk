@@ -52,8 +52,13 @@ def main() -> None:
         "workflow_dispatch:",
         "target_ref:",
         "deploy_to_production:",
+        "changelog_entry:",
         "make verify",
         "make prod-config",
+        "make release-workflow-check",
+        "Validate production changelog entry",
+        'test -n "${CHANGELOG_ENTRY}"',
+        "scripts/validate_changelog.py --entry",
         "git archive",
         "PROD_SSH_HOST",
         "PROD_SSH_USER",
@@ -64,6 +69,18 @@ def main() -> None:
     ]
     for fragment in required_fragments:
         require_contains(content, fragment)
+    require_order(
+        WORKFLOW_PATH,
+        content,
+        [
+            "Validate release workflow files",
+            "Validate production changelog entry",
+            "Validate required production secrets",
+            "Configure SSH",
+            "Upload release archive",
+            "Run remote production update",
+        ],
+    )
     for fragment in [
         "start_existing_service postgres",
         "start_existing_service redis",

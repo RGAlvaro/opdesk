@@ -35,11 +35,68 @@ Known gaps:
 
 ## Entries
 
+### 2026-08-12 — SPEC-310 — Release changelog implemented
+
+Role: Ingeniero de software
+Branch: agent/spec-310-release-changelog
+Commit/PR: Pending
+Status: Implemented
+
+Summary:
+- Added root `CHANGELOG.md` with newest-first production release notes in `Added`, `Changed`, and `Fixed` sections.
+- Added deterministic changelog validation for heading format, allowed sections, required bullets, newest-first order, and secret-like content guards.
+- Updated the manual production release workflow so real deploys require a `changelog_entry` matching `CHANGELOG.md` before production secrets, SSH setup, archive upload, or remote update steps run.
+- Added public `/changelog` frontend route backed by the repository changelog, linked it from the public landing page, and covered the route/link with frontend tests.
+- Documented changelog validation in the local harness and production release docs.
+
+Validation:
+- command: `make release-workflow-check`: PASS.
+- command: `python3 scripts/validate_changelog.py --entry "2026-08-12 - Production Release"`: PASS.
+- command: `make test-frontend`: PASS — 46 frontend tests passed.
+- command: `make typecheck`: PASS.
+- command: `make lint`: PASS.
+- command: `make format-check`: PASS after Prettier fixed two frontend files.
+- command: `make memory-check SPEC=SPEC-310`: PASS.
+- command: `git diff --check`: PASS.
+- command: `cd frontend && npm run build`: PASS.
+
+Review:
+- decision: N/A — implementation pending review.
+
+Known gaps:
+- None.
+
+### 2026-08-12 — SPEC-309 — Project task labels merged
+
+Role: Ingeniero de software
+Branch: main
+Commit/PR: 5d94836
+Status: Merged
+
+Summary:
+- Merged `agent/spec-309-task-labels` into `main` by fast-forward after review approval and pushed `main` to `origin`.
+- Deleted the merged local and remote `agent/spec-309-task-labels` branches.
+
+Validation:
+- command: `make test-frontend`: PASS — 45 frontend tests passed before merge.
+- command: `make test-backend`: PASS — 83 selected backend tests passed, 2 DB tests deselected before merge.
+- command: `make lint`: PASS before merge.
+- command: `make format-check`: PASS before merge.
+- command: `make typecheck`: PASS before merge.
+- command: `make memory-check SPEC=SPEC-309`: PASS before merge.
+- command: `git diff --check`: PASS before merge.
+
+Review:
+- decision: APPROVED — merged after approved re-review.
+
+Known gaps:
+- None.
+
 ### 2026-08-12 — SPEC-309 — Project task labels re-reviewed
 
 Role: Review agent
 Branch: agent/spec-309-task-labels
-Commit/PR: Pending
+Commit/PR: 5d94836
 Status: Reviewed
 
 Summary:

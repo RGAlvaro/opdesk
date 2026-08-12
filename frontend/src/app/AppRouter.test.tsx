@@ -157,6 +157,27 @@ describe("SPEC-104 frontend app shell and auth UI", () => {
     expect(
       screen.getByRole("link", { name: /create account/i }),
     ).toHaveAttribute("href", "/signup");
+    expect(
+      screen.getByRole("link", { name: /read release notes/i }),
+    ).toHaveAttribute("href", "/changelog");
+  });
+
+  it("renders the public changelog without authentication", async () => {
+    const fetchMock = mockFetch();
+
+    renderRoute("/changelog");
+
+    expect(
+      await screen.findByRole("heading", { name: "Changelog" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", {
+        name: "2026-08-12 - Production Release",
+      }),
+    ).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Added" })).toBeInTheDocument();
+    expect(screen.getByText(/project-scoped task labels/i)).toBeInTheDocument();
+    expect(fetchMock).not.toHaveBeenCalled();
   });
 
   it("redirects authenticated visitors away from public routes", async () => {
