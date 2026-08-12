@@ -35,6 +35,38 @@ Known gaps:
 
 ## Entries
 
+### 2026-08-12 — SPEC-301 — Production hostname cleanup and VPS reboot
+
+Role: Ingeniero de software
+Branch: main
+Commit/PR: Pending
+Status: Implemented
+
+Summary:
+- Removed the temporary `opdesk.51.255.202.88.sslip.io` Caddy fallback from the VPS-side `/srv/opdesk/.env.production` after confirming `rgalvaro.es` and `www.rgalvaro.es` were healthy.
+- Backed up the server-side env file to `/srv/opdesk/.env.production.pre-hostname-cleanup-20260812-093900` before editing.
+- Recreated only the production Caddy container from the active release directory so the hostname change applied without rebuilding app services.
+- Completed the controlled VPS reboot for the pending Ubuntu kernel upgrade.
+
+Validation:
+- command: pre-change `curl -fsS https://rgalvaro.es/health`, `curl -I -fsS https://rgalvaro.es/`, `curl -fsS https://www.rgalvaro.es/health`, and `curl -I -fsS https://www.rgalvaro.es/`: PASS.
+- command: pre-change `ssh opdesk-vps`: PASS — confirmed `REBOOT_REQUIRED=yes` and `CADDY_SITE_ADDRESS=rgalvaro.es, www.rgalvaro.es, opdesk.51.255.202.88.sslip.io`.
+- command: remote Caddy hostname cleanup: PASS — `.env.production` backup created, `CADDY_SITE_ADDRESS=rgalvaro.es, www.rgalvaro.es`, and `docker compose ... up -d --no-deps caddy` recreated Caddy.
+- command: post-cleanup `curl -fsS https://rgalvaro.es/health`, `curl -I -fsS https://rgalvaro.es/`, `curl -fsS https://www.rgalvaro.es/health`, and `curl -I -fsS https://www.rgalvaro.es/`: PASS.
+- command: post-cleanup `curl -fsS --max-time 15 https://opdesk.51.255.202.88.sslip.io/health`: EXPECTED FAIL — TLS internal alert confirms Caddy no longer serves that hostname.
+- command: `ssh opdesk-vps 'sudo reboot'`: PASS.
+- command: post-reboot public smoke: PASS — `https://rgalvaro.es/health` and `https://www.rgalvaro.es/health` returned `{"status":"ok"}`, both frontend routes returned `HTTP/2 200`, and unauthenticated `/api/v1/users/me` returned the expected `401 not_authenticated` envelope.
+- command: post-reboot `ssh opdesk-vps`: PASS — uptime since `2026-08-12 09:39:36`, `REBOOT_REQUIRED=no`, `CADDY_SITE_ADDRESS=rgalvaro.es, www.rgalvaro.es`, production Compose services running, backend/PostgreSQL/Redis healthy, Redis `PONG`, and worker running.
+- command: `make memory-check SPEC=SPEC-301`: PASS.
+- command: `make prod-config`: PASS.
+- command: `git diff --check`: PASS.
+
+Review:
+- decision: N/A — operational cleanup completed for already implemented `SPEC-301`.
+
+Known gaps:
+- None.
+
 ### 2026-08-12 — SPEC-311 — Public portfolio home merged
 
 Role: Ingeniero de software
