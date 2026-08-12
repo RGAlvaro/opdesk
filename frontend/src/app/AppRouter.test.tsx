@@ -138,28 +138,54 @@ afterEach(() => {
 });
 
 describe("SPEC-104 frontend app shell and auth UI", () => {
-  it("renders the landing page with login and signup actions", async () => {
-    mockFetch(
-      apiError("not_authenticated", "Authentication is required.", 401),
-    );
+  it("renders the portfolio home with app cards and public links", async () => {
+    const fetchMock = mockFetch();
 
     renderRoute("/");
 
     expect(
       await screen.findByRole("heading", {
-        name: /operational work management/i,
+        name: /production-minded SaaS projects/i,
       }),
     ).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: /log in/i })).toHaveAttribute(
-      "href",
-      "/login",
-    );
+    expect(screen.getByText(/software engineer/i)).toBeInTheDocument();
     expect(
-      screen.getByRole("link", { name: /create account/i }),
+      screen.getByRole("heading", { name: "OpsDesk" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { name: "Small-team ERP" }),
+    ).toBeInTheDocument();
+    expect(screen.getAllByText("Available")).toHaveLength(1);
+    expect(screen.getAllByText("Coming soon")).toHaveLength(1);
+    expect(
+      screen.getAllByRole("link", { name: /open opsdesk/i })[0],
+    ).toHaveAttribute("href", "/login");
+    expect(
+      screen.getAllByRole("link", { name: /create account/i })[0],
     ).toHaveAttribute("href", "/signup");
     expect(
-      screen.getByRole("link", { name: /read release notes/i }),
+      screen.getAllByRole("link", { name: /changelog|release notes/i })[0],
     ).toHaveAttribute("href", "/changelog");
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it("keeps the ERP coming-soon card without fake app navigation", async () => {
+    mockFetch();
+
+    renderRoute("/");
+
+    const erpCard = (
+      await screen.findByRole("heading", {
+        name: "Small-team ERP",
+      })
+    ).closest("article");
+    expect(erpCard).not.toBeNull();
+    expect(
+      within(erpCard as HTMLElement).getByText("Coming soon"),
+    ).toBeInTheDocument();
+    expect(
+      within(erpCard as HTMLElement).queryByRole("link"),
+    ).not.toBeInTheDocument();
   });
 
   it("renders the public changelog without authentication", async () => {
@@ -453,7 +479,7 @@ describe("SPEC-104 frontend app shell and auth UI", () => {
 
     expect(
       await screen.findByRole("heading", {
-        name: /operational work management/i,
+        name: /production-minded SaaS projects/i,
       }),
     ).toBeInTheDocument();
   });
