@@ -1,8 +1,8 @@
 # SPEC-309 — Project Task Labels
 
-Status: Ready
+Status: Implemented
 Owner: Arquitecto de specs
-Last updated: 2026-07-28
+Last updated: 2026-08-12
 
 ## Scope And Required Context
 

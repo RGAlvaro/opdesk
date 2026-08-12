@@ -57,6 +57,7 @@ const projectVisibilities = [
   "organization",
   "project_members",
 ] as const satisfies readonly ProjectVisibility[];
+const labelHexColorPattern = /^#[0-9A-F]{6}$/i;
 
 const projectSchema = z.object({
   name: z.string().trim().min(1, "Project name is required.").max(160),
@@ -775,6 +776,7 @@ export function ProjectDetailPage() {
           </div>
         </article>
       </div>
+      <ProjectLabelsPanel projectId={project.data.id} />
     </section>
   );
 }
@@ -912,7 +914,6 @@ export function ProjectSettingsPage() {
           </p>
         ) : null}
       </div>
-      <ProjectLabelsPanel projectId={project.data.id} />
       <div className="rounded-md border border-line bg-white p-6">
         <h2 className="text-lg font-semibold">
           {project.data.is_archived ? "Unarchive project" : "Archive project"}
@@ -947,13 +948,20 @@ function ProjectLabelsPanel({ projectId }: { projectId: string }) {
   const [name, setName] = useState("");
   const [color, setColor] = useState("#2563EB");
   const [description, setDescription] = useState("");
+  const [validationError, setValidationError] = useState<string | null>(null);
+  const isValidColor = labelHexColorPattern.test(color);
 
   /** Persist a new label through the project labels API. */
   async function onCreateLabel(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (!isValidColor) {
+      setValidationError("Label color must use #RRGGBB.");
+      return;
+    }
+    setValidationError(null);
     await createLabel.mutateAsync({
       name: name.trim(),
-      color,
+      color: color.toUpperCase(),
       description: description.trim() ? description.trim() : null,
     });
     setName("");
@@ -993,13 +1001,24 @@ function ProjectLabelsPanel({ projectId }: { projectId: string }) {
           <label htmlFor="label_color" className="block text-sm font-medium">
             Label color
           </label>
-          <input
-            id="label_color"
-            type="color"
-            value={color}
-            onChange={(event) => setColor(event.target.value.toUpperCase())}
-            className="mt-1 h-10 w-full rounded-md border border-line px-2 py-1"
-          />
+          <div className="mt-1 flex items-center gap-2">
+            <span
+              aria-hidden="true"
+              className="h-8 w-8 rounded-md border border-line"
+              style={{ backgroundColor: isValidColor ? color : "white" }}
+            />
+            <input
+              id="label_color"
+              type="text"
+              maxLength={7}
+              value={color}
+              onChange={(event) => setColor(event.target.value.toUpperCase())}
+              className="w-full rounded-md border border-line px-3 py-2 font-mono text-sm uppercase"
+            />
+          </div>
+          {validationError ? (
+            <p className="mt-1 text-sm text-accent">{validationError}</p>
+          ) : null}
         </div>
         <div>
           <label

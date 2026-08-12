@@ -35,6 +35,61 @@ Known gaps:
 
 ## Entries
 
+### 2026-08-12 — SPEC-309 — Project task labels re-reviewed
+
+Role: Review agent
+Branch: agent/spec-309-task-labels
+Commit/PR: Pending
+Status: Reviewed
+
+Summary:
+- Re-reviewed the `SPEC-309` review fixes against the frontend label permissions, task label assignment, archived-label visibility, test coverage, and project memory requirements.
+- Confirmed project label management is reachable from project detail for regular project-visible members while owner/admin-only project settings remain restricted.
+- Confirmed the added frontend tests cover regular-member label creation, local color validation, task label assignment, archived-label display, and existing label filter URL state.
+- Marked `SPEC-309` implemented in the spec index and feature spec after approval.
+
+Validation:
+- command: `make test-frontend`: PASS — 45 frontend tests passed.
+- command: `make test-backend`: PASS — 83 selected backend tests passed, 2 DB tests deselected.
+- command: `make lint`: PASS.
+- command: `make format-check`: PASS.
+- command: `make typecheck`: PASS.
+- command: `make memory-check SPEC=SPEC-309`: PASS.
+- command: `git diff --check`: PASS.
+- command: `make migrations-check`: NOT RUN — no backend model or Alembic changes in this frontend-only review fix; latest `SPEC-309` migration validation remains the 2026-08-11 PASS.
+
+Review:
+- decision: APPROVED
+
+Known gaps:
+- None.
+
+### 2026-08-12 — SPEC-309 — Project task labels review fixes
+
+Role: Ingeniero de software
+Branch: agent/spec-309-task-labels
+Commit/PR: Pending
+Status: Implemented
+
+Summary:
+- Moved frontend project label management from owner/admin-only project settings to the project detail page so regular project-visible team members can reach label creation and archive controls.
+- Added local `#RRGGBB` label color validation with a visible color swatch before project label creation.
+- Added frontend route coverage for regular-member label creation, label color validation, task label assignment, archived-label display, and the existing label filter URL state.
+
+Validation:
+- command: `make test-frontend`: PASS — 45 frontend tests passed.
+- command: `make test-backend`: PASS — 83 selected backend tests passed, 2 DB tests deselected.
+- command: `make lint`: PASS.
+- command: `make format-check`: PASS.
+- command: `make typecheck`: PASS.
+
+Review:
+- decision: N/A — review fixes pending re-review.
+
+Known gaps:
+- `SPEC-309` still needs re-review approval.
+- Migration validation was not rerun for this frontend-only review fix; the latest `SPEC-309` migration validation remains the 2026-08-11 passing `make migrations-check` run.
+
 ### 2026-08-11 — SPEC-309 — Project task labels review
 
 Role: Review agent

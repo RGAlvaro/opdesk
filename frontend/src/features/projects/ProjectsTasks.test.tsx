@@ -95,6 +95,13 @@ const label = {
   updated_at: "2026-06-21T11:00:00Z",
 };
 
+const archivedLabel = {
+  ...label,
+  id: "84cc62dd-2af5-43af-81bb-68f9e3699b99",
+  name: "Archived customer",
+  archived_at: "2026-06-25T10:00:00Z",
+};
+
 const task = {
   id: "2c871fbd-4941-4505-8359-193d7a2d967c",
   organization_id: ownerOrganization.id,
@@ -193,9 +200,13 @@ function renderRoute(initialPath: string) {
 /** Queue deterministic fetch responses for a test case. */
 function mockFetch(...responses: Response[]) {
   const queuedResponses = [...responses];
-  const fetchMock = vi.fn((input: RequestInfo | URL) => {
+  const fetchMock = vi.fn((input: RequestInfo | URL, init?: RequestInit) => {
     const url = String(input);
-    if (url.includes(`/api/v1/projects/${project.id}/labels`)) {
+    const method = init?.method ?? "GET";
+    if (
+      method === "GET" &&
+      url.includes(`/api/v1/projects/${project.id}/labels`)
+    ) {
       return Promise.resolve(jsonResponse(page([label])));
     }
     const nextResponse = queuedResponses.shift();
@@ -330,6 +341,79 @@ describe("SPEC-106 frontend projects and tasks UI", () => {
         `/api/v1/projects/${project.id}`,
         expect.objectContaining({ credentials: "include", method: "PATCH" }),
       ),
+    );
+  });
+
+  it("lets regular project members create labels from project detail", async () => {
+    const createdLabel = {
+      ...label,
+      id: "24171ae5-3951-4d65-8c4a-4a7a126e7f3a",
+      name: "Compliance",
+      color: "#155EEF",
+      description: "Audit follow-up",
+    };
+    const fetchMock = mockFetch(
+      jsonResponse(user),
+      jsonResponse(project),
+      jsonResponse(memberOrganization),
+      jsonResponse(createdLabel, 201),
+    );
+    const actor = userEvent.setup();
+
+    renderRoute(`/app/projects/${project.id}`);
+
+    expect(
+      await screen.findByRole("heading", { name: project.name }),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByRole("link", { name: "Settings" }),
+    ).not.toBeInTheDocument();
+    await actor.type(await screen.findByLabelText("Label name"), "Compliance");
+    await actor.clear(screen.getByLabelText("Label color"));
+    await actor.type(screen.getByLabelText("Label color"), "#155EEF");
+    await actor.type(
+      screen.getByLabelText("Label description"),
+      "Audit follow-up",
+    );
+    await actor.click(screen.getByRole("button", { name: "Add" }));
+
+    await waitFor(() =>
+      expect(fetchMock).toHaveBeenCalledWith(
+        `/api/v1/projects/${project.id}/labels`,
+        expect.objectContaining({
+          credentials: "include",
+          method: "POST",
+          body: JSON.stringify({
+            name: "Compliance",
+            color: "#155EEF",
+            description: "Audit follow-up",
+          }),
+        }),
+      ),
+    );
+  });
+
+  it("validates project label color before creation", async () => {
+    const fetchMock = mockFetch(
+      jsonResponse(user),
+      jsonResponse(project),
+      jsonResponse(memberOrganization),
+    );
+    const actor = userEvent.setup();
+
+    renderRoute(`/app/projects/${project.id}`);
+
+    await actor.type(await screen.findByLabelText("Label name"), "Risk");
+    await actor.clear(screen.getByLabelText("Label color"));
+    await actor.type(screen.getByLabelText("Label color"), "red");
+    await actor.click(screen.getByRole("button", { name: "Add" }));
+
+    expect(
+      await screen.findByText("Label color must use #RRGGBB."),
+    ).toBeInTheDocument();
+    expect(fetchMock).not.toHaveBeenCalledWith(
+      `/api/v1/projects/${project.id}/labels`,
+      expect.objectContaining({ method: "POST" }),
     );
   });
 
@@ -513,6 +597,52 @@ describe("SPEC-106 frontend projects and tasks UI", () => {
     await waitFor(() =>
       expect(screen.getAllByText("Completed").length).toBeGreaterThan(0),
     );
+  });
+
+  it("applies active labels from editable task detail", async () => {
+    const unlabeledTask = { ...task, labels: [] };
+    const labeledTask = { ...task, labels: [label] };
+    const fetchMock = mockFetch(
+      jsonResponse(user),
+      jsonResponse(unlabeledTask),
+      jsonResponse(project),
+      jsonResponse(ownerOrganization),
+      jsonResponse(page([membership(user), membership(memberUser)])),
+      jsonResponse(labeledTask),
+    );
+    const actor = userEvent.setup();
+
+    renderRoute(`/app/tasks/${task.id}`);
+
+    await actor.click(await screen.findByRole("button", { name: label.name }));
+
+    await waitFor(() =>
+      expect(fetchMock).toHaveBeenCalledWith(
+        `/api/v1/tasks/${task.id}/labels`,
+        expect.objectContaining({
+          credentials: "include",
+          method: "POST",
+          body: JSON.stringify({ label_id: label.id }),
+        }),
+      ),
+    );
+  });
+
+  it("renders archived task labels without offering them for assignment", async () => {
+    mockFetch(
+      jsonResponse(user),
+      jsonResponse({ ...task, labels: [archivedLabel] }),
+      jsonResponse(project),
+      jsonResponse(ownerOrganization),
+      jsonResponse(page([membership(user), membership(memberUser)])),
+    );
+
+    renderRoute(`/app/tasks/${task.id}`);
+
+    expect(await screen.findByText(archivedLabel.name)).toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: archivedLabel.name }),
+    ).not.toBeInTheDocument();
   });
 
   it("renders safe task update permission errors", async () => {
