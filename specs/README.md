@@ -47,7 +47,7 @@ Use this index for routing. Use `docs/project-state.md` for the compact current 
 | `SPEC-308` | Implemented | Enriched profile, organization, project, and task metadata | `SPEC-101`, `SPEC-102`, `SPEC-103`, `SPEC-104`, `SPEC-105`, `SPEC-106` | User profile, organization metadata, project metadata, task metadata, migrations, frontend forms |
 | `SPEC-309` | Implemented | Project-scoped task labels | `SPEC-103`, `SPEC-106`, `SPEC-308`, optionally `SPEC-303` | Label models/APIs, task label assignments, task filters, label UI, migrations |
 | `SPEC-310` | Implemented | Production release changelog | `SPEC-307`, `SPEC-104` | `CHANGELOG.md`, release validation, public changelog route/link |
-| `SPEC-311` | Draft | Static public portfolio home for OpsDesk and future apps | `SPEC-104`, `SPEC-310` | Public `/` route, app cards, changelog link, frontend tests |
+| `SPEC-311` | Implemented | Static public portfolio home for OpsDesk and future apps | `SPEC-104`, `SPEC-310` | Public `/` route, app cards, changelog link, frontend tests |
 
 Implementation order should usually follow spec dependencies:
 

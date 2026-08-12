@@ -34,14 +34,7 @@ import { LandingPage } from "./LandingPage";
 export function AppRouter() {
   return (
     <Routes>
-      <Route
-        path="/"
-        element={
-          <PublicOnlyRoute>
-            <LandingPage />
-          </PublicOnlyRoute>
-        }
-      />
+      <Route path="/" element={<LandingPage />} />
       <Route
         path="/login"
         element={

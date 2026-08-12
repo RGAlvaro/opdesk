@@ -35,6 +35,65 @@ Known gaps:
 
 ## Entries
 
+### 2026-08-12 — SPEC-311 — Public portfolio home reviewed
+
+Role: Review agent
+Branch: agent/spec-311-public-portfolio-home
+Commit/PR: 86f03ed
+Status: Reviewed
+
+Summary:
+- Reviewed the `SPEC-311` implementation against the public portfolio home, OpsDesk available card, ERP coming-soon card, changelog navigation, static/no-backend rendering, existing auth route behavior, generated visual asset, tests, and project memory.
+- Confirmed `/` is now public without session bootstrap, while `/login`, `/signup`, and `/app` keep the existing auth guard behavior.
+- Confirmed the ERP card is clearly marked `Coming soon` and exposes no fake app navigation.
+- Confirmed the generated portfolio bitmap has no legible text, logos, or fake product claims and builds into the frontend production bundle.
+
+Validation:
+- command: `make test-frontend`: PASS — 47 frontend tests passed.
+- command: `make lint`: PASS.
+- command: `make format-check`: PASS.
+- command: `make typecheck`: PASS.
+- command: `make memory-check SPEC=SPEC-311`: PASS.
+- command: `make smoke`: PASS — Docker/local backend health, Redis, worker, Adminer, and Vite frontend checks passed.
+- command: `cd frontend && npm run build`: PASS.
+- command: `git diff --check agent/spec-310-release-changelog...HEAD`: PASS.
+
+Review:
+- decision: APPROVED
+
+Known gaps:
+- None.
+
+### 2026-08-12 — SPEC-311 — Public portfolio home implemented
+
+Role: Ingeniero de software
+Branch: agent/spec-311-public-portfolio-home
+Commit/PR: Pending
+Status: Implemented
+
+Summary:
+- Resolved the `SPEC-311` Draft questions in the spec with recruiter-facing software-engineer copy and OpsDesk primary action to `/login` with `/signup` secondary.
+- Replaced the OpsDesk-only public landing page with a static portfolio/app hub that does not require session bootstrap to render.
+- Added an OpsDesk available app card, a Small-team ERP `Coming soon` card with no fake app navigation, and public changelog links.
+- Added a generated portfolio hub bitmap asset at `frontend/src/assets/portfolio-hub.png` and wired it into the first viewport.
+- Updated frontend route tests for portfolio copy, app cards, changelog link, ERP no-link behavior, and logout returning to the new home.
+
+Validation:
+- command: `make test-frontend`: PASS — 47 frontend tests passed.
+- command: `make lint`: PASS.
+- command: `make format-check`: PASS after Prettier fixed route files.
+- command: `make typecheck`: PASS.
+- command: `make smoke`: PASS — Docker/local backend health, Redis, worker, Adminer, and Vite frontend checks passed.
+- command: `cd frontend && npm run build`: PASS.
+- command: `make memory-check SPEC=SPEC-311`: PASS.
+- command: `git diff --check`: PASS.
+
+Review:
+- decision: N/A — implementation pending review.
+
+Known gaps:
+- None.
+
 ### 2026-08-12 — SPEC-310 — Release changelog reviewed
 
 Role: Review agent

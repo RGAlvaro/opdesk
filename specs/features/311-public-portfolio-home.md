@@ -1,8 +1,8 @@
 # SPEC-311 — Public Portfolio Home
 
-Status: Draft
+Status: Implemented
 Owner: Arquitecto de specs
-Last updated: 2026-07-28
+Last updated: 2026-08-12
 
 ## Scope And Required Context
 
@@ -138,8 +138,8 @@ make memory-check SPEC=SPEC-311
 
 ## Open Questions
 
-- [ ] What personal/developer description should appear on the home page? Ask during implementation for role, tone, target audience, and 2-3 strengths or project themes to highlight.
-- [ ] Should the OpsDesk action point primarily to `/login`, `/signup`, or `/app` with auth-aware redirect behavior?
+- [x] What personal/developer description should appear on the home page? Use concise recruiter-facing copy: a software engineer building production-minded SaaS systems with emphasis on FastAPI, React, deployment, validation, and spec-driven delivery.
+- [x] Should the OpsDesk action point primarily to `/login`, `/signup`, or `/app` with auth-aware redirect behavior? Use `/login` as the primary OpsDesk action and keep `/signup` as a secondary action; `/app` remains protected for authenticated users.
 
 ## Implementation Notes
 
