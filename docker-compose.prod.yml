@@ -76,7 +76,8 @@ services:
 
   frontend:
     build:
-      context: ./frontend
+      context: .
+      dockerfile: frontend/Dockerfile
       target: production
     depends_on:
       - backend

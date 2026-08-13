@@ -2,10 +2,11 @@ FROM node:24-alpine AS development
 
 WORKDIR /app
 
-COPY package.json package-lock.json* ./
+COPY frontend/package.json frontend/package-lock.json* ./
 RUN npm ci
 
-COPY . .
+COPY frontend ./
+COPY CHANGELOG.md /CHANGELOG.md
 
 EXPOSE 5173
 CMD ["npm", "run", "dev", "--", "--host", "0.0.0.0", "--port", "5173"]
@@ -14,10 +15,11 @@ FROM node:24-alpine AS build
 
 WORKDIR /app
 
-COPY package.json package-lock.json* ./
+COPY frontend/package.json frontend/package-lock.json* ./
 RUN npm ci
 
-COPY . .
+COPY frontend ./
+COPY CHANGELOG.md /CHANGELOG.md
 RUN npm run build
 
 FROM nginx:1.27-alpine AS production
