@@ -39,7 +39,7 @@ Known gaps:
 
 Role: Review agent
 Branch: agent/spec-312-playwright-e2e-expansion
-Commit/PR: `d088295`, PR pending
+Commit/PR: `d088295`, PR #13 https://github.com/RGAlvaro/opdesk/pull/13
 Status: Reviewed
 
 Summary:
@@ -57,14 +57,14 @@ Review:
 - decision: APPROVED
 
 Known gaps:
-- GitHub Actions has not yet run the new `e2e` job; validate it after pushing/opening the PR.
+- GitHub Actions has not yet run the new `e2e` job to completion; validate it on PR #13 before merge.
 - Firefox/WebKit, visual snapshots, and dedicated accessibility audits remain future E2E scope.
 
 ### 2026-08-13 — SPEC-312 — Playwright E2E expansion implemented
 
 Role: Ingeniero de software
 Branch: agent/spec-312-playwright-e2e-expansion
-Commit/PR: `d088295`, PR pending
+Commit/PR: `d088295`, PR #13 https://github.com/RGAlvaro/opdesk/pull/13
 Status: Implemented
 
 Summary:
