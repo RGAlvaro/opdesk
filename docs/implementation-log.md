@@ -35,6 +35,115 @@ Known gaps:
 
 ## Entries
 
+### 2026-08-13 — SPEC-312 — Playwright E2E expansion reviewed
+
+Role: Review agent
+Branch: agent/spec-312-playwright-e2e-expansion
+Commit/PR: Pending
+Status: Reviewed
+
+Summary:
+- Reviewed the expanded Playwright suite against `SPEC-312` acceptance criteria for auth route protection, login/logout, profile persistence, task filter URL persistence, label filtering, desktop Chromium, mobile Chromium critical path, CI artifact handling, and Docker/local harness behavior.
+- Confirmed E2E setup uses unique test data through public product APIs and browser UI behavior without direct database mutation or destructive cleanup.
+- Confirmed `make verify` remains separate from E2E, while the new GitHub Actions `e2e` job runs `make test-e2e` and uploads Playwright artifacts only on failure.
+- Confirmed project memory, spec index, and harness docs reflect the implemented state and residual E2E gaps.
+
+Validation:
+- command: `make memory-check SPEC=SPEC-312`: PASS.
+- command: `git diff --check`: PASS.
+- command: implementation evidence reviewed: `make test-e2e`, `make lint`, `make format-check`, `make typecheck`, `make test-frontend`, `make smoke`, `make prod-config`, and `cd frontend && npm run build` all recorded as PASS in the implementation entry.
+
+Review:
+- decision: APPROVED
+
+Known gaps:
+- GitHub Actions has not yet run the new `e2e` job; validate it after pushing/opening the PR.
+- Firefox/WebKit, visual snapshots, and dedicated accessibility audits remain future E2E scope.
+
+### 2026-08-13 — SPEC-312 — Playwright E2E expansion implemented
+
+Role: Ingeniero de software
+Branch: agent/spec-312-playwright-e2e-expansion
+Commit/PR: Pending
+Status: Implemented
+
+Summary:
+- Added shared Playwright E2E helpers for unique users, API-backed setup, authenticated sessions, organizations, projects, tasks, labels, and app-shell assertions.
+- Added desktop Chromium E2E coverage for anonymous protected-route redirects, login/logout/post-logout protection, profile update persistence, task filter URL persistence, and label filtering.
+- Expanded the critical signup-to-completed-task flow to run on both desktop Chromium and a mobile Chromium viewport.
+- Added a separate GitHub Actions `e2e` job that runs `make test-e2e` and uploads Playwright failure artifacts from `frontend/test-results`.
+- Updated Playwright harness docs to describe the expanded suite, CI split, and artifact behavior.
+
+Validation:
+- command: `make test-e2e`: PASS — Compose stack built, backend Alembic upgrade/check passed, and 6 Playwright tests passed across desktop Chromium plus mobile Chromium critical path.
+- command: `make lint`: PASS.
+- command: `make format-check`: PASS.
+- command: `make typecheck`: PASS.
+- command: `make test-frontend`: PASS — 47 frontend tests passed.
+- command: `make smoke`: PASS — Docker/local backend health, Redis, worker, Adminer, and Vite frontend checks passed.
+- command: `make prod-config`: PASS.
+- command: `cd frontend && npm run build`: PASS.
+
+Review:
+- decision: APPROVED — reviewed on 2026-08-13.
+
+Known gaps:
+- Firefox/WebKit browser projects, visual snapshot testing, and accessibility audits remain outside `SPEC-312`.
+- The new GitHub Actions `e2e` job is implemented but has not run on GitHub Actions in this local handoff.
+
+### 2026-08-13 — SPEC-312 — Playwright E2E expansion specified
+
+Role: Arquitecto de specs
+Branch: agent/spec-312-playwright-e2e-expansion
+Commit/PR: Pending
+Status: Ready
+
+Summary:
+- Added Ready `SPEC-312` for expanding Playwright E2E coverage after the initial critical path.
+- Scoped the next E2E phase to auth protection, login/logout, profile update persistence, task filter URL persistence, label filtering, desktop Chromium, mobile Chromium viewport, and optional CI artifacts.
+- Kept E2E separate from `make verify` for this phase and specified unique product-API-created test data rather than direct database cleanup.
+- Updated the spec index, dependency order, touch-to-spec routing, and project memory handoff.
+
+Validation:
+- command: `make memory-check SPEC=SPEC-312`: PASS.
+- command: `git diff --check`: PASS.
+
+Review:
+- decision: N/A — spec prepared for implementation.
+
+Known gaps:
+- Implementation has not started.
+
+### 2026-08-12 — SPEC-104/SPEC-106 — Playwright critical E2E harness
+
+Role: Ingeniero de software
+Branch: main
+Commit/PR: Pending
+Status: Implemented
+
+Summary:
+- Added Playwright browser coverage for the critical authenticated workflow from signup through organization creation, project creation, task creation, and marking the task done.
+- Added `make test-e2e`, `frontend/playwright.config.ts`, and `frontend/e2e/critical-workflow.spec.ts`.
+- Added a Compose `e2e` runner using the official Playwright Docker image so browser system libraries are not required on the host.
+- Updated frontend Docker builds to use the repository root context with a narrow root `.dockerignore`, allowing Docker dev/production frontend images to include root `CHANGELOG.md` for the public changelog route without sending local `node_modules` into the build context.
+- Added `frontend/test-results/` and `frontend/playwright-report/` to `.gitignore`.
+
+Validation:
+- command: `make test-e2e`: PASS — Compose stack built, backend Alembic upgrade/check passed, and 1 Playwright Chromium critical-path test passed.
+- command: `make lint`: PASS.
+- command: `make format-check`: PASS.
+- command: `make typecheck`: PASS.
+- command: `make test-frontend`: PASS — 47 frontend tests passed.
+- command: `make smoke`: PASS — Docker/local backend health, Redis, worker, Adminer, and Vite frontend checks passed.
+- command: `make prod-config`: PASS.
+- command: `cd frontend && npm run build`: PASS.
+
+Review:
+- decision: N/A — implementation pending review.
+
+Known gaps:
+- Full cross-browser/mobile E2E coverage remains outside this hardening pass.
+
 ### 2026-08-12 — SPEC-301 — Production hostname cleanup and VPS reboot
 
 Role: Ingeniero de software

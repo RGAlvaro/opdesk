@@ -48,6 +48,7 @@ Use this index for routing. Use `docs/project-state.md` for the compact current 
 | `SPEC-309` | Implemented | Project-scoped task labels | `SPEC-103`, `SPEC-106`, `SPEC-308`, optionally `SPEC-303` | Label models/APIs, task label assignments, task filters, label UI, migrations |
 | `SPEC-310` | Implemented | Production release changelog | `SPEC-307`, `SPEC-104` | `CHANGELOG.md`, release validation, public changelog route/link |
 | `SPEC-311` | Implemented | Static public portfolio home for OpsDesk and future apps | `SPEC-104`, `SPEC-310` | Public `/` route, app cards, changelog link, frontend tests |
+| `SPEC-312` | Implemented | Expanded Playwright E2E coverage for auth, profile, filters, mobile viewport, and optional CI | `SPEC-104`, `SPEC-105`, `SPEC-106`, `SPEC-309`, `SPEC-311` | `frontend/e2e/`, Playwright config, E2E Compose runner, CI/harness docs |
 
 Implementation order should usually follow spec dependencies:
 
@@ -58,6 +59,7 @@ SPEC-301 starts after SPEC-010 and should evolve as backend, frontend, Redis, an
 SPEC-307 is implemented for manual post-launch release automation after the initial `SPEC-301` public deployment is executed.
 SPEC-308 should be implemented before `SPEC-309` because task labels depend on the expanded project/task surfaces.
 SPEC-310 can be implemented after `SPEC-307`; `SPEC-311` should wait until the personal home-page copy questions are resolved.
+SPEC-312 can be implemented after the initial Playwright critical path exists and should remain separate from product feature work.
 ```
 
 ## Agent Routing
@@ -98,3 +100,4 @@ Use this table to decide which feature spec to open before editing.
 | Project task labels, label colors/descriptions, task label assignment, label task filters | `SPEC-309` |
 | `CHANGELOG.md`, release notes, public changelog page/link, changelog validation in release workflows | `SPEC-310` |
 | Public `/` portfolio/app hub, OpsDesk app card, ERP coming-soon card, personal developer description | `SPEC-311` |
+| Playwright E2E tests, browser projects, E2E CI job, E2E artifacts, auth/profile/filter browser coverage | `SPEC-312` |

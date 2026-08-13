@@ -1,7 +1,7 @@
 // Vite and Vitest configuration for the React frontend.
 
 import react from "@vitejs/plugin-react";
-import { defineConfig } from "vitest/config";
+import { configDefaults, defineConfig } from "vitest/config";
 
 const workspaceRoot = new URL("..", import.meta.url).pathname;
 const apiProxyTarget =
@@ -12,6 +12,7 @@ export default defineConfig({
   server: {
     host: "0.0.0.0",
     port: 5173,
+    allowedHosts: ["frontend", "localhost", "127.0.0.1"],
     fs: {
       allow: [workspaceRoot],
     },
@@ -24,6 +25,7 @@ export default defineConfig({
   },
   test: {
     environment: "jsdom",
+    exclude: [...configDefaults.exclude, "e2e/**"],
     globals: true,
     setupFiles: "./vitest.setup.ts",
   },

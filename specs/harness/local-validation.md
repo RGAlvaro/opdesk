@@ -16,6 +16,7 @@ make verify-no-db
 make test
 make test-backend
 make test-frontend
+make test-e2e
 make lint
 make format-check
 make typecheck
@@ -42,6 +43,7 @@ Expected meaning:
 | `make test` | Backend and frontend tests |
 | `make test-backend` | Backend unit/integration/API tests |
 | `make test-frontend` | Frontend unit/component tests |
+| `make test-e2e` | Critical Playwright browser flow against Docker/local frontend and backend services |
 | `make lint` | Backend and frontend lint |
 | `make format-check` | Formatting checks without modifying files |
 | `make typecheck` | Backend and frontend type checks where configured |
@@ -130,10 +132,31 @@ npm run lint
 npm run format:check
 npm run typecheck
 npm run test
+npm run test:e2e
 npm run build
 ```
 
 If pnpm/yarn is chosen during scaffold, replace this section immediately with exact commands.
+
+## Playwright E2E Checks
+
+Use this target for critical browser coverage after the Docker/local service harness is available:
+
+```bash
+make test-e2e
+```
+
+The target starts the local Compose stack, applies Alembic migrations inside the backend container,
+and runs Playwright through the Compose `e2e` service against `http://frontend:5173`. The runner uses
+the official Playwright Docker image so local hosts do not need browser system libraries installed.
+It currently covers the critical recruiter-visible path from signup to organization creation,
+project creation, task creation, and marking that task done. The expanded E2E suite also covers
+auth protection, login/logout, profile persistence, task filter URL persistence, and task label
+filtering. Desktop Chromium is the default full-suite browser project; mobile Chromium runs the
+critical path.
+
+GitHub Actions runs E2E as a separate `e2e` job rather than hiding it inside `make verify`. On CI
+failure, the workflow uploads Playwright artifacts from `frontend/test-results`.
 
 ## Docker Smoke Checks
 

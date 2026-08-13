@@ -1,0 +1,9 @@
+**
+!CHANGELOG.md
+!frontend/
+!frontend/**
+frontend/dist/
+frontend/node_modules/
+frontend/playwright-report/
+frontend/test-results/
+frontend/*.tsbuildinfo

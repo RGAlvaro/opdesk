@@ -17,7 +17,7 @@ CELERY_RESULT_BACKEND ?= redis://redis:6379/1
 .PHONY: verify verify-no-db test test-backend test-backend-db lint format-check typecheck
 .PHONY: migrations-check migrations-check-compose smoke prod-config prod-smoke-project-check
 .PHONY: prod-data-smoke prod-smoke prod-down changelog-check release-workflow-check compose-up compose-down
-.PHONY: test-frontend memory-check review-ready memory-entry
+.PHONY: test-frontend test-e2e memory-check review-ready memory-entry
 
 verify: verify-no-db migrations-check
 
@@ -30,6 +30,9 @@ test-backend:
 
 test-frontend:
 	cd frontend && npm run test
+
+test-e2e: compose-up migrations-check-compose
+	docker compose run --rm e2e
 
 memory-check:
 	test -n "$(SPEC)" || (echo "Usage: make memory-check SPEC=SPEC-106" && exit 2)

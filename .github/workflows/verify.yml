@@ -62,3 +62,24 @@ jobs:
 
       - name: Validate production Compose config
         run: make prod-config
+
+  e2e:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+
+      - name: Run Playwright E2E
+        env:
+          PLAYWRIGHT_OUTPUT_DIR: /work/test-results
+        run: make test-e2e
+
+      - name: Upload Playwright artifacts
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: playwright-e2e-artifacts
+          path: frontend/test-results
+          if-no-files-found: ignore
+          retention-days: 7
