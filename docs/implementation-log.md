@@ -39,7 +39,7 @@ Known gaps:
 
 Role: Review agent
 Branch: agent/spec-312-playwright-e2e-expansion
-Commit/PR: Pending
+Commit/PR: `d088295`, PR pending
 Status: Reviewed
 
 Summary:
@@ -64,7 +64,7 @@ Known gaps:
 
 Role: Ingeniero de software
 Branch: agent/spec-312-playwright-e2e-expansion
-Commit/PR: Pending
+Commit/PR: `d088295`, PR pending
 Status: Implemented
 
 Summary:
@@ -95,7 +95,7 @@ Known gaps:
 
 Role: Arquitecto de specs
 Branch: agent/spec-312-playwright-e2e-expansion
-Commit/PR: Pending
+Commit/PR: `d088295`, PR pending
 Status: Ready
 
 Summary:
