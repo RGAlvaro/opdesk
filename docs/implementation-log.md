@@ -35,11 +35,33 @@ Known gaps:
 
 ## Entries
 
+### 2026-08-13 — SPEC-312 — Playwright E2E expansion merged
+
+Role: Ingeniero de software
+Branch: main
+Commit/PR: PR #13 https://github.com/RGAlvaro/opdesk/pull/13, merge `9b020cc`
+Status: Merged
+
+Summary:
+- Pushed `agent/spec-312-playwright-e2e-expansion`, opened PR #13, marked it ready after checks passed, and merged it into `main`.
+- Confirmed GitHub Actions `Verify` run `31686532597` passed both the existing `verify` job and the new separate `e2e` job.
+- Fast-forwarded local `main` to the merge commit.
+
+Validation:
+- command: `gh pr checks 13 --watch --interval 20`: PASS — `e2e` passed in 2m17s and `verify` passed in 1m49s.
+- command: `git pull --ff-only`: PASS — local `main` updated to `9b020cc`.
+
+Review:
+- decision: APPROVED — review entry below approved before merge.
+
+Known gaps:
+- Firefox/WebKit, visual snapshots, and dedicated accessibility audits remain future E2E scope.
+
 ### 2026-08-13 — SPEC-312 — Playwright E2E expansion reviewed
 
 Role: Review agent
 Branch: agent/spec-312-playwright-e2e-expansion
-Commit/PR: `d088295`, PR #13 https://github.com/RGAlvaro/opdesk/pull/13
+Commit/PR: `d088295`, PR #13 https://github.com/RGAlvaro/opdesk/pull/13, merge `9b020cc`
 Status: Reviewed
 
 Summary:
@@ -57,14 +79,13 @@ Review:
 - decision: APPROVED
 
 Known gaps:
-- GitHub Actions has not yet run the new `e2e` job to completion; validate it on PR #13 before merge.
 - Firefox/WebKit, visual snapshots, and dedicated accessibility audits remain future E2E scope.
 
 ### 2026-08-13 — SPEC-312 — Playwright E2E expansion implemented
 
 Role: Ingeniero de software
 Branch: agent/spec-312-playwright-e2e-expansion
-Commit/PR: `d088295`, PR #13 https://github.com/RGAlvaro/opdesk/pull/13
+Commit/PR: `d088295`, PR #13 https://github.com/RGAlvaro/opdesk/pull/13, merge `9b020cc`
 Status: Implemented
 
 Summary:
@@ -89,13 +110,12 @@ Review:
 
 Known gaps:
 - Firefox/WebKit browser projects, visual snapshot testing, and accessibility audits remain outside `SPEC-312`.
-- The new GitHub Actions `e2e` job is implemented but has not run on GitHub Actions in this local handoff.
 
 ### 2026-08-13 — SPEC-312 — Playwright E2E expansion specified
 
 Role: Arquitecto de specs
 Branch: agent/spec-312-playwright-e2e-expansion
-Commit/PR: `d088295`, PR pending
+Commit/PR: `d088295`, PR #13 https://github.com/RGAlvaro/opdesk/pull/13, merge `9b020cc`
 Status: Ready
 
 Summary:
