@@ -114,6 +114,12 @@ function mockFetch(...responses: Response[]) {
   const queuedResponses = [...responses];
   const fetchMock = vi.fn((input: RequestInfo | URL) => {
     const url = String(input);
+    if (url.includes("/api/v1/notifications/unread-count")) {
+      return Promise.resolve(jsonResponse({ unread_count: 0 }));
+    }
+    if (url.includes("/api/v1/notifications")) {
+      return Promise.resolve(jsonResponse(page([])));
+    }
     if (url.includes(`/api/v1/projects/${project.id}/members`)) {
       return Promise.resolve(jsonResponse(page([])));
     }

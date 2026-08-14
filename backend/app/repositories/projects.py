@@ -110,6 +110,16 @@ class ProjectRepository:
         ).all()
         return [(row[0], row[1]) for row in rows], total
 
+    def list_member_user_ids(self, project_id: uuid.UUID) -> list[uuid.UUID]:
+        """Return explicit project member user IDs for notification fan-out."""
+        return list(
+            self.db.scalars(
+                select(ProjectMembership.user_id)
+                .where(ProjectMembership.project_id == project_id)
+                .order_by(ProjectMembership.created_at, ProjectMembership.id)
+            )
+        )
+
     def delete_membership(self, membership: ProjectMembership) -> None:
         """Remove only explicit project access."""
         self.db.delete(membership)

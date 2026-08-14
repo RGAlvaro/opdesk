@@ -7,6 +7,7 @@ from app.api.errors import APIError, api_error_handler
 from app.api.health import router as health_router
 from app.api.invitations import router as invitations_router
 from app.api.labels import router as labels_router
+from app.api.notifications import router as notifications_router
 from app.api.organizations import router as organizations_router
 from app.api.projects import router as projects_router
 from app.api.tasks import router as tasks_router
@@ -21,6 +22,7 @@ def create_app() -> FastAPI:
     app.include_router(health_router)
     app.include_router(invitations_router)
     app.include_router(labels_router)
+    app.include_router(notifications_router)
     app.include_router(organizations_router)
     app.include_router(projects_router)
     app.include_router(tasks_router)

@@ -1,5 +1,6 @@
 """Expose SQLAlchemy models so Alembic metadata discovery imports them."""
 
+from app.models.notification import Notification, NotificationType
 from app.models.organization import (
     Invitation,
     InvitationScope,
@@ -28,6 +29,8 @@ __all__ = [
     "Invitation",
     "InvitationScope",
     "InvitationStatus",
+    "Notification",
+    "NotificationType",
     "Organization",
     "OrganizationMembership",
     "Project",

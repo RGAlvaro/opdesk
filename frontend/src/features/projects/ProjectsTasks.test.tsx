@@ -203,6 +203,9 @@ function mockFetch(...responses: Response[]) {
   const fetchMock = vi.fn((input: RequestInfo | URL, init?: RequestInit) => {
     const url = String(input);
     const method = init?.method ?? "GET";
+    if (url.includes("/api/v1/notifications/unread-count")) {
+      return Promise.resolve(jsonResponse({ unread_count: 0 }));
+    }
     if (
       method === "GET" &&
       url.includes(`/api/v1/projects/${project.id}/members`)

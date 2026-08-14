@@ -13,6 +13,7 @@ from app.models.project import Project, ProjectMembership, ProjectStatus, Projec
 from app.models.user import User
 from app.repositories.projects import ProjectRepository
 from app.services.metadata import currency_code, non_negative_decimal
+from app.services.notifications import NotificationService
 from app.services.organizations import OrganizationService
 
 logger = logging.getLogger(__name__)
@@ -159,6 +160,9 @@ class ProjectService:
                 added_by_id=added_by_id,
             )
         )
+        project = self.projects.get_by_id(organization_id, project_id)
+        if project is not None and added_by_id != user_id:
+            NotificationService(self.db).notify_project_membership(project, user_id)
         return membership
 
     def remove_project_member(self, actor: User, project_id: uuid.UUID, user_id: uuid.UUID) -> None:
@@ -267,6 +271,7 @@ class ProjectService:
                     project.is_archived,
                 )
         self.db.add(project)
+        NotificationService(self.db).notify_project_updated(actor.id, project, fields_set)
         self.db.commit()
         self.db.refresh(project)
         return project
