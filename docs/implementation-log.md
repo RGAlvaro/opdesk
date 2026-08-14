@@ -35,6 +35,30 @@ Known gaps:
 
 ## Entries
 
+### 2026-08-14 — SPEC-307 — SPEC-306 deployed to production
+
+Role: Ingeniero de software
+Branch: main
+Commit/PR: commit `926c0c1`, Production Release run `31793554991`
+Status: Merged
+
+Summary:
+- Deployed `SPEC-306` app revision `926c0c16dbbca07213085cf942c5f9f49fac1101` to the production VPS through the `Production Release` workflow.
+- The workflow passed repository verification, frontend build, production Compose config validation, release workflow validation, changelog validation, SSH upload, and remote production update.
+- The remote release manifest records backup creation, Alembic `0009 (head)`, Compose update, backend health, frontend, Redis, and worker checks as PASS.
+
+Validation:
+- command: `gh run watch 31793554991 --interval 20 --exit-status`: PASS — Production Release completed in 2m54s.
+- command: `curl -fsS https://rgalvaro.es/health`: PASS — returned `{"status":"ok"}`.
+- command: `curl -I -fsS https://rgalvaro.es/`: PASS — returned `HTTP/2 200` through Caddy/nginx.
+- command: `ssh opdesk-vps 'cat /srv/opdesk/releases/latest-release.txt'`: PASS — manifest recorded `release_ref=926c0c16dbbca07213085cf942c5f9f49fac1101`, backup `/srv/opdesk/backups/opdesk-20260814-104816-926c0c16dbbca07213085cf942c5f9f4.dump`, `alembic_current=0009 (head)`, `compose_update=PASS`, `backend_health=PASS`, `frontend=PASS`, `redis=PASS`, and `worker=PASS`.
+
+Review:
+- decision: N/A
+
+Known gaps:
+- This post-deploy memory entry is documentation-only and does not require another app deploy.
+
 ### 2026-08-14 — SPEC-307 — Production frontend build context fix
 
 Role: Ingeniero de software
