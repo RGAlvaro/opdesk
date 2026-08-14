@@ -16,6 +16,7 @@ from app.repositories.organizations import OrganizationRepository
 from app.repositories.projects import ProjectRepository
 from app.repositories.tasks import TaskRepository
 from app.services.metadata import non_negative_decimal, optional_string
+from app.services.notifications import NotificationService
 
 logger = logging.getLogger(__name__)
 
@@ -132,6 +133,7 @@ class TaskService:
                 task.id,
                 len(normalized_watchers),
             )
+        NotificationService(self.db).notify_task_created_or_assigned(actor.id, task, created=True)
         self.db.commit()
         self.db.refresh(task)
         if task.assignee_id is not None:
@@ -215,6 +217,7 @@ class TaskService:
         if not fields_set:
             raise APIError(400, "invalid_task", "At least one field must be updated.")
         assignment_changed = False
+        status_changed = False
         if "title" in fields_set:
             if title is None:
                 raise APIError(400, "invalid_task", "Title is required.")
@@ -270,7 +273,9 @@ class TaskService:
             parsed_status = parse_task_status(status)
             if parsed_status is None:
                 raise APIError(400, "invalid_task", "Task status is required.")
+            previous_status = task.status
             self._apply_status_transition(task, parsed_status)
+            status_changed = previous_status != task.status
         self._apply_blocked_reason(
             task,
             blocked_reason,
@@ -290,6 +295,11 @@ class TaskService:
             )
 
         self.db.add(task)
+        notifier = NotificationService(self.db)
+        if assignment_changed:
+            notifier.notify_task_created_or_assigned(actor.id, task, created=False)
+        if status_changed:
+            notifier.notify_task_status_changed(actor.id, task)
         self.db.commit()
         self.db.refresh(task)
         if assignment_changed and task.assignee_id is not None:

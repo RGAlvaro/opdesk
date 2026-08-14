@@ -20,6 +20,7 @@ from app.repositories.invitations import InvitationRepository
 from app.repositories.organizations import OrganizationRepository
 from app.repositories.projects import ProjectRepository
 from app.repositories.users import UserRepository
+from app.services.notifications import NotificationService
 from app.services.organizations import OrganizationService
 from app.services.projects import ProjectService
 from app.services.users import normalize_email
@@ -99,6 +100,10 @@ class InvitationService:
                 expires_at=self._new_expiration(),
             )
         )
+        organization = self.organizations.db.get(Organization, organization_id)
+        NotificationService(self.db).notify_invitation_created(
+            invitation, organization.name if organization is not None else "the organization"
+        )
         self.db.commit()
         self.db.refresh(invitation)
         return invitation
@@ -152,6 +157,10 @@ class InvitationService:
                 status=InvitationStatus.PENDING,
                 expires_at=self._new_expiration(),
             )
+        )
+        organization = self.organizations.db.get(Organization, project.organization_id)
+        NotificationService(self.db).notify_invitation_created(
+            invitation, organization.name if organization is not None else "the organization"
         )
         self.db.commit()
         self.db.refresh(invitation)
@@ -210,6 +219,7 @@ class InvitationService:
         invitation.status = InvitationStatus.ACCEPTED
         invitation.accepted_at = now
         self.db.add(invitation)
+        NotificationService(self.db).mark_invitation_read(invitation)
         self.db.commit()
         self.db.refresh(invitation)
         return invitation
@@ -224,6 +234,7 @@ class InvitationService:
         invitation.status = InvitationStatus.DECLINED
         invitation.declined_at = datetime.now(UTC)
         self.db.add(invitation)
+        NotificationService(self.db).mark_invitation_read(invitation)
         self.db.commit()
         self.db.refresh(invitation)
         return invitation

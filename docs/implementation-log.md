@@ -35,6 +35,72 @@ Known gaps:
 
 ## Entries
 
+### 2026-08-14 — SPEC-306 — In-app notifications reviewed
+
+Role: Review agent
+Branch: agent/spec-306-in-app-notifications
+Commit/PR: Pending
+Status: Reviewed
+
+Summary:
+- Reviewed `SPEC-306` implementation against the readied polling inbox scope, API conventions, migration requirements, permission isolation, invitation reuse, project/task recipient rules, frontend unread state, and required project memory.
+- Confirmed chat missed-message notifications are explicitly deferred until `SPEC-304` defines chat persistence and recipient state.
+- Confirmed no external notification delivery, preference, deletion, retention cleanup, or realtime transport decision was introduced outside the active spec.
+
+Validation:
+- command: `make test-backend`: PASS — 92 selected tests passed, 2 DB tests deselected.
+- command: `make test-frontend`: PASS — 52 frontend tests passed.
+- command: `make lint`: PASS — backend Ruff and frontend ESLint passed.
+- command: `make format-check`: PASS — backend Ruff format check and frontend Prettier check passed.
+- command: `make typecheck`: PASS — backend mypy passed and frontend `tsc -b` passed.
+- command: elevated `make migrations-check`: PASS — migration `0009` applied and Alembic check reported no new upgrade operations.
+- command: `docker compose up -d --build backend worker`: PASS — backend and worker images rebuilt so Compose included migration `0009`.
+- command: elevated `make migrations-check-compose`: PASS — Alembic upgrade/check passed inside the backend container after rebuild.
+- command: `python3 -m compileall backend/alembic/versions backend/app`: PASS.
+- command: `git diff --check`: PASS.
+- command: `make memory-check SPEC=SPEC-306`: PASS.
+
+Review:
+- decision: APPROVED
+
+Known gaps:
+- Chat missed-message notifications remain deferred until `SPEC-304` defines chat persistence and recipient state.
+- Notification preferences, deletion, external delivery, retention cleanup, and WebSockets/SSE remain future scope.
+
+### 2026-08-14 — SPEC-306 — In-app notifications implemented
+
+Role: Ingeniero de software
+Branch: agent/spec-306-in-app-notifications
+Commit/PR: Pending
+Status: Implemented
+
+Summary:
+- Readied `SPEC-306` by resolving polling, retention, recipient, invitation-surface, and chat-deferral questions before implementation.
+- Added migration `0009` and persistent `notifications` backend model/repository/schema/service/API for current-user listing, unread count, mark-read, mark-unread, and mark-all-read.
+- Connected notification creation to `SPEC-303` organization/project invitations, project membership grants, project visible-state changes, task creation/assignment, and task status changes.
+- Added authenticated notification inbox UI at `/app/notifications` with unread badge in the app shell, read toggles, mark-all-read, and action links to the existing invitation flow.
+- Added backend API/service tests and frontend route tests for unread state, inbox list, mark-read, action navigation, invitation integration, project/task fan-out, and non-recipient isolation.
+
+Validation:
+- command: `make test-backend`: PASS — 92 selected tests passed, 2 DB tests deselected.
+- command: `make test-frontend`: PASS — 52 frontend tests passed.
+- command: `make lint`: PASS — backend Ruff and frontend ESLint passed.
+- command: `make format-check`: PASS — backend Ruff format check and frontend Prettier check passed after formatting new files.
+- command: `make typecheck`: PASS — backend mypy passed and frontend `tsc -b` passed.
+- command: elevated `make migrations-check`: PASS — migration `0009` applied and Alembic check reported no new upgrade operations.
+- command: `docker compose up -d --build backend worker`: PASS — backend and worker images rebuilt so Compose included migration `0009`.
+- command: elevated `make migrations-check-compose`: PASS — Alembic upgrade/check passed inside the backend container after rebuild; the first attempt failed because the old backend image could not locate revision `0009`.
+- command: `python3 -m compileall backend/alembic/versions backend/app`: PASS.
+- command: `git diff --check`: PASS.
+- command: `make memory-check SPEC=SPEC-306`: PASS.
+
+Review:
+- decision: N/A
+
+Known gaps:
+- Chat missed-message notifications remain deferred until `SPEC-304` defines chat persistence and recipient state.
+- Notification preferences, deletion, external delivery, retention cleanup, and WebSockets/SSE remain future scope.
+
 ### 2026-08-14 — SPEC-303 — Compose migration validation rerun
 
 Role: Ingeniero de software

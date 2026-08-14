@@ -1,6 +1,7 @@
 // Authenticated application shell with navigation, user chrome, and nested pages.
 
 import {
+  Bell,
   Building2,
   FolderKanban,
   ListChecks,
@@ -18,10 +19,16 @@ import {
 import { ReactNode } from "react";
 
 import { useLogout, useSession } from "../features/auth/session";
+import { useUnreadNotificationCount } from "../features/notifications/api";
 import { useProject } from "../features/projects/api";
 import { useTask } from "../features/tasks/api";
 
-type PrimarySection = "organizations" | "projects" | "tasks" | "invitations";
+type PrimarySection =
+  | "organizations"
+  | "projects"
+  | "tasks"
+  | "invitations"
+  | "notifications";
 
 const primaryNavBaseClass =
   "flex w-full items-center gap-2 rounded-md px-3 py-2 text-left text-sm font-medium";
@@ -46,6 +53,9 @@ function activePrimarySection(pathname: string): PrimarySection | undefined {
   if (/^\/app\/invitations(\/|$)/.test(pathname)) {
     return "invitations";
   }
+  if (/^\/app\/notifications(\/|$)/.test(pathname)) {
+    return "notifications";
+  }
   return undefined;
 }
 
@@ -61,12 +71,14 @@ function PrimaryNavItem({
   section,
   to,
   activeSection,
+  badge,
 }: {
   icon: ReactNode;
   label: string;
   section: PrimarySection;
   to: string | undefined;
   activeSection: PrimarySection | undefined;
+  badge?: number;
 }) {
   const isActive = activeSection === section;
   const className = `${primaryNavBaseClass} ${
@@ -82,7 +94,7 @@ function PrimaryNavItem({
         disabled
       >
         {icon}
-        {label}
+        <span className="min-w-0 flex-1">{label}</span>
       </button>
     );
   }
@@ -94,7 +106,17 @@ function PrimaryNavItem({
       aria-current={isActive ? "page" : undefined}
     >
       {icon}
-      {label}
+      <span className="min-w-0 flex-1">{label}</span>
+      {badge && badge > 0 ? (
+        <span
+          aria-label={`${badge} unread notifications`}
+          className={`rounded-full px-2 py-0.5 text-xs font-semibold ${
+            isActive ? "bg-white text-brand" : "bg-brand text-white"
+          }`}
+        >
+          {badge > 99 ? "99+" : badge}
+        </span>
+      ) : null}
     </Link>
   );
 }
@@ -116,6 +138,7 @@ export function AppShell() {
   const routeTaskId = routeId(location.pathname, /^\/app\/tasks\/([^/]+)/);
   const project = useProject(routeProjectId);
   const task = useTask(routeTaskId);
+  const unreadNotifications = useUnreadNotificationCount();
   const activeSection = activePrimarySection(location.pathname);
   const activeProjectId = routeProjectId ?? task.data?.project_id;
   const projectOrganizationId =
@@ -198,6 +221,14 @@ export function AppShell() {
                 section="organizations"
                 to="/app/organizations"
                 activeSection={activeSection}
+              />
+              <PrimaryNavItem
+                icon={<Bell aria-hidden="true" className="h-4 w-4" />}
+                label="Notifications"
+                section="notifications"
+                to="/app/notifications"
+                activeSection={activeSection}
+                badge={unreadNotifications.data?.unread_count}
               />
               <PrimaryNavItem
                 icon={<Mail aria-hidden="true" className="h-4 w-4" />}

@@ -42,7 +42,7 @@ Use this index for routing. Use `docs/project-state.md` for the compact current 
 | `SPEC-303` | Implemented | Member invitations by email and project-level access | `SPEC-102`, `SPEC-103`, `SPEC-105`, `SPEC-106` | Organization invitations, project invitations/memberships, project visibility, invite APIs, migration `0008`, frontend management UI |
 | `SPEC-304` | Draft | Organization member chat with shared-project member ordering | `SPEC-102`, `SPEC-103`, `SPEC-303`, optionally `SPEC-306` | Chat persistence, chat APIs, organization chat UI |
 | `SPEC-305` | Draft | Project clients and client-created tickets | `SPEC-102`, `SPEC-103`, optionally `SPEC-303` | Client project access, ticket APIs, ticket UI, migrations |
-| `SPEC-306` | Draft | Persistent in-app notifications | `SPEC-201`, optionally `SPEC-303`, `SPEC-304` | Notification models, APIs, inbox UI, notification fan-out |
+| `SPEC-306` | Implemented | Persistent in-app notifications | `SPEC-201`, `SPEC-303` | Notification models, APIs, inbox UI, invitation/project/task notification fan-out |
 | `SPEC-307` | Implemented | Release automation and safe production updates after initial deployment | `SPEC-301`, initial public deployment | GitHub Actions/manual release workflow, pre-deploy backup script, production migrations, post-deploy checks, rollback docs |
 | `SPEC-308` | Implemented | Enriched profile, organization, project, and task metadata | `SPEC-101`, `SPEC-102`, `SPEC-103`, `SPEC-104`, `SPEC-105`, `SPEC-106` | User profile, organization metadata, project metadata, task metadata, migrations, frontend forms |
 | `SPEC-309` | Implemented | Project-scoped task labels | `SPEC-103`, `SPEC-106`, `SPEC-308`, optionally `SPEC-303` | Label models/APIs, task label assignments, task filters, label UI, migrations |
@@ -54,7 +54,7 @@ Implementation order should usually follow spec dependencies:
 
 ```text
 SPEC-010 -> SPEC-011 -> SPEC-101 -> SPEC-104 -> SPEC-002 -> SPEC-102 -> SPEC-103 -> SPEC-105 -> SPEC-106 -> SPEC-201 -> SPEC-302
-SPEC-303 is implemented pending review before the remaining Draft collaboration features. SPEC-304, SPEC-305, and SPEC-306 are Draft follow-up product additions whose final order depends on notification, chat, and client-ticket decisions.
+SPEC-303 is implemented before the remaining collaboration features. SPEC-306 is implemented pending review as the notification inbox slice. SPEC-304 and SPEC-305 are Draft follow-up product additions whose final order depends on chat and client-ticket decisions.
 SPEC-301 starts after SPEC-010 and should evolve as backend, frontend, Redis, and worker services exist.
 SPEC-307 is implemented for manual post-launch release automation after the initial `SPEC-301` public deployment is executed.
 SPEC-308 should be implemented before `SPEC-309` because task labels depend on the expanded project/task surfaces.
