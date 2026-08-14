@@ -35,6 +35,30 @@ Known gaps:
 
 ## Entries
 
+### 2026-08-14 — SPEC-307 — Production frontend build context fix
+
+Role: Ingeniero de software
+Branch: main
+Commit/PR: Pending
+Status: Implemented
+
+Summary:
+- Production Release run `31792683181` passed validation, created a production backup, built the backend image, and applied migrations through Alembic `0009`.
+- The remote production update then failed during `docker compose up -d --build` because `frontend/Dockerfile` copied `nginx.conf` from the production root build context while the file lives under `frontend/nginx.conf`.
+- Updated the production Dockerfile copy path so the frontend image can build from the root context used by `docker-compose.prod.yml`.
+
+Validation:
+- command: `gh run watch 31792683181 --interval 20 --exit-status`: FAIL — remote update failed after migrations during frontend image build.
+- command: elevated `docker compose --project-name opdesk-prod-smoke --env-file .env.example -f docker-compose.prod.yml build frontend`: PASS — production frontend image builds with `frontend/nginx.conf` copied from the root build context.
+- command: `make memory-check SPEC=SPEC-307`: PASS.
+- command: `git diff --check`: PASS.
+
+Review:
+- decision: N/A
+
+Known gaps:
+- Production database is at Alembic `0009`; production app update remains pending until the fixed frontend production image builds and the release workflow passes.
+
 ### 2026-08-14 — SPEC-307 — SPEC-306 production release validation fix
 
 Role: Ingeniero de software
