@@ -18,7 +18,7 @@ from app.db.base import Base
 from app.db.session import get_db
 from app.main import app
 from app.models.organization import MembershipRole, OrganizationMembership
-from app.models.project import Task
+from app.models.project import ProjectMembership, Task
 from app.models.user import User
 
 
@@ -124,6 +124,22 @@ def add_membership(
         organization_id=uuid.UUID(organization_id),
         user_id=user.id,
         role=role,
+    )
+    session.add(membership)
+    session.commit()
+    session.refresh(membership)
+    return membership
+
+
+def add_project_membership(
+    session: Session, organization_id: str, project_id: str, user: User
+) -> ProjectMembership:
+    """Seed explicit project access for scenarios that predate invitations."""
+    membership = ProjectMembership(
+        organization_id=uuid.UUID(organization_id),
+        project_id=uuid.UUID(project_id),
+        user_id=user.id,
+        added_by_id=None,
     )
     session.add(membership)
     session.commit()
@@ -310,6 +326,7 @@ def test_valid_task_creation_stores_organization_scope(
     organization, owner, _, member, _ = organization_team(client, session)
     login_as(client, owner)
     project = create_project(client, organization["id"])
+    add_project_membership(session, organization["id"], project["id"], member)
 
     task = create_task(
         client,
@@ -338,6 +355,7 @@ def test_cross_organization_assignee_is_rejected(
     create_organization(client, "Hidden Org")
     login_as(client, owner)
     project = create_project(client, organization["id"])
+    add_project_membership(session, organization["id"], project["id"], admin)
     task = create_task(client, project["id"], assignee_id=admin.id)
 
     create_response = client.post(
@@ -533,6 +551,7 @@ def test_task_label_assignment_removal_permissions_and_filtering(
     login_as(client, owner)
     project = create_project(client, organization["id"])
     label = create_label(client, project["id"])
+    add_project_membership(session, organization["id"], project["id"], member)
     assigned = create_task(client, project["id"], title="Assigned", assignee_id=member.id)
     unassigned = create_task(client, project["id"], title="Unassigned")
     login_as(client, member)
@@ -614,6 +633,7 @@ def test_task_filters_and_pagination(api_client: tuple[TestClient, Session]) -> 
     organization, owner, _, member, _ = organization_team(client, session)
     login_as(client, owner)
     project = create_project(client, organization["id"])
+    add_project_membership(session, organization["id"], project["id"], member)
     matching = create_task(
         client,
         project["id"],
@@ -653,6 +673,7 @@ def test_member_task_assignment_restrictions(api_client: tuple[TestClient, Sessi
     organization, owner, _, member, _ = organization_team(client, session)
     login_as(client, owner)
     project = create_project(client, organization["id"])
+    add_project_membership(session, organization["id"], project["id"], member)
     login_as(client, member)
 
     self_assigned = client.post(
@@ -675,6 +696,7 @@ def test_member_update_restrictions(api_client: tuple[TestClient, Session]) -> N
     organization, owner, _, member, _ = organization_team(client, session)
     login_as(client, owner)
     project = create_project(client, organization["id"])
+    add_project_membership(session, organization["id"], project["id"], member)
     assigned = create_task(client, project["id"], title="Assigned", assignee_id=member.id)
     unassigned = create_task(client, project["id"], title="Unassigned")
     login_as(client, member)

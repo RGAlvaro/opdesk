@@ -72,6 +72,25 @@ const adminUser = {
   is_active: true,
 };
 
+const organizationInvitation = {
+  id: "511311d5-1608-49b4-9fd0-9f59deac09b0",
+  organization_id: ownerOrganization.id,
+  organization_name: ownerOrganization.name,
+  target_email: "invitee@example.com",
+  target_user_id: "a560b606-7684-48b7-95f2-fef7c815a945",
+  role: "member",
+  scope_type: "organization",
+  project_id: null,
+  project_name: null,
+  status: "pending",
+  accepted_at: null,
+  declined_at: null,
+  cancelled_at: null,
+  expires_at: "2026-08-21T10:00:00Z",
+  created_at: "2026-08-14T10:00:00Z",
+  updated_at: "2026-08-14T10:00:00Z",
+};
+
 /** Build a JSON fetch response for mocked backend calls. */
 function jsonResponse(body: unknown, status = 200) {
   return new Response(JSON.stringify(body), {
@@ -176,6 +195,103 @@ describe("SPEC-105 frontend organizations UI", () => {
     expect(
       screen.getAllByRole("link", { name: /new organization/i })[0],
     ).toHaveAttribute("href", "/app/organizations/new");
+  });
+
+  it("lets owners invite existing users and renders duplicate errors", async () => {
+    const fetchMock = mockFetch(
+      jsonResponse(user),
+      jsonResponse(ownerOrganization),
+      jsonResponse(page([membership(memberUser, "member")])),
+      jsonResponse(page([])),
+      apiError("invitation_exists", "Invitation already exists.", 409),
+    );
+    const actor = userEvent.setup();
+
+    renderRoute(`/app/organizations/${ownerOrganization.id}/members`);
+
+    await actor.type(
+      await screen.findByLabelText("Email"),
+      "invitee@example.com",
+    );
+    await actor.click(screen.getByRole("button", { name: "Invite" }));
+
+    await screen.findByText("Invitation already exists.");
+    expect(fetchMock).toHaveBeenLastCalledWith(
+      `/api/v1/organizations/${ownerOrganization.id}/invitations`,
+      expect.objectContaining({
+        method: "POST",
+        body: JSON.stringify({ email: "invitee@example.com", role: "member" }),
+      }),
+    );
+  });
+
+  it("shows admin users only member invitation role", async () => {
+    mockFetch(
+      jsonResponse(user),
+      jsonResponse(adminOrganization),
+      jsonResponse(page([membership(memberUser, "member")])),
+      jsonResponse(page([])),
+    );
+
+    renderRoute(`/app/organizations/${ownerOrganization.id}/members`);
+
+    const roleSelect = await screen.findByLabelText("Role");
+    expect(roleSelect).toHaveValue("member");
+    expect(
+      screen.queryByRole("option", { name: "Admin" }),
+    ).not.toBeInTheDocument();
+  });
+
+  it("lets invited users accept their own invitations", async () => {
+    const acceptedInvitation = {
+      ...organizationInvitation,
+      status: "accepted",
+      accepted_at: "2026-08-14T11:00:00Z",
+    };
+    const fetchMock = mockFetch(
+      jsonResponse(user),
+      jsonResponse(page([organizationInvitation])),
+      jsonResponse(acceptedInvitation),
+      jsonResponse(page([])),
+    );
+    const actor = userEvent.setup();
+
+    renderRoute("/app/invitations");
+
+    expect(await screen.findByText("Acme Ops")).toBeInTheDocument();
+    await actor.click(screen.getByRole("button", { name: "Accept" }));
+
+    await screen.findByText("No pending invitations");
+    expect(fetchMock).toHaveBeenCalledWith(
+      `/api/v1/invitations/${organizationInvitation.id}/accept`,
+      expect.objectContaining({ method: "POST" }),
+    );
+  });
+
+  it("lets invited users decline their own invitations", async () => {
+    const declinedInvitation = {
+      ...organizationInvitation,
+      status: "declined",
+      declined_at: "2026-08-14T11:00:00Z",
+    };
+    const fetchMock = mockFetch(
+      jsonResponse(user),
+      jsonResponse(page([organizationInvitation])),
+      jsonResponse(declinedInvitation),
+      jsonResponse(page([])),
+    );
+    const actor = userEvent.setup();
+
+    renderRoute("/app/invitations");
+
+    expect(await screen.findByText("Acme Ops")).toBeInTheDocument();
+    await actor.click(screen.getByRole("button", { name: "Decline" }));
+
+    await screen.findByText("No pending invitations");
+    expect(fetchMock).toHaveBeenCalledWith(
+      `/api/v1/invitations/${organizationInvitation.id}/decline`,
+      expect.objectContaining({ method: "POST" }),
+    );
   });
 
   it("lists only backend-returned organizations with roles", async () => {

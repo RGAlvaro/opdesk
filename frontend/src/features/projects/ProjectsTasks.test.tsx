@@ -205,6 +205,12 @@ function mockFetch(...responses: Response[]) {
     const method = init?.method ?? "GET";
     if (
       method === "GET" &&
+      url.includes(`/api/v1/projects/${project.id}/members`)
+    ) {
+      return Promise.resolve(jsonResponse(page([])));
+    }
+    if (
+      method === "GET" &&
       url.includes(`/api/v1/projects/${project.id}/labels`)
     ) {
       return Promise.resolve(jsonResponse(page([label])));

@@ -2,7 +2,7 @@
 
 Status: Draft
 Owner: Arquitecto de specs
-Last updated: 2026-07-15
+Last updated: 2026-08-14
 
 ## Scope And Required Context
 
@@ -11,6 +11,7 @@ This spec governs:
 - Persistent in-app notifications.
 - Notification inbox UI and read/unread state.
 - Notification events for organization, project, task, and chat activity.
+- Integration of `SPEC-303` organization/project invitations into the full notification inbox after the minimal invitation flow exists.
 - Backend notification models, APIs, services, and frontend notification surfaces.
 
 Required context:
@@ -43,7 +44,7 @@ Background jobs currently support log-only notification delivery, but users have
 - Store in-app notifications for authenticated users.
 - Show a notification inbox or menu with unread state.
 - Let users mark notifications as read.
-- Support actionable invitations to organizations, projects, and tasks.
+- Surface actionable organization and project invitations created by `SPEC-303` in the notification inbox.
 - Notify users when they are added to an organization, project, or task.
 - Notify relevant users when a project or task changes state.
 - Notify users about missed chat messages while they are disconnected or not viewing the conversation.
@@ -55,6 +56,7 @@ Background jobs currently support log-only notification delivery, but users have
 - User-configurable notification preferences in the first implementation.
 - Guaranteed real-time delivery unless a later ADR selects WebSockets/SSE.
 - Full audit log. Notifications are user-facing events, not the canonical history of every change.
+- Defining invitation persistence or accept/decline semantics. `SPEC-303` owns those rules and provides the initial “My invitations” flow.
 
 ## Actors And Permissions
 
@@ -68,8 +70,8 @@ Background jobs currently support log-only notification delivery, but users have
 
 - BR-1: Notifications belong to exactly one recipient user.
 - BR-2: A recipient can list, read, and mark only their own notifications.
-- BR-3: Invitation notifications must be actionable and support accept/decline semantics from the owning invite spec.
-- BR-4: Adding a user to an organization, project, or task creates a notification for that user.
+- BR-3: Invitation notifications must be actionable and must reuse `SPEC-303` invitation records and accept/decline endpoints rather than duplicating invitation state.
+- BR-4: Adding a user to an organization or project through `SPEC-303` creates or surfaces a notification for that user once this spec is implemented.
 - BR-5: Project state changes notify project members who should see that project.
 - BR-6: Task state changes notify the assignee and any other explicitly configured recipients.
 - BR-7: Missed chat messages notify recipients who are offline or not actively viewing the relevant conversation.
@@ -115,14 +117,15 @@ Errors must follow `specs/001-api-conventions.md`, including `401 not_authentica
 - Show unread count.
 - Show notification list with safe title, body, timestamp, and action route.
 - Support mark-as-read and mark-all-read.
-- Invitation notifications must route to an accept/decline flow from `SPEC-303`.
+- Invitation notifications must route to or embed the accept/decline flow from `SPEC-303`.
+- The existing `SPEC-303` “My invitations” surface remains valid until this notification inbox ships; after `SPEC-306`, both surfaces must use the same backend invitation state.
 
 ## Acceptance Criteria
 
 - AC-1: Given a user has unread notifications, when the app shell renders, then unread state is visible.
 - AC-2: Given a user opens notifications, then only their notifications are listed.
 - AC-3: Given a user marks a notification read, then `read_at` is persisted and unread count updates.
-- AC-4: Given a user is invited to an organization, project, or task, then they receive an actionable in-app notification.
+- AC-4: Given a user is invited to an organization or project through `SPEC-303`, then the notification inbox shows an actionable notification backed by the same invitation state.
 - AC-5: Given a project or task changes state, then intended recipients receive in-app notifications.
 - AC-6: Given a user receives chat messages while disconnected or away from the conversation, then they receive an in-app notification.
 - AC-7: Given a user tries to read another user's notification, then the API returns a tenant-safe not-found response.
@@ -132,7 +135,7 @@ Errors must follow `specs/001-api-conventions.md`, including `401 not_authentica
 Required tests/checks:
 
 - Backend API tests for notification list, mark-read, mark-all-read, and non-recipient isolation.
-- Backend service tests for invitation, assignment, state-change, and chat notification creation.
+- Backend service tests for `SPEC-303` invitation notification integration, assignment, state-change, and chat notification creation.
 - Frontend tests for unread count, inbox list, mark-read, and action navigation.
 - Migration checks.
 
@@ -153,3 +156,4 @@ make memory-check SPEC=SPEC-306
 - [ ] Should notification delivery use polling first, or should chat/notifications share a WebSocket/SSE transport later?
 - [ ] What notification retention policy should apply?
 - [ ] Which project/task state changes notify all project members versus only assignees/watchers?
+- [ ] Should the `SPEC-303` “My invitations” view remain as a dedicated page after the full notification inbox ships, or should it become a filtered notifications view?

@@ -8,6 +8,8 @@ import {
   FolderKanban,
   Save,
   Tag,
+  UserPlus,
+  UsersRound,
 } from "lucide-react";
 import { FormEvent, useCallback, useEffect, useState } from "react";
 import { UseFormRegisterReturn, useForm } from "react-hook-form";
@@ -27,17 +29,25 @@ import { useOrganization } from "../organizations/api";
 import { useOrganizationMembers } from "../organizations/api";
 import {
   OrganizationMembership,
+  OrganizationRole,
   PaginatedResponse,
   PaginationParams,
-  OrganizationRole,
 } from "../organizations/types";
 import {
   useCreateProject,
+  useCreateProjectInvitation,
   useOrganizationProjects,
   useProject,
+  useProjectMembers,
+  useRemoveProjectMember,
   useUpdateProject,
 } from "./api";
-import { Project, ProjectStatus, ProjectVisibility } from "./types";
+import {
+  Project,
+  ProjectMembership,
+  ProjectStatus,
+  ProjectVisibility,
+} from "./types";
 import {
   useCreateProjectLabel,
   useProjectLabels,
@@ -130,6 +140,16 @@ function PaginationControls<TItem>({
       </div>
     </div>
   );
+}
+
+/** Read items from paginated API data while tolerating older list mocks in tests. */
+function paginatedItems<TItem>(
+  data: PaginatedResponse<TItem> | TItem[] | undefined,
+) {
+  if (!data) {
+    return [];
+  }
+  return Array.isArray(data) ? data : (data.items ?? []);
 }
 
 /** Render backend and network errors using safe user-facing copy. */
@@ -776,8 +796,140 @@ export function ProjectDetailPage() {
           </div>
         </article>
       </div>
+      <ProjectMembersPanel
+        projectId={project.data.id}
+        organizationId={project.data.organization_id}
+        canManage={canManage}
+      />
       <ProjectLabelsPanel projectId={project.data.id} />
     </section>
+  );
+}
+
+/** Render explicit project members and owner/admin invite controls. */
+function ProjectMembersPanel({
+  projectId,
+  organizationId,
+  canManage,
+}: {
+  projectId: string;
+  organizationId: string;
+  canManage: boolean;
+}) {
+  const projectMembers = useProjectMembers(projectId);
+  const organizationMembers = useOrganizationMembers(organizationId, canManage);
+  const invite = useCreateProjectInvitation(projectId);
+  const removeProjectMember = useRemoveProjectMember(projectId);
+  const [selectedUserId, setSelectedUserId] = useState("");
+  const projectMemberItems = paginatedItems<ProjectMembership>(
+    projectMembers.data,
+  );
+  const organizationMemberItems = paginatedItems<OrganizationMembership>(
+    organizationMembers.data,
+  );
+  const projectMemberIds = new Set(
+    projectMemberItems.map((member) => member.user_id),
+  );
+  const inviteOptions = organizationMemberItems.filter(
+    (member) => !projectMemberIds.has(member.user_id),
+  );
+
+  /** Create a pending invitation for project access. */
+  async function handleProjectInvite(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (!selectedUserId) {
+      return;
+    }
+    await invite.mutateAsync(selectedUserId);
+    setSelectedUserId("");
+  }
+
+  return (
+    <div className="rounded-md border border-line bg-white p-6 shadow-panel">
+      <div className="flex items-center gap-2">
+        <UsersRound aria-hidden="true" className="h-5 w-5 text-brand" />
+        <h2 className="text-lg font-semibold">Project members</h2>
+      </div>
+      {projectMembers.isLoading ? (
+        <p className="mt-4 text-sm text-muted">Loading project members.</p>
+      ) : null}
+      {projectMembers.isError ? (
+        <div className="mt-4">
+          <ErrorNotice error={projectMembers.error} />
+        </div>
+      ) : null}
+      <div className="mt-4 grid gap-3">
+        {projectMemberItems.map((member) => (
+          <div
+            key={member.id}
+            className="flex flex-col gap-3 rounded-md bg-surface p-3 sm:flex-row sm:items-center sm:justify-between"
+          >
+            <div>
+              <p className="font-medium">{member.user.full_name}</p>
+              <p className="text-sm text-muted">
+                {member.user.email} · {optionLabel(member.role)}
+              </p>
+            </div>
+            {canManage ? (
+              <button
+                type="button"
+                disabled={removeProjectMember.isPending}
+                className="inline-flex items-center justify-center rounded-md border border-line px-3 py-2 text-sm font-medium hover:bg-white disabled:cursor-not-allowed disabled:opacity-70"
+                onClick={() => removeProjectMember.mutate(member.user_id)}
+              >
+                Remove
+              </button>
+            ) : null}
+          </div>
+        ))}
+      </div>
+      {canManage ? (
+        <form
+          className="mt-5 flex flex-col gap-3 sm:flex-row sm:items-end"
+          onSubmit={handleProjectInvite}
+        >
+          <div className="min-w-0 flex-1">
+            <label
+              htmlFor="project_invite_user"
+              className="block text-sm font-medium"
+            >
+              Add project member
+            </label>
+            <select
+              id="project_invite_user"
+              value={selectedUserId}
+              onChange={(event) => setSelectedUserId(event.target.value)}
+              className="mt-1 w-full rounded-md border border-line bg-white px-3 py-2"
+            >
+              <option value="">Select organization member</option>
+              {inviteOptions.map((member) => (
+                <option key={member.user_id} value={member.user_id}>
+                  {member.user.full_name} ({member.user.email})
+                </option>
+              ))}
+            </select>
+          </div>
+          <button
+            type="submit"
+            disabled={!selectedUserId || invite.isPending}
+            className="inline-flex items-center justify-center gap-2 rounded-md bg-brand px-4 py-2 font-semibold text-white hover:bg-brand/90 disabled:cursor-not-allowed disabled:opacity-70"
+          >
+            <UserPlus aria-hidden="true" className="h-4 w-4" />
+            {invite.isPending ? "Inviting" : "Invite"}
+          </button>
+        </form>
+      ) : null}
+      {invite.isError ? (
+        <div className="mt-4">
+          <ErrorNotice error={invite.error} />
+        </div>
+      ) : null}
+      {removeProjectMember.isError ? (
+        <div className="mt-4">
+          <ErrorNotice error={removeProjectMember.error} />
+        </div>
+      ) : null}
+    </div>
   );
 }
 

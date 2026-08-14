@@ -6,7 +6,9 @@ from decimal import Decimal
 
 from pydantic import BaseModel
 
+from app.models.organization import MembershipRole
 from app.models.project import ProjectStatus, ProjectVisibility
+from app.schemas.organizations import MembershipUserRead
 
 
 class ProjectCreateRequest(BaseModel):
@@ -61,6 +63,28 @@ class ProjectListResponse(BaseModel):
     """Paginated projects visible to one organization member."""
 
     items: list[ProjectRead]
+    total: int
+    limit: int
+    offset: int
+
+
+class ProjectMembershipRead(BaseModel):
+    """Explicit project participation returned to allowed project viewers."""
+
+    id: uuid.UUID
+    organization_id: uuid.UUID
+    project_id: uuid.UUID
+    user_id: uuid.UUID
+    added_by_id: uuid.UUID | None
+    role: MembershipRole
+    user: MembershipUserRead
+    created_at: datetime
+
+
+class ProjectMembershipListResponse(BaseModel):
+    """Paginated list of explicit project members."""
+
+    items: list[ProjectMembershipRead]
     total: int
     limit: int
     offset: int

@@ -1,6 +1,10 @@
 // TypeScript contracts for project API responses and form payloads.
 
-import { PaginatedResponse } from "../organizations/types";
+import {
+  MembershipUser,
+  OrganizationRole,
+  PaginatedResponse,
+} from "../organizations/types";
 
 export type ProjectStatus =
   | "planned"
@@ -30,6 +34,21 @@ export type Project = {
 };
 
 export type ProjectListResponse = PaginatedResponse<Project>;
+
+/** Explicit project member returned by the project members endpoint. */
+export type ProjectMembership = {
+  id: string;
+  organization_id: string;
+  project_id: string;
+  user_id: string;
+  added_by_id: string | null;
+  role: OrganizationRole;
+  user: MembershipUser;
+  created_at: string;
+};
+
+export type ProjectMembershipListResponse =
+  PaginatedResponse<ProjectMembership>;
 
 /** Payload accepted by project create and update mutations. */
 export type ProjectPayload = {

@@ -20,7 +20,7 @@ from app.db.base import Base
 from app.db.session import get_db
 from app.main import app
 from app.models.organization import MembershipRole, Organization, OrganizationMembership
-from app.models.project import Project, Task
+from app.models.project import Project, ProjectMembership, Task
 from app.models.user import User
 from app.notifications.assignment import (
     TaskAssignmentNotificationPayload,
@@ -119,6 +119,15 @@ def create_org_project_and_member(
         json={"name": "Notification Project"},
     )
     assert project_response.status_code == 201
+    session.add(
+        ProjectMembership(
+            organization_id=uuid.UUID(organization["id"]),
+            project_id=uuid.UUID(project_response.json()["id"]),
+            user_id=member.id,
+            added_by_id=owner.id,
+        )
+    )
+    session.commit()
     return organization, project_response.json(), owner, member
 
 

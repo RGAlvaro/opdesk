@@ -13,6 +13,7 @@ from app.api.errors import APIError
 from app.models.organization import MembershipRole, Organization, OrganizationMembership
 from app.models.user import User
 from app.repositories.organizations import OrganizationRepository
+from app.repositories.projects import ProjectRepository
 from app.repositories.users import UserRepository
 from app.services.metadata import optional_email, optional_string, optional_url
 
@@ -53,6 +54,7 @@ class OrganizationService:
         """Create organization collaborators bound to the request transaction."""
         self.db = db
         self.organizations = OrganizationRepository(db)
+        self.projects = ProjectRepository(db)
         self.users = UserRepository(db)
 
     def create_organization(
@@ -252,6 +254,7 @@ class OrganizationService:
         if target.role == MembershipRole.OWNER:
             self._raise_ownership_transfer_required()
 
+        self.projects.delete_memberships_for_user(organization_id, user_id)
         self.organizations.delete_membership(target)
         self.db.commit()
 

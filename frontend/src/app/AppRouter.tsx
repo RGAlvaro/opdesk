@@ -13,6 +13,7 @@ import {
   OrganizationNewPage,
   OrganizationSettingsPage,
 } from "../features/organizations/OrganizationPages";
+import { MyInvitationsPage } from "../features/organizations/InvitationsPage";
 import {
   ProjectDetailPage,
   ProjectListPage,
@@ -62,6 +63,7 @@ export function AppRouter() {
       >
         <Route index element={<DashboardPage />} />
         <Route path="profile" element={<ProfilePage />} />
+        <Route path="invitations" element={<MyInvitationsPage />} />
         <Route path="organizations" element={<OrganizationListPage />} />
         <Route path="organizations/new" element={<OrganizationNewPage />} />
         <Route

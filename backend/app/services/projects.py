@@ -9,7 +9,7 @@ from sqlalchemy.orm import Session
 
 from app.api.errors import APIError
 from app.models.organization import MembershipRole, OrganizationMembership
-from app.models.project import Project, ProjectStatus, ProjectVisibility
+from app.models.project import Project, ProjectMembership, ProjectStatus, ProjectVisibility
 from app.models.user import User
 from app.repositories.projects import ProjectRepository
 from app.services.metadata import currency_code, non_negative_decimal
@@ -97,6 +97,14 @@ class ProjectService:
             project_owner_id=project_owner_id,
         )
         self.projects.add(project)
+        self.projects.add_membership(
+            ProjectMembership(
+                organization_id=organization_id,
+                project_id=project.id,
+                user_id=actor.id,
+                added_by_id=actor.id,
+            )
+        )
         self.db.commit()
         self.db.refresh(project)
         return project
@@ -105,8 +113,14 @@ class ProjectService:
         self, actor: User, organization_id: uuid.UUID, limit: int, offset: int
     ) -> tuple[list[Project], int]:
         """List projects for an organization member with standard pagination."""
-        self.organizations.get_organization(actor, organization_id)
-        return self.projects.list_by_organization(organization_id, limit, offset)
+        _, membership = self.organizations.get_organization(actor, organization_id)
+        return self.projects.list_by_organization(
+            organization_id,
+            limit,
+            offset,
+            actor_user_id=actor.id,
+            actor_role=membership.role,
+        )
 
     def get_project(
         self, actor: User, project_id: uuid.UUID
@@ -115,7 +129,51 @@ class ProjectService:
         result = self.projects.get_for_member(project_id, actor.id)
         if result is None:
             raise APIError(404, "project_not_found", "Project was not found.")
-        return result
+        project, membership = result
+        self._require_project_access(project, membership, actor.id)
+        return project, membership
+
+    def list_project_members(
+        self, actor: User, project_id: uuid.UUID, limit: int, offset: int
+    ) -> tuple[list[tuple[ProjectMembership, OrganizationMembership]], int]:
+        """List explicit project members for users allowed to see the project."""
+        project, _ = self.get_project(actor, project_id)
+        return self.projects.list_members(project.id, limit, offset)
+
+    def add_project_member(
+        self,
+        organization_id: uuid.UUID,
+        project_id: uuid.UUID,
+        user_id: uuid.UUID,
+        added_by_id: uuid.UUID | None,
+    ) -> ProjectMembership:
+        """Create explicit project access for a validated organization member."""
+        existing = self.projects.get_membership(project_id, user_id)
+        if existing is not None:
+            return existing
+        membership = self.projects.add_membership(
+            ProjectMembership(
+                organization_id=organization_id,
+                project_id=project_id,
+                user_id=user_id,
+                added_by_id=added_by_id,
+            )
+        )
+        return membership
+
+    def remove_project_member(self, actor: User, project_id: uuid.UUID, user_id: uuid.UUID) -> None:
+        """Remove explicit project participation while preserving organization membership."""
+        project, organization_membership = self.get_project(actor, project_id)
+        self._require_role(organization_membership, {MembershipRole.OWNER, MembershipRole.ADMIN})
+        membership = self.projects.get_membership(project.id, user_id)
+        if membership is None:
+            raise APIError(
+                404,
+                "project_membership_not_found",
+                "Project membership was not found.",
+            )
+        self.projects.delete_membership(membership)
+        self.db.commit()
 
     def update_project(
         self,
@@ -235,3 +293,12 @@ class ProjectService:
         """Raise the stable authorization error when a member lacks a required role."""
         if membership.role not in allowed_roles:
             raise APIError(403, "insufficient_role", "Your organization role is insufficient.")
+
+    def _require_project_access(
+        self, project: Project, membership: OrganizationMembership, user_id: uuid.UUID
+    ) -> None:
+        """Hide projects from regular members without explicit access."""
+        if membership.role in {MembershipRole.OWNER, MembershipRole.ADMIN}:
+            return
+        if self.projects.get_membership(project.id, user_id) is None:
+            raise APIError(404, "project_not_found", "Project was not found.")

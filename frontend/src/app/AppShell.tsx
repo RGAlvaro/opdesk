@@ -5,6 +5,7 @@ import {
   FolderKanban,
   ListChecks,
   LogOut,
+  Mail,
   UserRound,
 } from "lucide-react";
 import {
@@ -20,7 +21,7 @@ import { useLogout, useSession } from "../features/auth/session";
 import { useProject } from "../features/projects/api";
 import { useTask } from "../features/tasks/api";
 
-type PrimarySection = "organizations" | "projects" | "tasks";
+type PrimarySection = "organizations" | "projects" | "tasks" | "invitations";
 
 const primaryNavBaseClass =
   "flex w-full items-center gap-2 rounded-md px-3 py-2 text-left text-sm font-medium";
@@ -41,6 +42,9 @@ function activePrimarySection(pathname: string): PrimarySection | undefined {
   }
   if (/^\/app\/organizations(\/|$)/.test(pathname)) {
     return "organizations";
+  }
+  if (/^\/app\/invitations(\/|$)/.test(pathname)) {
+    return "invitations";
   }
   return undefined;
 }
@@ -193,6 +197,13 @@ export function AppShell() {
                 label="Organizations"
                 section="organizations"
                 to="/app/organizations"
+                activeSection={activeSection}
+              />
+              <PrimaryNavItem
+                icon={<Mail aria-hidden="true" className="h-4 w-4" />}
+                label="Invitations"
+                section="invitations"
+                to="/app/invitations"
                 activeSection={activeSection}
               />
               <PrimaryNavItem
