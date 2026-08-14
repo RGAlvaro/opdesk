@@ -4,7 +4,13 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { apiRequest } from "../../shared/api";
 import { PaginationParams } from "../organizations/types";
-import { Project, ProjectListResponse, ProjectPayload } from "./types";
+import {
+  Project,
+  ProjectListResponse,
+  ProjectMembershipListResponse,
+  ProjectPayload,
+} from "./types";
+import { Invitation } from "../organizations/types";
 
 export const projectsRootQueryKey = ["projects"] as const;
 const projectsStaleTimeMs = 30_000;
@@ -20,6 +26,11 @@ export function organizationProjectsQueryKey(
 /** Build a stable query key for one project detail response. */
 export function projectQueryKey(projectId: string) {
   return ["projects", projectId] as const;
+}
+
+/** Build a stable query key for one project's explicit member list. */
+export function projectMembersQueryKey(projectId: string) {
+  return ["projects", projectId, "members"] as const;
 }
 
 /** Convert pagination state into backend query parameters. */
@@ -48,6 +59,13 @@ export function getProject(projectId: string) {
   return apiRequest<Project>(`/api/v1/projects/${projectId}`);
 }
 
+/** Fetch explicit members for one project. */
+export function listProjectMembers(projectId: string) {
+  return apiRequest<ProjectMembershipListResponse>(
+    `/api/v1/projects/${projectId}/members`,
+  );
+}
+
 /** Keep one organization's project list in React Query cache. */
 export function useOrganizationProjects(
   organizationId: string | undefined,
@@ -68,6 +86,18 @@ export function useProject(projectId: string | undefined) {
   return useQuery({
     queryKey: projectId ? projectQueryKey(projectId) : ["projects", "missing"],
     queryFn: () => getProject(projectId ?? ""),
+    enabled: Boolean(projectId),
+    staleTime: projectsStaleTimeMs,
+  });
+}
+
+/** Keep explicit project members in React Query cache. */
+export function useProjectMembers(projectId: string | undefined) {
+  return useQuery({
+    queryKey: projectId
+      ? projectMembersQueryKey(projectId)
+      : ["projects", "missing", "members"],
+    queryFn: () => listProjectMembers(projectId ?? ""),
     enabled: Boolean(projectId),
     staleTime: projectsStaleTimeMs,
   });
@@ -105,6 +135,39 @@ export function useUpdateProject(projectId: string) {
         queryKey: ["organizations", project.organization_id, "projects"],
       });
       queryClient.setQueryData(projectQueryKey(project.id), project);
+    },
+  });
+}
+
+/** Invite an organization member to join a project. */
+export function useCreateProjectInvitation(projectId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (userId: string) =>
+      apiRequest<Invitation>(`/api/v1/projects/${projectId}/invitations`, {
+        method: "POST",
+        body: JSON.stringify({ user_id: userId }),
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: projectMembersQueryKey(projectId),
+      });
+    },
+  });
+}
+
+/** Remove explicit membership from a project. */
+export function useRemoveProjectMember(projectId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (userId: string) =>
+      apiRequest<undefined>(`/api/v1/projects/${projectId}/members/${userId}`, {
+        method: "DELETE",
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: projectMembersQueryKey(projectId),
+      });
     },
   });
 }

@@ -5,6 +5,8 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "../../shared/api";
 import {
   MembershipListResponse,
+  Invitation,
+  InvitationListResponse,
   Organization,
   OrganizationListResponse,
   OrganizationPayload,
@@ -24,6 +26,16 @@ export function organizationMembersQueryKey(organizationId: string) {
   return ["organizations", organizationId, "members"] as const;
 }
 
+/** Build a stable query key for one organization's invitation list. */
+export function organizationInvitationsQueryKey(organizationId: string) {
+  return ["organizations", organizationId, "invitations"] as const;
+}
+
+/** Build a stable query key for invitations addressed to the current user. */
+export function myInvitationsQueryKey() {
+  return ["invitations", "mine"] as const;
+}
+
 /** Fetch organizations visible to the authenticated user. */
 export function listOrganizations() {
   return apiRequest<OrganizationListResponse>("/api/v1/organizations");
@@ -39,6 +51,18 @@ export function listOrganizationMembers(organizationId: string) {
   return apiRequest<MembershipListResponse>(
     `/api/v1/organizations/${organizationId}/members`,
   );
+}
+
+/** Fetch administrator-visible invitations for one organization. */
+export function listOrganizationInvitations(organizationId: string) {
+  return apiRequest<InvitationListResponse>(
+    `/api/v1/organizations/${organizationId}/invitations`,
+  );
+}
+
+/** Fetch invitations addressed to the current authenticated user. */
+export function listMyInvitations() {
+  return apiRequest<InvitationListResponse>("/api/v1/invitations");
 }
 
 /** Keep the current user's organization list in React Query cache. */
@@ -73,6 +97,30 @@ export function useOrganizationMembers(
       : ["organizations", "missing", "members"],
     queryFn: () => listOrganizationMembers(organizationId ?? ""),
     enabled: Boolean(organizationId) && enabled,
+    staleTime: organizationStaleTimeMs,
+  });
+}
+
+/** Keep one organization's invitation list in React Query cache. */
+export function useOrganizationInvitations(
+  organizationId: string | undefined,
+  enabled: boolean,
+) {
+  return useQuery({
+    queryKey: organizationId
+      ? organizationInvitationsQueryKey(organizationId)
+      : ["organizations", "missing", "invitations"],
+    queryFn: () => listOrganizationInvitations(organizationId ?? ""),
+    enabled: Boolean(organizationId) && enabled,
+    staleTime: organizationStaleTimeMs,
+  });
+}
+
+/** Keep current-user invitations in React Query cache. */
+export function useMyInvitations() {
+  return useQuery({
+    queryKey: myInvitationsQueryKey(),
+    queryFn: listMyInvitations,
     staleTime: organizationStaleTimeMs,
   });
 }
@@ -195,6 +243,77 @@ export function useTransferOwnership(organizationId: string) {
         queryKey: organizationMembersQueryKey(organizationId),
       });
       queryClient.invalidateQueries({ queryKey: organizationsQueryKey });
+    },
+  });
+}
+
+/** Invite an existing user to join one organization. */
+export function useCreateOrganizationInvitation(organizationId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (payload: {
+      email: string;
+      role: Exclude<OrganizationRole, "owner">;
+    }) =>
+      apiRequest<Invitation>(
+        `/api/v1/organizations/${organizationId}/invitations`,
+        {
+          method: "POST",
+          body: JSON.stringify(payload),
+        },
+      ),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: organizationInvitationsQueryKey(organizationId),
+      });
+    },
+  });
+}
+
+/** Cancel one pending invitation owned by the organization. */
+export function useCancelInvitation(organizationId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (invitationId: string) =>
+      apiRequest<undefined>(
+        `/api/v1/organizations/${organizationId}/invitations/${invitationId}`,
+        { method: "DELETE" },
+      ),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: organizationInvitationsQueryKey(organizationId),
+      });
+      queryClient.invalidateQueries({ queryKey: myInvitationsQueryKey() });
+    },
+  });
+}
+
+/** Accept one pending invitation addressed to the current user. */
+export function useAcceptInvitation() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (invitationId: string) =>
+      apiRequest<Invitation>(`/api/v1/invitations/${invitationId}/accept`, {
+        method: "POST",
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: myInvitationsQueryKey() });
+      queryClient.invalidateQueries({ queryKey: organizationsQueryKey });
+      queryClient.invalidateQueries({ queryKey: ["projects"] });
+    },
+  });
+}
+
+/** Decline one pending invitation addressed to the current user. */
+export function useDeclineInvitation() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (invitationId: string) =>
+      apiRequest<Invitation>(`/api/v1/invitations/${invitationId}/decline`, {
+        method: "POST",
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: myInvitationsQueryKey() });
     },
   });
 }

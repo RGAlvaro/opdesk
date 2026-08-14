@@ -6,13 +6,14 @@ import {
   ArrowLeft,
   Building2,
   FolderKanban,
+  MailPlus,
   Save,
   ShieldCheck,
   Trash2,
   UserCog,
   UsersRound,
 } from "lucide-react";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { FormEvent, useCallback, useEffect, useMemo, useState } from "react";
 import { UseFormRegisterReturn, useForm } from "react-hook-form";
 import { useQueryClient } from "@tanstack/react-query";
 import { Link, Navigate, useNavigate, useParams } from "react-router-dom";
@@ -22,8 +23,11 @@ import { ApiError, getErrorMessage } from "../../shared/api";
 import { sessionQueryKey, useSession } from "../auth/session";
 import {
   useCreateOrganization,
+  useCreateOrganizationInvitation,
   useDeleteOrganization,
+  useCancelInvitation,
   useOrganization,
+  useOrganizationInvitations,
   useOrganizationMembers,
   useOrganizations,
   useRemoveMember,
@@ -33,6 +37,7 @@ import {
 } from "./api";
 import {
   Organization,
+  Invitation,
   OrganizationMembership,
   OrganizationPayload,
   OrganizationRole,
@@ -917,27 +922,198 @@ function OrganizationMembersPanel({
   organization: Organization;
 }) {
   const members = useOrganizationMembers(organization.id, true);
+  const invitations = useOrganizationInvitations(organization.id, true);
+
+  return (
+    <div className="space-y-4">
+      <OrganizationInvitePanel organization={organization} />
+      <div className="rounded-md border border-line bg-white p-6 shadow-panel">
+        <h2 className="text-lg font-semibold">Members</h2>
+        {members.isLoading ? (
+          <p className="mt-4 text-sm text-muted">Loading members.</p>
+        ) : null}
+        {members.isError ? (
+          <>
+            <AuthErrorRedirect error={members.error} />
+            <div className="mt-4">
+              <ErrorNotice error={members.error} />
+            </div>
+          </>
+        ) : null}
+        {members.data ? (
+          <MemberList
+            organizationId={organization.id}
+            actorRole={organization.role}
+            members={members.data.items}
+          />
+        ) : null}
+      </div>
+      <OrganizationInvitationList
+        organizationId={organization.id}
+        invitations={invitations.data?.items ?? []}
+        error={invitations.error}
+        isLoading={invitations.isLoading}
+        isError={invitations.isError}
+      />
+    </div>
+  );
+}
+
+/** Render owner/admin organization invite-by-email controls. */
+function OrganizationInvitePanel({
+  organization,
+}: {
+  organization: Organization;
+}) {
+  const [email, setEmail] = useState("");
+  const [role, setRole] =
+    useState<Exclude<OrganizationRole, "owner">>("member");
+  const invite = useCreateOrganizationInvitation(organization.id);
+  const handleAuthLoss = useOrganizationAuthLoss();
+  const canInviteAdmin = organization.role === "owner";
+
+  /** Create a pending organization invitation for an existing user. */
+  async function handleInvite(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    try {
+      await invite.mutateAsync({ email, role });
+      setEmail("");
+      setRole("member");
+    } catch (error) {
+      await handleAuthLoss(error);
+    }
+  }
 
   return (
     <div className="rounded-md border border-line bg-white p-6 shadow-panel">
-      <h2 className="text-lg font-semibold">Members</h2>
-      {members.isLoading ? (
-        <p className="mt-4 text-sm text-muted">Loading members.</p>
+      <h2 className="text-lg font-semibold">Invite member</h2>
+      <form
+        className="mt-4 grid gap-3 sm:grid-cols-[1fr_10rem_auto]"
+        onSubmit={handleInvite}
+      >
+        <div>
+          <label
+            htmlFor="organization_invite_email"
+            className="block text-sm font-medium"
+          >
+            Email
+          </label>
+          <input
+            id="organization_invite_email"
+            type="email"
+            required
+            value={email}
+            onChange={(event) => setEmail(event.target.value)}
+            className="mt-1 w-full rounded-md border border-line px-3 py-2"
+          />
+        </div>
+        <div>
+          <label
+            htmlFor="organization_invite_role"
+            className="block text-sm font-medium"
+          >
+            Role
+          </label>
+          <select
+            id="organization_invite_role"
+            value={role}
+            onChange={(event) =>
+              setRole(event.target.value as Exclude<OrganizationRole, "owner">)
+            }
+            className="mt-1 w-full rounded-md border border-line bg-white px-3 py-2"
+          >
+            <option value="member">Member</option>
+            {canInviteAdmin ? <option value="admin">Admin</option> : null}
+          </select>
+        </div>
+        <button
+          type="submit"
+          disabled={invite.isPending}
+          className="mt-6 inline-flex items-center justify-center gap-2 rounded-md bg-brand px-4 py-2 font-semibold text-white hover:bg-brand/90 disabled:cursor-not-allowed disabled:opacity-70"
+        >
+          <MailPlus aria-hidden="true" className="h-4 w-4" />
+          {invite.isPending ? "Inviting" : "Invite"}
+        </button>
+      </form>
+      {invite.isError ? (
+        <div className="mt-4">
+          <ErrorNotice error={invite.error} />
+        </div>
       ) : null}
-      {members.isError ? (
-        <>
-          <AuthErrorRedirect error={members.error} />
-          <div className="mt-4">
-            <ErrorNotice error={members.error} />
+      {invite.isSuccess ? (
+        <p
+          role="status"
+          className="mt-4 rounded-md bg-green-50 px-3 py-2 text-sm text-brand"
+        >
+          Invitation created.
+        </p>
+      ) : null}
+    </div>
+  );
+}
+
+/** Render organization-owned invitations with pending cancellation controls. */
+function OrganizationInvitationList({
+  organizationId,
+  invitations,
+  error,
+  isLoading,
+  isError,
+}: {
+  organizationId: string;
+  invitations: Invitation[];
+  error: unknown;
+  isLoading: boolean;
+  isError: boolean;
+}) {
+  const cancelInvitation = useCancelInvitation(organizationId);
+  const pending = invitations.filter(
+    (invitation) => invitation.status === "pending",
+  );
+
+  return (
+    <div className="rounded-md border border-line bg-white p-6 shadow-panel">
+      <h2 className="text-lg font-semibold">Invitations</h2>
+      {isLoading ? (
+        <p className="mt-4 text-sm text-muted">Loading invitations.</p>
+      ) : null}
+      {isError ? (
+        <div className="mt-4">
+          <ErrorNotice error={error} />
+        </div>
+      ) : null}
+      {pending.length === 0 && !isLoading ? (
+        <p className="mt-4 text-sm text-muted">No pending invitations.</p>
+      ) : null}
+      <div className="mt-4 grid gap-3">
+        {pending.map((invitation) => (
+          <div
+            key={invitation.id}
+            className="flex flex-col gap-3 rounded-md bg-surface p-3 sm:flex-row sm:items-center sm:justify-between"
+          >
+            <div>
+              <p className="font-medium">{invitation.target_email}</p>
+              <p className="text-sm text-muted">
+                {invitation.scope_type === "organization"
+                  ? `Organization ${invitation.role ?? "member"}`
+                  : `Project ${invitation.project_name ?? ""}`}
+              </p>
+            </div>
+            <button
+              type="button"
+              disabled={cancelInvitation.isPending}
+              className="inline-flex items-center justify-center rounded-md border border-line px-3 py-2 text-sm font-medium hover:bg-white disabled:cursor-not-allowed disabled:opacity-70"
+              onClick={() => cancelInvitation.mutate(invitation.id)}
+            >
+              Cancel
+            </button>
           </div>
-        </>
-      ) : null}
-      {members.data ? (
-        <MemberList
-          organizationId={organization.id}
-          actorRole={organization.role}
-          members={members.data.items}
-        />
+        ))}
+      </div>
+      {cancelInvitation.isError ? (
+        <div className="mt-4">
+          <ErrorNotice error={cancelInvitation.error} />
+        </div>
       ) : null}
     </div>
   );

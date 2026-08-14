@@ -94,7 +94,7 @@ class TaskService:
             raise APIError(409, "project_archived", "Archived projects cannot receive new tasks.")
         self._validate_create_assignment(actor, membership, assignee_id)
         if assignee_id is not None:
-            self._require_organization_member(project.organization_id, assignee_id)
+            self._require_project_member(project.id, assignee_id)
 
         task = Task(
             organization_id=project.organization_id,
@@ -183,7 +183,11 @@ class TaskService:
         result = self.tasks.get_for_member(task_id, actor.id)
         if result is None:
             raise APIError(404, "task_not_found", "Task was not found.")
-        return result
+        task, membership = result
+        if membership.role not in {MembershipRole.OWNER, MembershipRole.ADMIN}:
+            if self.projects.get_membership(task.project_id, actor.id) is None:
+                raise APIError(404, "task_not_found", "Task was not found.")
+        return task, membership
 
     def update_task(
         self,
@@ -224,7 +228,7 @@ class TaskService:
             task.priority = parsed_priority
         if "assignee_id" in fields_set:
             if assignee_id is not None:
-                self._require_organization_member(task.organization_id, assignee_id)
+                self._require_project_member(task.project_id, assignee_id)
             previous_assignee_id = task.assignee_id
             task.assignee_id = assignee_id
             if previous_assignee_id != assignee_id:
@@ -303,7 +307,9 @@ class TaskService:
         result = self.projects.get_for_member(project_id, user_id)
         if result is None:
             raise APIError(404, "project_not_found", "Project was not found.")
-        return result
+        project, membership = result
+        self._require_project_access(project, membership, user_id)
+        return project, membership
 
     def _require_organization_member(
         self, organization_id: uuid.UUID, user_id: uuid.UUID
@@ -317,6 +323,20 @@ class TaskService:
                 "Task assignee must be a member of the task organization.",
             )
         return membership
+
+    def _require_project_member(self, project_id: uuid.UUID, user_id: uuid.UUID) -> None:
+        """Validate assignment targets against explicit project access."""
+        project_membership = self.projects.get_membership(project_id, user_id)
+        if (
+            project_membership is None
+            or self.organizations.get_membership(project_membership.organization_id, user_id)
+            is None
+        ):
+            raise APIError(
+                400,
+                "invalid_task",
+                "Task assignee must be a project member.",
+            )
 
     def _validate_watcher_ids(
         self, organization_id: uuid.UUID, watcher_ids: list[uuid.UUID]
@@ -332,6 +352,15 @@ class TaskService:
                 raise APIError(400, "invalid_task", "Task watchers must be organization members.")
             normalized.append(watcher_id)
         return normalized
+
+    def _require_project_access(
+        self, project: Project, membership: OrganizationMembership, user_id: uuid.UUID
+    ) -> None:
+        """Hide project tasks from regular members without explicit access."""
+        if membership.role in {MembershipRole.OWNER, MembershipRole.ADMIN}:
+            return
+        if self.projects.get_membership(project.id, user_id) is None:
+            raise APIError(404, "project_not_found", "Project was not found.")
 
     @staticmethod
     def _validate_create_assignment(

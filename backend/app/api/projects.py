@@ -3,16 +3,20 @@
 import uuid
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends, Query, Response
 from sqlalchemy.orm import Session
 
 from app.api.deps import get_current_user
 from app.db.session import get_db
 from app.models.project import Project
 from app.models.user import User
+from app.repositories.users import UserRepository
+from app.schemas.organizations import MembershipUserRead
 from app.schemas.projects import (
     ProjectCreateRequest,
     ProjectListResponse,
+    ProjectMembershipListResponse,
+    ProjectMembershipRead,
     ProjectRead,
     ProjectUpdateRequest,
 )
@@ -120,3 +124,46 @@ def update_project(
         fields_set=payload.model_fields_set,
     )
     return project_read(project)
+
+
+@router.get("/projects/{project_id}/members", response_model=ProjectMembershipListResponse)
+def list_project_members(
+    project_id: uuid.UUID,
+    current_user: Annotated[User, Depends(get_current_user)],
+    db: Annotated[Session, Depends(get_db)],
+    limit: Annotated[int, Query(ge=1, le=100)] = 20,
+    offset: Annotated[int, Query(ge=0)] = 0,
+) -> ProjectMembershipListResponse:
+    """List explicit project members for owners/admins and project members."""
+    rows, total = ProjectService(db).list_project_members(current_user, project_id, limit, offset)
+    users = UserRepository(db)
+    items: list[ProjectMembershipRead] = []
+    for project_membership, organization_membership in rows:
+        user = users.get_by_id(project_membership.user_id)
+        if user is None:
+            continue
+        items.append(
+            ProjectMembershipRead(
+                id=project_membership.id,
+                organization_id=project_membership.organization_id,
+                project_id=project_membership.project_id,
+                user_id=project_membership.user_id,
+                added_by_id=project_membership.added_by_id,
+                role=organization_membership.role,
+                user=MembershipUserRead.model_validate(user),
+                created_at=project_membership.created_at,
+            )
+        )
+    return ProjectMembershipListResponse(items=items, total=total, limit=limit, offset=offset)
+
+
+@router.delete("/projects/{project_id}/members/{user_id}", status_code=204)
+def remove_project_member(
+    project_id: uuid.UUID,
+    user_id: uuid.UUID,
+    current_user: Annotated[User, Depends(get_current_user)],
+    db: Annotated[Session, Depends(get_db)],
+) -> Response:
+    """Remove explicit project access without changing organization membership."""
+    ProjectService(db).remove_project_member(current_user, project_id, user_id)
+    return Response(status_code=204)

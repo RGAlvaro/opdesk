@@ -35,6 +35,107 @@ Known gaps:
 
 ## Entries
 
+### 2026-08-14 — SPEC-303 — Compose migration validation rerun
+
+Role: Ingeniero de software
+Branch: main
+Commit/PR: Pending
+Status: Implemented
+
+Summary:
+- Rebuilt and recreated the Docker Compose backend and worker images so the containers included migration `0008`.
+- Reran Compose-based migration validation successfully after the old backend image initially could not locate revision `0008`.
+
+Validation:
+- command: `docker compose up -d --build backend worker`: PASS — backend and worker images rebuilt and containers recreated.
+- command: elevated `make migrations-check-compose`: PASS — Alembic upgrade ran inside the backend container and `alembic check` reported no new upgrade operations.
+
+Review:
+- decision: N/A
+
+Known gaps:
+- None.
+
+### 2026-08-14 — SPEC-303 — Review fix for stale project membership assignment
+
+Role: Ingeniero de software
+Branch: main
+Commit/PR: Pending
+Status: Implemented
+
+Summary:
+- Fixed review-found stale-access risk where removing an organization membership could leave explicit project membership rows usable for task assignment.
+- Organization member removal now removes that user's explicit project memberships in the organization.
+- Task assignee validation now requires both explicit project membership and current organization membership.
+- Added a regression test for removing an organization member and rejecting later task assignment to that user.
+
+Validation:
+- command: `make test-backend`: PASS — 89 passed, 2 deselected.
+- command: `make typecheck`: PASS — backend mypy passed and frontend `tsc -b` passed.
+- command: `make lint`: PASS — backend Ruff and frontend ESLint passed.
+- command: `make format-check`: PASS — backend Ruff format check and frontend Prettier check passed.
+
+Review:
+- decision: N/A
+
+Known gaps:
+- None.
+
+### 2026-08-14 — SPEC-303 — Member invitations and project access implemented
+
+Role: Ingeniero de software
+Branch: main
+Commit/PR: Pending
+Status: Implemented
+
+Summary:
+- Added migration `0008` plus SQLAlchemy models for `invitations` and `project_memberships`, including pending-invitation uniqueness and existing-project membership backfill.
+- Added backend invitation APIs for organization invites, project invites, current-user invitation list, accept, decline, cancellation, project member listing, and project member removal.
+- Restricted regular members to explicit project membership for project/task access and changed task assignee validation to require explicit project membership.
+- Added frontend organization invite controls, organization invitation list/cancellation, project member/invite controls, primary-nav access to `/app/invitations`, and a minimal My invitations accept/decline page.
+- Added backend SPEC-303 API tests and frontend invitation UI tests, and updated older project/task notification tests to seed explicit project memberships where the new contract requires them.
+
+Validation:
+- command: `make test-backend`: PASS — 88 passed, 2 deselected.
+- command: `make test-frontend`: PASS — 51 passed.
+- command: `make typecheck`: PASS — backend mypy passed and frontend `tsc -b` passed.
+- command: `make lint`: PASS — backend Ruff and frontend ESLint passed after migration import ordering fix.
+- command: `make format-check`: PASS — backend Ruff format check and frontend Prettier check passed.
+- command: `python3 -m compileall backend/alembic/versions backend/app`: PASS.
+- command: elevated `make migrations-check`: PASS — migration `0008` applied and Alembic check reported no new upgrade operations after replacing the reused `membership_role` column type with `postgresql.ENUM(..., create_type=False)`.
+- command: elevated `make migrations-check-compose`: PASS on rerun after rebuilding backend/worker images; the initial failure came from the old backend image not knowing revision `0008`.
+
+Review:
+- decision: N/A
+
+Known gaps:
+- None.
+
+### 2026-08-14 — SPEC-303 — Member invitations and project access readied
+
+Role: Arquitecto de specs
+Branch: main
+Commit/PR: Pending
+Status: Ready
+
+Summary:
+- Refined `SPEC-303` from Draft to Ready for existing-user organization invitations, project invitations, explicit project memberships, and regular-member project visibility restrictions.
+- Resolved admin invite permissions: owners may invite admins or members; admins may invite only members.
+- Removed task invitations from `SPEC-303`; task assignment now depends on explicit project membership.
+- Added migration backfill requirements so existing organization members retain access to existing projects.
+- Defined a minimal “My invitations” flow owned by `SPEC-303` and updated `SPEC-306` to integrate those invitations later in the full notification inbox.
+
+Validation:
+- command: `make memory-check SPEC=SPEC-303`: PASS.
+- command: `git diff --check`: PASS.
+
+Review:
+- decision: N/A
+
+Known gaps:
+- `SPEC-303` implementation remains pending.
+- `SPEC-306` still needs future notification inbox decisions and must later reuse the `SPEC-303` invitation state.
+
 ### 2026-08-13 — SPEC-312 — Playwright E2E expansion merged
 
 Role: Ingeniero de software
