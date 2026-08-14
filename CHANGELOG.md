@@ -1,5 +1,16 @@
 # Changelog
 
+## 2026-08-14 - Notification Inbox Release
+
+### Added
+
+- Persistent in-app notification inbox with unread count, mark-read, mark-all-read, and action links.
+- Notification fan-out for organization/project invitations, project access changes, project updates, task assignments, and task status changes.
+
+### Changed
+
+- The authenticated app shell now shows notification unread state while keeping invitations as the dedicated accept/decline surface.
+
 ## 2026-08-12 - Production Release
 
 ### Added

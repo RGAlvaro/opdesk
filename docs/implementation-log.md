@@ -35,6 +35,28 @@ Known gaps:
 
 ## Entries
 
+### 2026-08-14 — SPEC-306 — In-app notifications merged
+
+Role: Ingeniero de software
+Branch: main
+Commit/PR: PR #15 https://github.com/RGAlvaro/opdesk/pull/15, merge `7084fd5`
+Status: Merged
+
+Summary:
+- Merged `SPEC-306` into `main` through PR #15 after local review approval and GitHub Actions validation.
+- Confirmed `main` includes migration `0009`, notification APIs, invitation/project/task fan-out, frontend inbox, tests, and project memory updates.
+- Added `CHANGELOG.md` entry `2026-08-14 - Notification Inbox Release` required by the production release workflow.
+
+Validation:
+- command: `gh pr checks 15`: PASS — `verify` passed in 1m45s and `e2e` passed in 2m12s.
+- command: `git status -sb`: PASS — local `main` clean and aligned with `origin/main` before post-merge memory/changelog correction.
+
+Review:
+- decision: APPROVED — review entry below approved before merge.
+
+Known gaps:
+- Production deployment remains pending for the current `main` revision.
+
 ### 2026-08-14 — SPEC-306 — In-app notifications reviewed
 
 Role: Review agent
