@@ -35,6 +35,28 @@ Known gaps:
 
 ## Entries
 
+### 2026-08-14 — SPEC-307 — SPEC-306 production release validation fix
+
+Role: Ingeniero de software
+Branch: main
+Commit/PR: Pending
+Status: Implemented
+
+Summary:
+- Triggered `Production Release` for `main` after the `SPEC-306` release readiness commit.
+- GitHub Actions run `31792406644` stopped before production deployment during `Run full verification`.
+- Root cause was a frontend changelog test that assumed only one `Added` heading after the new `2026-08-14 - Notification Inbox Release` changelog entry.
+- Updated the changelog route test to assert the new release entry and allow multiple `Added` section headings.
+
+Validation:
+- command: `gh run watch 31792406644 --interval 20 --exit-status`: FAIL — full verification failed before backup, migration, SSH, or remote production update.
+
+Review:
+- decision: N/A
+
+Known gaps:
+- Production deployment remains pending until the fixed `main` revision passes the release workflow.
+
 ### 2026-08-14 — SPEC-306 — In-app notifications merged
 
 Role: Ingeniero de software

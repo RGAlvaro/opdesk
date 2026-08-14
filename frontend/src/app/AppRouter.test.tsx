@@ -207,11 +207,13 @@ describe("SPEC-104 frontend app shell and auth UI", () => {
     ).toBeInTheDocument();
     expect(
       screen.getByRole("heading", {
-        name: "2026-08-12 - Production Release",
+        name: "2026-08-14 - Notification Inbox Release",
       }),
     ).toBeInTheDocument();
-    expect(screen.getByRole("heading", { name: "Added" })).toBeInTheDocument();
-    expect(screen.getByText(/project-scoped task labels/i)).toBeInTheDocument();
+    expect(screen.getAllByRole("heading", { name: "Added" })).toHaveLength(2);
+    expect(
+      screen.getByText(/persistent in-app notification inbox/i),
+    ).toBeInTheDocument();
     expect(fetchMock).not.toHaveBeenCalled();
   });
 
