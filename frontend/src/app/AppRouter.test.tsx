@@ -21,8 +21,17 @@ const user = {
   bio: null,
   is_active: true,
   is_superuser: false,
+  account_type: "internal",
   created_at: "2026-06-15T10:00:00Z",
   updated_at: "2026-06-15T10:00:00Z",
+};
+
+const clientUser = {
+  ...user,
+  id: "c395a77f-9f47-4f66-aa91-d7f5c06b0cbd",
+  email: "client@example.com",
+  full_name: "Client User",
+  account_type: "client",
 };
 
 const organization = {
@@ -49,6 +58,52 @@ const project = {
   project_owner_id: user.id,
   created_at: "2026-06-21T10:00:00Z",
   updated_at: "2026-06-21T10:00:00Z",
+};
+
+const worker = {
+  id: "cf5965d5-b300-41e6-9a5a-00304f9cdab8",
+  email: "worker@example.com",
+  full_name: "Worker User",
+  account_type: "internal",
+};
+
+const ticket = {
+  id: "a2ca8f75-95af-43a6-bb8c-90d0baec8dc0",
+  organization_id: organization.id,
+  project_id: project.id,
+  title: "Printer down",
+  description: "The printer is offline.",
+  status: "todo",
+  priority: "medium",
+  assignee_id: worker.id,
+  client_user_id: clientUser.id,
+  task_type: "ticket",
+  created_at: "2026-06-21T12:00:00Z",
+  updated_at: "2026-06-21T12:30:00Z",
+};
+
+const clientAccess = {
+  id: "88a6b1b4-4d98-4723-aa63-b005404d7784",
+  organization_id: organization.id,
+  project_id: project.id,
+  client_user_id: clientUser.id,
+  granted_by_id: user.id,
+  revoked_at: null,
+  client: clientUser,
+  created_at: "2026-06-21T11:00:00Z",
+};
+
+const assignmentRequest = {
+  id: "a37ad584-4016-47ac-b33e-bac226212a7c",
+  task_id: ticket.id,
+  organization_id: organization.id,
+  project_id: project.id,
+  requested_by_id: user.id,
+  target_user_id: worker.id,
+  status: "pending",
+  ticket,
+  created_at: "2026-06-21T12:45:00Z",
+  responded_at: null,
 };
 
 /** Build a JSON fetch response for mocked backend calls. */
@@ -120,10 +175,22 @@ function mockFetch(...responses: Response[]) {
     if (url.includes("/api/v1/notifications")) {
       return Promise.resolve(jsonResponse(page([])));
     }
+    if (url.includes("/api/v1/client/projects")) {
+      return Promise.resolve(jsonResponse({ items: [project] }));
+    }
+    if (url.includes("/api/v1/client/tickets")) {
+      return Promise.resolve(jsonResponse(page([])));
+    }
     if (url.includes(`/api/v1/projects/${project.id}/members`)) {
       return Promise.resolve(jsonResponse(page([])));
     }
     if (url.includes(`/api/v1/projects/${project.id}/labels`)) {
+      return Promise.resolve(jsonResponse(page([])));
+    }
+    if (url.includes(`/api/v1/projects/${project.id}/clients`)) {
+      return Promise.resolve(jsonResponse(page([])));
+    }
+    if (url.includes(`/api/v1/projects/${project.id}/tasks`)) {
       return Promise.resolve(jsonResponse(page([])));
     }
     const nextResponse = queuedResponses.shift();
@@ -176,6 +243,219 @@ describe("SPEC-104 frontend app shell and auth UI", () => {
       screen.getAllByRole("link", { name: /changelog|release notes/i })[0],
     ).toHaveAttribute("href", "/changelog");
     expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it("renders project client management in project settings", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn((input: RequestInfo | URL) => {
+        const url = String(input);
+        if (url.includes("/api/v1/users/me")) {
+          return Promise.resolve(jsonResponse(user));
+        }
+        if (url.includes("/api/v1/notifications/unread-count")) {
+          return Promise.resolve(jsonResponse({ unread_count: 0 }));
+        }
+        if (url.includes(`/api/v1/projects/${project.id}/clients`)) {
+          return Promise.resolve(jsonResponse(page([clientAccess])));
+        }
+        if (url.includes(`/api/v1/organizations/${organization.id}/members`)) {
+          return Promise.resolve(jsonResponse(page([])));
+        }
+        if (url.includes(`/api/v1/organizations/${organization.id}`)) {
+          return Promise.resolve(jsonResponse(organization));
+        }
+        if (url.includes(`/api/v1/projects/${project.id}`)) {
+          return Promise.resolve(jsonResponse(project));
+        }
+        return Promise.resolve(jsonResponse(page([])));
+      }),
+    );
+
+    renderRoute(`/app/projects/${project.id}/settings`);
+
+    expect(
+      await screen.findByRole("heading", { name: "Project clients" }),
+    ).toBeInTheDocument();
+    expect(await screen.findByText("Client User")).toBeInTheDocument();
+    expect(screen.getByText("client@example.com")).toBeInTheDocument();
+  });
+
+  it("lets a client create a ticket from the restricted shell", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn((input: RequestInfo | URL, init?: RequestInit) => {
+        const url = String(input);
+        if (url.includes("/api/v1/users/me")) {
+          return Promise.resolve(jsonResponse(clientUser));
+        }
+        if (url.includes("/api/v1/notifications/unread-count")) {
+          return Promise.resolve(jsonResponse({ unread_count: 0 }));
+        }
+        if (url.includes("/api/v1/client/projects")) {
+          return Promise.resolve(jsonResponse({ items: [project] }));
+        }
+        if (
+          url.includes(`/api/v1/client/projects/${project.id}/tickets`) &&
+          init?.method === "POST"
+        ) {
+          return Promise.resolve(jsonResponse(ticket, 201));
+        }
+        if (url.includes("/api/v1/client/tickets")) {
+          return Promise.resolve(jsonResponse(page([])));
+        }
+        return Promise.resolve(jsonResponse(page([])));
+      }),
+    );
+    const actor = userEvent.setup();
+
+    renderRoute("/app/client");
+
+    await screen.findByRole("heading", { name: "My tickets" });
+    await actor.selectOptions(screen.getByLabelText("Project"), project.id);
+    await actor.type(screen.getByLabelText("Subject"), "Printer down");
+    await actor.type(screen.getByLabelText("Description"), "Offline.");
+    await actor.click(screen.getByRole("button", { name: /create ticket/i }));
+
+    await waitFor(() =>
+      expect(fetch).toHaveBeenCalledWith(
+        `/api/v1/client/projects/${project.id}/tickets`,
+        expect.objectContaining({ method: "POST" }),
+      ),
+    );
+  });
+
+  it("renders client ticket detail comments and safe assignment state", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn((input: RequestInfo | URL, init?: RequestInit) => {
+        const url = String(input);
+        if (url.includes("/api/v1/users/me")) {
+          return Promise.resolve(jsonResponse(clientUser));
+        }
+        if (url.includes("/api/v1/notifications/unread-count")) {
+          return Promise.resolve(jsonResponse({ unread_count: 0 }));
+        }
+        if (url.includes(`/api/v1/client/tickets/${ticket.id}/comments`)) {
+          if (init?.method === "POST") {
+            return Promise.resolve(
+              jsonResponse(
+                {
+                  id: "78076d2d-cc2f-4282-9a2c-68f65808357b",
+                  task_id: ticket.id,
+                  organization_id: organization.id,
+                  project_id: project.id,
+                  author_user_id: clientUser.id,
+                  body: "Any update?",
+                  created_at: "2026-06-21T13:00:00Z",
+                  updated_at: "2026-06-21T13:00:00Z",
+                },
+                201,
+              ),
+            );
+          }
+          return Promise.resolve(jsonResponse(page([])));
+        }
+        if (url.includes(`/api/v1/client/tickets/${ticket.id}`)) {
+          return Promise.resolve(jsonResponse(ticket));
+        }
+        return Promise.resolve(jsonResponse(page([])));
+      }),
+    );
+    const actor = userEvent.setup();
+
+    renderRoute(`/app/client/tickets/${ticket.id}`);
+
+    expect(await screen.findByText("Assigned")).toBeInTheDocument();
+    await actor.type(screen.getByRole("textbox"), "Any update?");
+    await actor.click(screen.getByRole("button", { name: /add comment/i }));
+
+    await waitFor(() =>
+      expect(fetch).toHaveBeenCalledWith(
+        `/api/v1/client/tickets/${ticket.id}/comments`,
+        expect.objectContaining({ method: "POST" }),
+      ),
+    );
+  });
+
+  it("shows internal ticket visibility and assignment request controls", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn((input: RequestInfo | URL) => {
+        const url = String(input);
+        if (url.includes("/api/v1/users/me")) {
+          return Promise.resolve(jsonResponse(user));
+        }
+        if (url.includes("/api/v1/notifications/unread-count")) {
+          return Promise.resolve(jsonResponse({ unread_count: 0 }));
+        }
+        if (url.includes(`/api/v1/projects/${project.id}/members`)) {
+          return Promise.resolve(
+            jsonResponse(page([{ user_id: worker.id, user: worker }])),
+          );
+        }
+        if (url.includes(`/api/v1/projects/${project.id}/tickets`)) {
+          return Promise.resolve(jsonResponse(page([ticket])));
+        }
+        if (url.includes(`/api/v1/projects/${project.id}`)) {
+          return Promise.resolve(jsonResponse(project));
+        }
+        if (url.includes(`/api/v1/tickets/${ticket.id}/comments`)) {
+          return Promise.resolve(jsonResponse(page([])));
+        }
+        if (url.includes(`/api/v1/tickets/${ticket.id}`)) {
+          return Promise.resolve(jsonResponse(ticket));
+        }
+        return Promise.resolve(jsonResponse(page([])));
+      }),
+    );
+
+    renderRoute(`/app/tickets/${ticket.id}`);
+
+    expect(await screen.findAllByText("Worker User")).toHaveLength(2);
+    expect(
+      screen.getByRole("heading", { name: "Request reassignment" }),
+    ).toBeInTheDocument();
+  });
+
+  it("lets an internal worker accept a pending ticket assignment request", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn((input: RequestInfo | URL, init?: RequestInit) => {
+        const url = String(input);
+        if (url.includes("/api/v1/users/me")) {
+          return Promise.resolve(jsonResponse(user));
+        }
+        if (url.includes("/api/v1/notifications/unread-count")) {
+          return Promise.resolve(jsonResponse({ unread_count: 0 }));
+        }
+        if (url.includes("/api/v1/ticket-assignment-requests")) {
+          if (init?.method === "POST") {
+            return Promise.resolve(
+              jsonResponse({ ...assignmentRequest, status: "accepted" }),
+            );
+          }
+          return Promise.resolve(jsonResponse(page([assignmentRequest])));
+        }
+        return Promise.resolve(jsonResponse(page([])));
+      }),
+    );
+    const actor = userEvent.setup();
+
+    renderRoute("/app/ticket-assignment-requests");
+
+    expect(
+      await screen.findByRole("heading", { name: "Assignment requests" }),
+    ).toBeInTheDocument();
+    expect(screen.getByText("Printer down")).toBeInTheDocument();
+    await actor.click(screen.getByRole("button", { name: "Accept" }));
+
+    await waitFor(() =>
+      expect(fetch).toHaveBeenCalledWith(
+        `/api/v1/ticket-assignment-requests/${assignmentRequest.id}/accept`,
+        expect.objectContaining({ method: "POST" }),
+      ),
+    );
   });
 
   it("keeps the ERP coming-soon card without fake app navigation", async () => {
@@ -473,6 +753,25 @@ describe("SPEC-104 frontend app shell and auth UI", () => {
     expect(
       within(nav).getByRole("link", { name: /projects/i }),
     ).not.toHaveAttribute("aria-current");
+  });
+
+  it("routes client accounts to the restricted ticket shell", async () => {
+    mockFetch(jsonResponse(clientUser));
+
+    renderRoute("/app");
+
+    expect(
+      await screen.findByRole("heading", { name: "My tickets" }),
+    ).toBeInTheDocument();
+    const nav = await screen.findByRole("navigation", {
+      name: /primary navigation/i,
+    });
+    expect(
+      within(nav).getByRole("link", { name: /my tickets/i }),
+    ).toHaveAttribute("aria-current", "page");
+    expect(
+      within(nav).queryByRole("link", { name: /organizations/i }),
+    ).not.toBeInTheDocument();
   });
 
   it("logs out and returns to the landing page", async () => {

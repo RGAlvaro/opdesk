@@ -159,6 +159,40 @@ class NotificationService:
                 resource_id=task.id,
             )
 
+    def notify_ticket_comment(
+        self, actor_id: uuid.UUID, task: Task, recipient_ids: set[uuid.UUID]
+    ) -> None:
+        """Create one aggregate unread notification per recipient and ticket."""
+        recipient_ids.discard(actor_id)
+        for recipient_id in recipient_ids:
+            self._create_once(
+                recipient_user_id=recipient_id,
+                notification_type=NotificationType.TICKET_COMMENT,
+                title="Unread ticket comments",
+                body=f"{task.title} has unread ticket feedback.",
+                action_url=f"/app/tickets/{task.id}"
+                if task.client_user_id != recipient_id
+                else f"/app/client/tickets/{task.id}",
+                resource_type="ticket",
+                resource_id=task.id,
+            )
+
+    def notify_ticket_assignment_requested(
+        self, actor_id: uuid.UUID, task: Task, target_user_id: uuid.UUID
+    ) -> None:
+        """Notify the target worker that a ticket handoff needs acceptance."""
+        if target_user_id == actor_id:
+            return
+        self._create_once(
+            recipient_user_id=target_user_id,
+            notification_type=NotificationType.TICKET_ASSIGNMENT_REQUESTED,
+            title="Ticket assignment request",
+            body=f"{task.title} needs your assignment response.",
+            action_url="/app/ticket-assignment-requests",
+            resource_type="ticket",
+            resource_id=task.id,
+        )
+
     def _create_once(
         self,
         *,

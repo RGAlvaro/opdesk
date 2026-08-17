@@ -6,6 +6,14 @@ import { LoginPage } from "../features/auth/LoginPage";
 import { SignupPage } from "../features/auth/SignupPage";
 import { ProtectedRoute } from "../features/auth/ProtectedRoute";
 import { PublicOnlyRoute } from "../features/auth/PublicOnlyRoute";
+import { useSession } from "../features/auth/session";
+import {
+  ClientTicketDetailPage,
+  ClientTicketListPage,
+  InternalTicketDetailPage,
+  InternalTicketListPage,
+  TicketAssignmentRequestsPage,
+} from "../features/client-tickets/ClientTicketPages";
 import {
   OrganizationDetailPage,
   OrganizationListPage,
@@ -31,6 +39,15 @@ import { AppShell } from "./AppShell";
 import { ChangelogPage } from "./ChangelogPage";
 import { DashboardPage } from "./DashboardPage";
 import { LandingPage } from "./LandingPage";
+
+/** Map URLs to route guards, public pages, and authenticated app content. */
+function AppIndexPage() {
+  const { data: user } = useSession();
+  if (user?.account_type === "client") {
+    return <Navigate to="/app/client" replace />;
+  }
+  return <DashboardPage />;
+}
 
 /** Map URLs to route guards, public pages, and authenticated app content. */
 export function AppRouter() {
@@ -62,10 +79,19 @@ export function AppRouter() {
           </ProtectedRoute>
         }
       >
-        <Route index element={<DashboardPage />} />
+        <Route index element={<AppIndexPage />} />
+        <Route path="client" element={<ClientTicketListPage />} />
+        <Route
+          path="client/tickets/:ticketId"
+          element={<ClientTicketDetailPage />}
+        />
         <Route path="profile" element={<ProfilePage />} />
         <Route path="invitations" element={<MyInvitationsPage />} />
         <Route path="notifications" element={<NotificationsPage />} />
+        <Route
+          path="ticket-assignment-requests"
+          element={<TicketAssignmentRequestsPage />}
+        />
         <Route path="organizations" element={<OrganizationListPage />} />
         <Route path="organizations/new" element={<OrganizationNewPage />} />
         <Route
@@ -95,7 +121,15 @@ export function AppRouter() {
         />
         <Route path="projects/:projectId/tasks" element={<TaskListPage />} />
         <Route path="projects/:projectId/tasks/new" element={<TaskNewPage />} />
+        <Route
+          path="projects/:projectId/tickets"
+          element={<InternalTicketListPage />}
+        />
         <Route path="tasks/:taskId" element={<TaskDetailPage />} />
+        <Route
+          path="tickets/:ticketId"
+          element={<InternalTicketDetailPage />}
+        />
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>

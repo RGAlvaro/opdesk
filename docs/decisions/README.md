@@ -45,6 +45,8 @@ ADR-009-managed-sandbox-github-cli.md
 - `ADR-008-production-compose-and-caddy.md`
 - `ADR-009-managed-sandbox-github-cli.md`
 - `ADR-010-background-jobs-and-notifications.md`
+- `ADR-011-client-accounts-and-ticket-access.md`
+- `ADR-012-websocket-chat-transport.md`
 
 ## Template
 

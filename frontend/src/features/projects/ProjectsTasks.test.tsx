@@ -208,6 +208,12 @@ function mockFetch(...responses: Response[]) {
     }
     if (
       method === "GET" &&
+      url.includes(`/api/v1/projects/${project.id}/clients`)
+    ) {
+      return Promise.resolve(jsonResponse(page([])));
+    }
+    if (
+      method === "GET" &&
       url.includes(`/api/v1/projects/${project.id}/members`)
     ) {
       return Promise.resolve(jsonResponse(page([])));

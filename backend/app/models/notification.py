@@ -21,6 +21,8 @@ class NotificationType(str, enum.Enum):
     TASK_ASSIGNED = "task.assigned"
     TASK_CREATED = "task.created"
     TASK_STATUS_CHANGED = "task.status_changed"
+    TICKET_COMMENT = "ticket.comment"
+    TICKET_ASSIGNMENT_REQUESTED = "ticket.assignment_requested"
 
 
 class Notification(Base):

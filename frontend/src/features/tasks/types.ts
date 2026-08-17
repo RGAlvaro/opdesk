@@ -10,7 +10,7 @@ export type TaskStatus =
   | "cancelled";
 
 export type TaskPriority = "low" | "medium" | "high" | "urgent";
-export type TaskType = "internal" | "operational";
+export type TaskType = "internal" | "operational" | "ticket";
 
 /** Project-scoped label returned by the backend for tasks and label lists. */
 export type TaskLabel = {
@@ -36,6 +36,7 @@ export type Task = {
   status: TaskStatus;
   priority: TaskPriority;
   assignee_id: string | null;
+  client_user_id: string | null;
   due_date: string | null;
   completed_at: string | null;
   estimated_hours: string | null;

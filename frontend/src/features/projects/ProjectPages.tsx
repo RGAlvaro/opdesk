@@ -8,6 +8,7 @@ import {
   FolderKanban,
   Save,
   Tag,
+  Ticket,
   UserPlus,
   UsersRound,
 } from "lucide-react";
@@ -54,6 +55,11 @@ import {
   useUpdateProjectLabel,
 } from "../tasks/api";
 import { TaskLabel } from "../tasks/types";
+import {
+  useCreateProjectClient,
+  useProjectClients,
+  useRevokeProjectClient,
+} from "../client-tickets/api";
 
 const projectStatuses = [
   "planned",
@@ -784,6 +790,13 @@ export function ProjectDetailPage() {
               <ClipboardList aria-hidden="true" className="h-4 w-4" />
               Open tasks
             </Link>
+            <Link
+              to={`/app/projects/${project.data.id}/tickets`}
+              className="inline-flex items-center gap-2 rounded-md border border-line px-3 py-2 text-sm font-medium hover:bg-surface"
+            >
+              <Ticket aria-hidden="true" className="h-4 w-4" />
+              Open tickets
+            </Link>
             {canManage ? (
               <Link
                 to={`/app/projects/${project.data.id}/settings`}
@@ -803,6 +816,120 @@ export function ProjectDetailPage() {
       />
       <ProjectLabelsPanel projectId={project.data.id} />
     </section>
+  );
+}
+
+/** Render owner/admin controls for restricted client project access. */
+function ProjectClientsPanel({ projectId }: { projectId: string }) {
+  const clients = useProjectClients(projectId);
+  const createClient = useCreateProjectClient(projectId);
+  const revokeClient = useRevokeProjectClient(projectId);
+  const [email, setEmail] = useState("");
+  const [fullName, setFullName] = useState("");
+  const [password, setPassword] = useState("");
+
+  /** Create or grant one restricted client account. */
+  async function handleCreateClient(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    await createClient.mutateAsync({
+      email,
+      full_name: fullName,
+      password: password || null,
+    });
+    setEmail("");
+    setFullName("");
+    setPassword("");
+  }
+
+  return (
+    <div className="rounded-md border border-line bg-white p-6 shadow-panel">
+      <div className="flex items-center gap-2">
+        <Ticket aria-hidden="true" className="h-5 w-5 text-brand" />
+        <h2 className="text-lg font-semibold">Project clients</h2>
+      </div>
+      <form
+        className="mt-4 grid gap-3 sm:grid-cols-3"
+        onSubmit={handleCreateClient}
+      >
+        <input
+          type="email"
+          placeholder="client@example.com"
+          className="rounded-md border border-line px-3 py-2 text-sm"
+          value={email}
+          onChange={(event) => setEmail(event.target.value)}
+          required
+        />
+        <input
+          type="text"
+          placeholder="Client name"
+          className="rounded-md border border-line px-3 py-2 text-sm"
+          value={fullName}
+          onChange={(event) => setFullName(event.target.value)}
+          required
+        />
+        <input
+          type="password"
+          placeholder="Password for new client"
+          className="rounded-md border border-line px-3 py-2 text-sm"
+          value={password}
+          onChange={(event) => setPassword(event.target.value)}
+        />
+        <button
+          type="submit"
+          disabled={createClient.isPending}
+          className="inline-flex items-center justify-center gap-2 rounded-md bg-brand px-4 py-2 text-sm font-semibold text-white hover:bg-brand/90 disabled:cursor-not-allowed disabled:opacity-70 sm:col-span-3"
+        >
+          <UserPlus aria-hidden="true" className="h-4 w-4" />
+          {createClient.isPending ? "Saving client" : "Add client"}
+        </button>
+      </form>
+      {createClient.isError ? (
+        <div className="mt-4">
+          <ErrorNotice error={createClient.error} />
+        </div>
+      ) : null}
+      {clients.isLoading ? (
+        <p className="mt-4 text-sm text-muted">Loading clients.</p>
+      ) : null}
+      {clients.isError ? (
+        <div className="mt-4">
+          <ErrorNotice error={clients.error} />
+        </div>
+      ) : null}
+      <div className="mt-4 divide-y divide-line rounded-md border border-line">
+        {(clients.data?.items ?? [])
+          .filter((client) => client.client)
+          .map((client) => (
+            <div
+              key={client.id}
+              className="flex flex-col gap-3 p-3 text-sm sm:flex-row sm:items-center sm:justify-between"
+            >
+              <div>
+                <p className="font-medium">{client.client.full_name}</p>
+                <p className="text-muted">{client.client.email}</p>
+                {client.revoked_at ? (
+                  <p className="text-xs text-accent">Revoked</p>
+                ) : null}
+              </div>
+              {!client.revoked_at ? (
+                <button
+                  type="button"
+                  className="rounded-md border border-line px-3 py-2 font-medium hover:bg-surface"
+                  disabled={revokeClient.isPending}
+                  onClick={() => revokeClient.mutate(client.id)}
+                >
+                  Revoke
+                </button>
+              ) : null}
+            </div>
+          ))}
+        {clients.data?.items.length === 0 ? (
+          <p className="p-3 text-sm text-muted">
+            No clients have project access.
+          </p>
+        ) : null}
+      </div>
+    </div>
   );
 }
 
@@ -1066,6 +1193,7 @@ export function ProjectSettingsPage() {
           </p>
         ) : null}
       </div>
+      <ProjectClientsPanel projectId={project.data.id} />
       <div className="rounded-md border border-line bg-white p-6">
         <h2 className="text-lg font-semibold">
           {project.data.is_archived ? "Unarchive project" : "Archive project"}

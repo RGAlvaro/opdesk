@@ -118,7 +118,7 @@ class TaskService:
                 code="invalid_task",
                 field="external_reference",
             ),
-            task_type=parse_task_type(task_type, default=TaskType.INTERNAL),
+            task_type=self._parse_internal_task_type(task_type),
             created_by_id=actor.id,
         )
         self._apply_blocked_reason(task, blocked_reason, blocked_reason_provided=True)
@@ -265,7 +265,7 @@ class TaskService:
                 field="external_reference",
             )
         if "task_type" in fields_set:
-            parsed_type = parse_task_type(task_type)
+            parsed_type = self._parse_internal_task_type(task_type, required=True)
             if parsed_type is None:
                 raise APIError(400, "invalid_task", "Task type is required.")
             task.task_type = parsed_type
@@ -418,3 +418,11 @@ class TaskService:
             task.blocked_reason = optional_string(
                 blocked_reason, max_length=1000, code="invalid_task", field="blocked_reason"
             )
+
+    @staticmethod
+    def _parse_internal_task_type(value: str | None, *, required: bool = False) -> TaskType | None:
+        """Keep ticket creation on SPEC-305 ticket endpoints, not generic tasks."""
+        parsed = parse_task_type(value, default=TaskType.INTERNAL if not required else None)
+        if parsed == TaskType.TICKET:
+            raise APIError(400, "invalid_task", "Tickets must be created through ticket APIs.")
+        return parsed

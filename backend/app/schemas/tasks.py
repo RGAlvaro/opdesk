@@ -56,6 +56,7 @@ class TaskRead(BaseModel):
     status: TaskStatus
     priority: TaskPriority
     assignee_id: uuid.UUID | None
+    client_user_id: uuid.UUID | None = None
     due_date: date | None
     completed_at: datetime | None
     estimated_hours: Decimal | None

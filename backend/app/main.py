@@ -3,6 +3,7 @@
 from fastapi import FastAPI
 
 from app.api.auth import router as auth_router
+from app.api.client_tickets import router as client_tickets_router
 from app.api.errors import APIError, api_error_handler
 from app.api.health import router as health_router
 from app.api.invitations import router as invitations_router
@@ -19,6 +20,7 @@ def create_app() -> FastAPI:
     app = FastAPI(title="OpsDesk API")
     app.add_exception_handler(APIError, api_error_handler)
     app.include_router(auth_router)
+    app.include_router(client_tickets_router)
     app.include_router(health_router)
     app.include_router(invitations_router)
     app.include_router(labels_router)

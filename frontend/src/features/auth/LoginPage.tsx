@@ -32,8 +32,13 @@ export function LoginPage() {
   /** Submit credentials and move authenticated users into the app shell. */
   async function onSubmit(values: LoginForm) {
     try {
-      await login.mutateAsync(values);
-      navigate("/app", { replace: true });
+      const response = await login.mutateAsync(values);
+      navigate(
+        response.user.account_type === "client" ? "/app/client" : "/app",
+        {
+          replace: true,
+        },
+      );
     } catch {
       // React Query exposes the safe API error through mutation state.
     }

@@ -13,6 +13,7 @@ export type User = {
   bio: string | null;
   is_active: boolean;
   is_superuser: boolean;
+  account_type: "internal" | "client";
   created_at: string;
   updated_at: string;
 };

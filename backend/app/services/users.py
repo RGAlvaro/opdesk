@@ -7,7 +7,7 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from app.api.errors import APIError
-from app.models.user import User
+from app.models.user import User, UserAccountType
 from app.repositories.users import UserRepository
 from app.services.metadata import optional_locale, optional_string, optional_timezone, optional_url
 from app.services.security import hash_password, verify_password
@@ -57,7 +57,14 @@ class UserService:
         self.db = db
         self.users = UserRepository(db)
 
-    def register_user(self, email: str, password: str, full_name: str) -> User:
+    def register_user(
+        self,
+        email: str,
+        password: str,
+        full_name: str,
+        *,
+        account_type: UserAccountType = UserAccountType.INTERNAL,
+    ) -> User:
         """Create a user account and promote the first account to superuser."""
         normalized_email = normalize_email(email)
         normalized_name = validate_full_name(full_name)
@@ -70,7 +77,8 @@ class UserService:
             email=normalized_email,
             password_hash=hash_password(password),
             full_name=normalized_name,
-            is_superuser=self.users.count_users() == 0,
+            is_superuser=self.users.count_users() == 0 and account_type == UserAccountType.INTERNAL,
+            account_type=account_type,
         )
         try:
             user = self.users.add(user)
