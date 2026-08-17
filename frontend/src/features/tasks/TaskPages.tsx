@@ -43,6 +43,8 @@ import {
   TaskType,
 } from "./types";
 
+type InternalTaskType = Exclude<TaskType, "ticket">;
+
 const taskStatuses = [
   "todo",
   "in_progress",
@@ -61,7 +63,7 @@ const taskPriorities = [
 const taskTypes = [
   "internal",
   "operational",
-] as const satisfies readonly TaskType[];
+] as const satisfies readonly InternalTaskType[];
 
 const taskSchema = z.object({
   title: z.string().trim().min(1, "Task title is required.").max(200),
@@ -248,7 +250,7 @@ function filtersFromSearch(searchParams: URLSearchParams): TaskFilters {
     ...(searchParams.get("due_after")
       ? { due_after: searchParams.get("due_after") ?? undefined }
       : {}),
-    ...(taskTypes.includes(taskType as TaskType)
+    ...(taskTypes.includes(taskType as InternalTaskType)
       ? { task_type: taskType as TaskType }
       : {}),
     ...(searchParams.get("watcher_id")
@@ -1091,7 +1093,8 @@ export function TaskDetailPage() {
           task.data.sort_order === null ? "" : String(task.data.sort_order),
         blocked_reason: task.data.blocked_reason ?? "",
         external_reference: task.data.external_reference ?? "",
-        task_type: task.data.task_type,
+        task_type:
+          task.data.task_type === "ticket" ? "internal" : task.data.task_type,
         watcher_ids: task.data.watcher_ids,
       });
     }

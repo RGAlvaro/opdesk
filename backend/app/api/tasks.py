@@ -34,6 +34,7 @@ def task_read(
         status=task.status,
         priority=task.priority,
         assignee_id=task.assignee_id,
+        client_user_id=task.client_user_id,
         due_date=task.due_date,
         completed_at=task.completed_at,
         estimated_hours=task.estimated_hours,

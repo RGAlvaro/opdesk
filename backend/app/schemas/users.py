@@ -5,6 +5,8 @@ from datetime import datetime
 
 from pydantic import BaseModel, ConfigDict
 
+from app.models.user import UserAccountType
+
 
 class UserRead(BaseModel):
     """Public user representation returned by auth and profile endpoints."""
@@ -20,6 +22,7 @@ class UserRead(BaseModel):
     bio: str | None
     is_active: bool
     is_superuser: bool
+    account_type: UserAccountType
     created_at: datetime
     updated_at: datetime
 

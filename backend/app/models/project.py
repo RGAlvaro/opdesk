@@ -61,10 +61,19 @@ class ProjectVisibility(str, enum.Enum):
 
 
 class TaskType(str, enum.Enum):
-    """Task categories owned by SPEC-308 before ticket semantics are added."""
+    """Task categories used to distinguish internal tasks from client tickets."""
 
     INTERNAL = "internal"
     OPERATIONAL = "operational"
+    TICKET = "ticket"
+
+
+class TicketAssignmentRequestStatus(str, enum.Enum):
+    """Allowed states for worker-initiated ticket reassignment requests."""
+
+    PENDING = "pending"
+    ACCEPTED = "accepted"
+    DECLINED = "declined"
 
 
 class Project(Base):
@@ -191,6 +200,9 @@ class Task(Base):
     assignee_id: Mapped[uuid.UUID | None] = mapped_column(
         Uuid, ForeignKey("users.id", ondelete="SET NULL"), nullable=True
     )
+    client_user_id: Mapped[uuid.UUID | None] = mapped_column(
+        Uuid, ForeignKey("users.id", ondelete="SET NULL"), nullable=True
+    )
     due_date: Mapped[date | None] = mapped_column(Date, nullable=True)
     completed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     estimated_hours: Mapped[Decimal | None] = mapped_column(Numeric(8, 2), nullable=True)
@@ -315,6 +327,117 @@ class TaskLabelAssignment(Base):
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), nullable=False, server_default=func.now()
     )
+
+
+class ProjectClientAccess(Base):
+    """Persist one restricted client account's access to one project."""
+
+    __tablename__ = "project_client_accesses"
+    __table_args__ = (
+        UniqueConstraint(
+            "project_id", "client_user_id", name="uq_project_client_access_project_client"
+        ),
+        Index("ix_project_client_accesses_organization_id", "organization_id"),
+        Index("ix_project_client_accesses_project_id", "project_id"),
+        Index("ix_project_client_accesses_client_user_id", "client_user_id"),
+    )
+
+    id: Mapped[uuid.UUID] = mapped_column(Uuid, primary_key=True, default=uuid.uuid4)
+    organization_id: Mapped[uuid.UUID] = mapped_column(
+        Uuid, ForeignKey("organizations.id", ondelete="CASCADE"), nullable=False
+    )
+    project_id: Mapped[uuid.UUID] = mapped_column(
+        Uuid, ForeignKey("projects.id", ondelete="CASCADE"), nullable=False
+    )
+    client_user_id: Mapped[uuid.UUID] = mapped_column(
+        Uuid, ForeignKey("users.id", ondelete="CASCADE"), nullable=False
+    )
+    granted_by_id: Mapped[uuid.UUID] = mapped_column(
+        Uuid, ForeignKey("users.id", ondelete="RESTRICT"), nullable=False
+    )
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, server_default=func.now()
+    )
+    revoked_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+
+
+class TicketComment(Base):
+    """Persist a ticket-scoped feedback message visible to allowed participants."""
+
+    __tablename__ = "ticket_comments"
+    __table_args__ = (
+        Index("ix_ticket_comments_task_created", "task_id", "created_at"),
+        Index("ix_ticket_comments_organization_id", "organization_id"),
+        Index("ix_ticket_comments_project_id", "project_id"),
+        Index("ix_ticket_comments_author_user_id", "author_user_id"),
+    )
+
+    id: Mapped[uuid.UUID] = mapped_column(Uuid, primary_key=True, default=uuid.uuid4)
+    task_id: Mapped[uuid.UUID] = mapped_column(
+        Uuid, ForeignKey("tasks.id", ondelete="CASCADE"), nullable=False
+    )
+    organization_id: Mapped[uuid.UUID] = mapped_column(
+        Uuid, ForeignKey("organizations.id", ondelete="CASCADE"), nullable=False
+    )
+    project_id: Mapped[uuid.UUID] = mapped_column(
+        Uuid, ForeignKey("projects.id", ondelete="CASCADE"), nullable=False
+    )
+    author_user_id: Mapped[uuid.UUID] = mapped_column(
+        Uuid, ForeignKey("users.id", ondelete="CASCADE"), nullable=False
+    )
+    body: Mapped[str] = mapped_column(Text, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, server_default=func.now()
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, server_default=func.now(), onupdate=func.now()
+    )
+    deleted_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+
+
+class TicketAssignmentRequest(Base):
+    """Persist a pending handoff before changing a ticket's assignee."""
+
+    __tablename__ = "ticket_assignment_requests"
+    __table_args__ = (
+        Index("ix_ticket_assignment_requests_task_id", "task_id"),
+        Index("ix_ticket_assignment_requests_target_status", "target_user_id", "status"),
+        Index(
+            "ix_ticket_assignment_requests_organization_project",
+            "organization_id",
+            "project_id",
+        ),
+    )
+
+    id: Mapped[uuid.UUID] = mapped_column(Uuid, primary_key=True, default=uuid.uuid4)
+    task_id: Mapped[uuid.UUID] = mapped_column(
+        Uuid, ForeignKey("tasks.id", ondelete="CASCADE"), nullable=False
+    )
+    organization_id: Mapped[uuid.UUID] = mapped_column(
+        Uuid, ForeignKey("organizations.id", ondelete="CASCADE"), nullable=False
+    )
+    project_id: Mapped[uuid.UUID] = mapped_column(
+        Uuid, ForeignKey("projects.id", ondelete="CASCADE"), nullable=False
+    )
+    requested_by_id: Mapped[uuid.UUID] = mapped_column(
+        Uuid, ForeignKey("users.id", ondelete="CASCADE"), nullable=False
+    )
+    target_user_id: Mapped[uuid.UUID] = mapped_column(
+        Uuid, ForeignKey("users.id", ondelete="CASCADE"), nullable=False
+    )
+    status: Mapped[TicketAssignmentRequestStatus] = mapped_column(
+        Enum(
+            TicketAssignmentRequestStatus,
+            name="ticket_assignment_request_status",
+            values_callable=lambda values: [v.value for v in values],
+        ),
+        nullable=False,
+        default=TicketAssignmentRequestStatus.PENDING,
+    )
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, server_default=func.now()
+    )
+    responded_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
 
 
 Index(

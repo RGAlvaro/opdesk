@@ -35,6 +35,248 @@ Known gaps:
 
 ## Entries
 
+### 2026-08-17 — SPEC-305 — Project clients and tickets approved
+
+Role: Review agent
+Branch: main
+Commit/PR: Pending
+Status: Reviewed
+
+Summary:
+- Re-reviewed `SPEC-305` after the accept-time assignment eligibility fix.
+- Confirmed restricted client accounts, project client access, client-created ticket tasks, ticket comments, aggregate ticket-comment notifications, assignment requests, target-only accept/decline, tenant-safe pending assignment listing, project-settings client management, client shell, and ticket workflow UI align with the implemented spec.
+- Confirmed both prior review gaps are fixed: pending handoff listing revalidates current access, and accept-time handoff resolution revalidates explicit assignment eligibility before changing `assignee_id`.
+
+Validation:
+- command: `make test-backend`: PASS — 100 selected tests passed, 2 DB tests deselected.
+- command: `make test-frontend`: PASS — 58 frontend tests passed.
+- command: `make lint`: PASS — backend Ruff and frontend ESLint passed.
+- command: `make format-check`: PASS — backend Ruff format check and frontend Prettier check passed.
+- command: `make typecheck`: PASS — backend mypy and frontend `tsc -b` passed.
+- command: elevated `make migrations-check`: PASS — Alembic upgraded through head and check reported no new upgrade operations.
+- command: `make memory-check SPEC=SPEC-305`: PASS.
+- command: `git diff --check`: PASS.
+
+Review:
+- decision: APPROVED
+
+Known gaps:
+- None.
+
+### 2026-08-17 — SPEC-305 — Accept-time assignment eligibility fixed
+
+Role: Ingeniero de software
+Branch: main
+Commit/PR: Pending
+Status: Implemented
+
+Summary:
+- Fixed the remaining `SPEC-305` accept-time handoff gap by revalidating current explicit project assignment eligibility before accepting a pending assignment request and changing `ticket.assignee_id`.
+- Added a regression test proving an organization admin target who loses explicit project membership before accepting cannot become the ticket assignee and leaves the request pending.
+
+Validation:
+- command: `cd backend && poetry run pytest tests/test_client_tickets_api.py -q`: PASS — 8 SPEC-305 backend tests passed.
+- command: `make test-backend`: PASS — 100 selected tests passed, 2 DB tests deselected.
+- command: `make test-frontend`: PASS — 58 frontend tests passed.
+- command: `make lint`: PASS — backend Ruff and frontend ESLint passed.
+- command: `make format-check`: PASS — backend Ruff format check and frontend Prettier check passed.
+- command: `make typecheck`: PASS — backend mypy and frontend `tsc -b` passed.
+- command: elevated `make migrations-check`: PASS — Alembic upgraded through head and check reported no new upgrade operations.
+
+Review:
+- decision: N/A
+
+Known gaps:
+- `SPEC-305` accept-time assignment eligibility fix is implemented and needs re-review.
+
+### 2026-08-17 — SPEC-305 — Assignment isolation fix re-reviewed
+
+Role: Review agent
+Branch: main
+Commit/PR: Pending
+Status: Reviewed
+
+Summary:
+- Re-reviewed the `SPEC-305` assignment-request isolation fix.
+- Confirmed pending assignment request listing now revalidates current project and organization membership before returning embedded ticket metadata.
+- Found one remaining blocking gap: accepting a pending assignment request revalidates internal project visibility but does not revalidate current explicit assignment eligibility before setting `ticket.assignee_id = actor.id`.
+
+Validation:
+- command: `make test-backend`: PASS — 99 selected tests passed, 2 DB tests deselected.
+- command: `make test-frontend`: PASS — 58 frontend tests passed.
+- command: `make lint`: PASS — backend Ruff and frontend ESLint passed.
+- command: `make format-check`: PASS — backend Ruff format check and frontend Prettier check passed.
+- command: `make typecheck`: PASS — backend mypy and frontend `tsc -b` passed.
+- command: elevated `make migrations-check`: PASS — Alembic upgraded through head and check reported no new upgrade operations.
+
+Review:
+- decision: CHANGES_REQUESTED
+
+Known gaps:
+- `accept_assignment_request` must call the same assignee eligibility policy used for direct assignment before changing `assignee_id`, and tests should cover a target who loses project assignment eligibility before accepting.
+
+### 2026-08-17 — SPEC-305 — Assignment request listing isolation fixed
+
+Role: Ingeniero de software
+Branch: main
+Commit/PR: Pending
+Status: Implemented
+
+Summary:
+- Fixed the remaining `SPEC-305` re-review gap by making pending ticket assignment request listing join through ticket tasks, project memberships, and organization memberships.
+- Added a regression test proving a target user removed from the project no longer receives pending handoff ticket metadata in `/api/v1/ticket-assignment-requests`.
+
+Validation:
+- command: `cd backend && poetry run pytest tests/test_client_tickets_api.py -q`: PASS — 7 SPEC-305 backend tests passed.
+- command: `make test-backend`: PASS — 99 selected tests passed, 2 DB tests deselected.
+- command: `make test-frontend`: PASS — 58 frontend tests passed.
+- command: `make lint`: PASS — backend Ruff and frontend ESLint passed.
+- command: `make format-check`: PASS — backend Ruff format check and frontend Prettier check passed.
+- command: `make typecheck`: PASS — backend mypy and frontend `tsc -b` passed.
+- command: elevated `make migrations-check`: PASS — Alembic upgraded through head and check reported no new upgrade operations.
+- command: `git diff --check`: PASS.
+
+Review:
+- decision: N/A
+
+Known gaps:
+- `SPEC-305` assignment-request isolation fix is implemented and needs re-review.
+
+### 2026-08-17 — SPEC-305 — Review fixes re-reviewed
+
+Role: Review agent
+Branch: main
+Commit/PR: Pending
+Status: Reviewed
+
+Summary:
+- Re-reviewed `SPEC-305` after the assignment-request review fixes.
+- Confirmed the previous review findings were addressed: assigned workers can update assigned ticket status/priority, client management moved to project settings, ticket detail shows assignment state, and frontend ticket workflow coverage was expanded.
+- Found one remaining blocking gap: pending assignment request listing returns ticket metadata for any matching `target_user_id` without revalidating current organization/project membership, so a user removed after request creation can still see pending handoff ticket data.
+
+Validation:
+- command: `cd backend && poetry run pytest tests/test_client_tickets_api.py -q`: PASS — 6 SPEC-305 backend tests passed.
+- command: `make memory-check SPEC=SPEC-305`: PASS.
+- command: `git diff --check`: PASS.
+
+Review:
+- decision: CHANGES_REQUESTED
+
+Known gaps:
+- Revalidate project/organization access when listing pending ticket assignment requests, and add a regression test for revoked target membership.
+
+### 2026-08-17 — SPEC-305 — Review fixes implemented
+
+Role: Ingeniero de software
+Branch: main
+Commit/PR: Pending
+Status: Implemented
+
+Summary:
+- Updated `SPEC-305` to capture the clarified assignment rule: owner/admin users can assign directly, while the currently assigned worker must request reassignment and the target worker must accept before `assignee_id` changes.
+- Added ticket assignment request persistence, notification type `ticket.assignment_requested`, API schemas/routes for create/list/accept/decline, and service/repository policy enforcing target-only resolution.
+- Allowed assigned workers to update assigned ticket status/priority while requiring reassignment requests for worker-initiated handoffs.
+- Moved project client management to project settings, added assignment state to ticket detail, added a pending assignment requests route, and expanded frontend tests for client management, client ticket creation/detail/comments, internal ticket visibility, and assignment requests.
+- Added Alembic migration `0011` for ticket assignment requests because local migration `0010` had already been applied before this review-fix scope.
+
+Validation:
+- command: `make test-backend`: PASS — 98 selected tests passed, 2 DB tests deselected.
+- command: `make test-frontend`: PASS — 58 frontend tests passed.
+- command: `make lint`: PASS — backend Ruff and frontend ESLint passed.
+- command: `make format-check`: PASS — backend Ruff format check and frontend Prettier check passed.
+- command: `make typecheck`: PASS — backend mypy and frontend `tsc -b` passed.
+- command: elevated `make migrations-check`: PASS — Alembic upgraded through `0011` and check reported no new upgrade operations.
+- command: `git diff --check`: PASS.
+
+Review:
+- decision: N/A
+
+Known gaps:
+- `SPEC-305` review fixes are implemented and need re-review before approval/deployment.
+
+### 2026-08-17 — SPEC-305 — Project clients and tickets reviewed
+
+Role: Review agent
+Branch: main
+Commit/PR: Pending
+Status: Reviewed
+
+Summary:
+- Reviewed `SPEC-305` implementation against restricted client-account behavior, ticket APIs, ticket comments, assignment/update permissions, frontend placement, required frontend coverage, migrations, and project memory.
+- Found blocking gaps: assigned workers cannot update assigned ticket fields, client management is rendered on project detail instead of project settings, frontend ticket detail omits assignment state, and required frontend tests do not cover client management, ticket creation/detail/comments, or internal ticket visibility.
+
+Validation:
+- command: `make test-backend`: PASS — 96 selected tests passed, 2 DB tests deselected.
+- command: `make test-frontend`: PASS — 53 frontend tests passed.
+- command: `make lint`: PASS.
+- command: `make format-check`: PASS.
+- command: `make typecheck`: PASS.
+- command: elevated `make migrations-check`: PASS — Alembic upgrade/check reported no new upgrade operations.
+- command: `make memory-check SPEC=SPEC-305`: PASS.
+- command: `git diff --check`: PASS.
+
+Review:
+- decision: CHANGES_REQUESTED
+
+Known gaps:
+- Assigned worker ticket update permission and corresponding tests are missing.
+- Project client management must move to project settings or the spec must be changed before approval.
+- Frontend client-ticket workflows need the required coverage from `SPEC-305`.
+
+### 2026-08-17 — SPEC-305 — Project clients and tickets implemented
+
+Role: Ingeniero de software
+Branch: main
+Commit/PR: Pending
+Status: Implemented
+
+Summary:
+- Added migration `0010` for `users.account_type`, `tasks.client_user_id`, `task_type=ticket`, `project_client_accesses`, `ticket_comments`, and `ticket.comment` notifications.
+- Added backend client-ticket models, repository, schemas, service, and routes for owner/admin client grants/revocation, client project/ticket endpoints, internal ticket listing/update, ticket comments, assignment eligibility, revoked-access behavior, and aggregate unread ticket-comment notifications.
+- Updated generic task handling so tickets cannot be created through normal task APIs.
+- Added frontend client ticket hooks/pages, restricted client app-shell navigation, login redirect for client accounts, project client management, internal ticket lists/details, and ticket comment forms.
+- Added backend SPEC-305 API tests and frontend route coverage for the client shell.
+
+Validation:
+- command: `make test-backend`: PASS — 96 selected tests passed, 2 DB tests deselected.
+- command: `make test-frontend`: PASS — 53 frontend tests passed.
+- command: `make lint`: PASS — backend Ruff and frontend ESLint passed.
+- command: `make format-check`: PASS — backend Ruff format check and frontend Prettier check passed.
+- command: `make typecheck`: PASS — backend mypy and frontend `tsc -b` passed.
+- command: elevated temporary PostgreSQL `alembic upgrade head`: PASS — created `opdesk_spec305_migration_check`, applied migrations `0001` through `0010`, and dropped the temporary database after validating enum additions from scratch.
+- command: elevated local PostgreSQL enum alignment: PASS — applied non-destructive `ALTER TYPE ... ADD VALUE IF NOT EXISTS` for `task_type=ticket` and `notification_type=ticket.comment` because the local database had already run the first draft of migration `0010`.
+- command: elevated `make migrations-check`: PASS — Alembic upgraded through `0010` and check reported no new upgrade operations.
+
+Review:
+- decision: N/A
+
+Known gaps:
+- `SPEC-305` is implemented but not reviewed; production deployment remains pending.
+
+### 2026-08-17 — SPEC-304/SPEC-305 — Collaboration specs readied
+
+Role: Arquitecto de specs
+Branch: main
+Commit/PR: Pending
+Status: Ready
+
+Summary:
+- Readied `SPEC-305` around restricted OpsDesk client accounts, owner/admin project client grants, client-owned ticket tracking, assignment to internal project members, ticket status visibility, and ticket detail comments/feedback.
+- Readied `SPEC-304` around internal-only organization chat with WebSocket delivery, direct messages, organization channels, project channels, shared-project member ordering, indefinite retention, per-user conversation clearing, and aggregate unread conversation notifications.
+- Added `ADR-011` for client accounts and ticket access and `ADR-012` for WebSocket chat transport.
+- Updated spec routing and project memory so `SPEC-305` is the next implementation target before `SPEC-304`.
+
+Validation:
+- command: `make memory-check SPEC=SPEC-305`: PASS.
+- command: `make memory-check SPEC=SPEC-304`: PASS.
+- command: `git diff --check`: PASS.
+
+Review:
+- decision: N/A
+
+Known gaps:
+- Product implementation has not started; `SPEC-305` should be implemented before `SPEC-304`.
+
 ### 2026-08-14 — SPEC-307 — SPEC-306 deployed to production
 
 Role: Ingeniero de software

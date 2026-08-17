@@ -7,6 +7,7 @@ import {
   ListChecks,
   LogOut,
   Mail,
+  Ticket,
   UserRound,
 } from "lucide-react";
 import {
@@ -28,7 +29,9 @@ type PrimarySection =
   | "projects"
   | "tasks"
   | "invitations"
-  | "notifications";
+  | "notifications"
+  | "assignment-requests"
+  | "client";
 
 const primaryNavBaseClass =
   "flex w-full items-center gap-2 rounded-md px-3 py-2 text-left text-sm font-medium";
@@ -55,6 +58,12 @@ function activePrimarySection(pathname: string): PrimarySection | undefined {
   }
   if (/^\/app\/notifications(\/|$)/.test(pathname)) {
     return "notifications";
+  }
+  if (/^\/app\/ticket-assignment-requests(\/|$)/.test(pathname)) {
+    return "assignment-requests";
+  }
+  if (/^\/app\/client(\/|$)/.test(pathname)) {
+    return "client";
   }
   return undefined;
 }
@@ -140,6 +149,7 @@ export function AppShell() {
   const task = useTask(routeTaskId);
   const unreadNotifications = useUnreadNotificationCount();
   const activeSection = activePrimarySection(location.pathname);
+  const isClient = user?.account_type === "client";
   const activeProjectId = routeProjectId ?? task.data?.project_id;
   const projectOrganizationId =
     activeOrganizationId ??
@@ -193,65 +203,104 @@ export function AppShell() {
       <div className="mx-auto grid max-w-6xl gap-6 px-4 py-6 lg:grid-cols-[220px_1fr]">
         <aside className="rounded-md border border-line bg-white p-3">
           <nav aria-label="Primary navigation" className="space-y-1">
-            <NavLink
-              to="/app"
-              end
-              className={({ isActive }) =>
-                `block rounded-md px-3 py-2 text-sm font-medium ${
-                  isActive ? "bg-brand text-white" : "text-ink hover:bg-surface"
-                }`
-              }
-            >
-              Overview
-            </NavLink>
-            <NavLink
-              to="/app/profile"
-              className={({ isActive }) =>
-                `block rounded-md px-3 py-2 text-sm font-medium ${
-                  isActive ? "bg-brand text-white" : "text-ink hover:bg-surface"
-                }`
-              }
-            >
-              Profile
-            </NavLink>
-            <div className="border-t border-line pt-2">
-              <PrimaryNavItem
-                icon={<Building2 aria-hidden="true" className="h-4 w-4" />}
-                label="Organizations"
-                section="organizations"
-                to="/app/organizations"
-                activeSection={activeSection}
-              />
-              <PrimaryNavItem
-                icon={<Bell aria-hidden="true" className="h-4 w-4" />}
-                label="Notifications"
-                section="notifications"
-                to="/app/notifications"
-                activeSection={activeSection}
-                badge={unreadNotifications.data?.unread_count}
-              />
-              <PrimaryNavItem
-                icon={<Mail aria-hidden="true" className="h-4 w-4" />}
-                label="Invitations"
-                section="invitations"
-                to="/app/invitations"
-                activeSection={activeSection}
-              />
-              <PrimaryNavItem
-                icon={<FolderKanban aria-hidden="true" className="h-4 w-4" />}
-                label="Projects"
-                section="projects"
-                to={projectsHref}
-                activeSection={activeSection}
-              />
-              <PrimaryNavItem
-                icon={<ListChecks aria-hidden="true" className="h-4 w-4" />}
-                label="Tasks"
-                section="tasks"
-                to={tasksHref}
-                activeSection={activeSection}
-              />
-            </div>
+            {isClient ? (
+              <>
+                <PrimaryNavItem
+                  icon={<Ticket aria-hidden="true" className="h-4 w-4" />}
+                  label="My tickets"
+                  section="client"
+                  to="/app/client"
+                  activeSection={activeSection}
+                />
+                <NavLink
+                  to="/app/profile"
+                  className={({ isActive }) =>
+                    `block rounded-md px-3 py-2 text-sm font-medium ${
+                      isActive
+                        ? "bg-brand text-white"
+                        : "text-ink hover:bg-surface"
+                    }`
+                  }
+                >
+                  Profile
+                </NavLink>
+              </>
+            ) : (
+              <>
+                <NavLink
+                  to="/app"
+                  end
+                  className={({ isActive }) =>
+                    `block rounded-md px-3 py-2 text-sm font-medium ${
+                      isActive
+                        ? "bg-brand text-white"
+                        : "text-ink hover:bg-surface"
+                    }`
+                  }
+                >
+                  Overview
+                </NavLink>
+                <NavLink
+                  to="/app/profile"
+                  className={({ isActive }) =>
+                    `block rounded-md px-3 py-2 text-sm font-medium ${
+                      isActive
+                        ? "bg-brand text-white"
+                        : "text-ink hover:bg-surface"
+                    }`
+                  }
+                >
+                  Profile
+                </NavLink>
+                <div className="border-t border-line pt-2">
+                  <PrimaryNavItem
+                    icon={<Building2 aria-hidden="true" className="h-4 w-4" />}
+                    label="Organizations"
+                    section="organizations"
+                    to="/app/organizations"
+                    activeSection={activeSection}
+                  />
+                  <PrimaryNavItem
+                    icon={<Bell aria-hidden="true" className="h-4 w-4" />}
+                    label="Notifications"
+                    section="notifications"
+                    to="/app/notifications"
+                    activeSection={activeSection}
+                    badge={unreadNotifications.data?.unread_count}
+                  />
+                  <PrimaryNavItem
+                    icon={<Mail aria-hidden="true" className="h-4 w-4" />}
+                    label="Invitations"
+                    section="invitations"
+                    to="/app/invitations"
+                    activeSection={activeSection}
+                  />
+                  <PrimaryNavItem
+                    icon={<Ticket aria-hidden="true" className="h-4 w-4" />}
+                    label="Assignment requests"
+                    section="assignment-requests"
+                    to="/app/ticket-assignment-requests"
+                    activeSection={activeSection}
+                  />
+                  <PrimaryNavItem
+                    icon={
+                      <FolderKanban aria-hidden="true" className="h-4 w-4" />
+                    }
+                    label="Projects"
+                    section="projects"
+                    to={projectsHref}
+                    activeSection={activeSection}
+                  />
+                  <PrimaryNavItem
+                    icon={<ListChecks aria-hidden="true" className="h-4 w-4" />}
+                    label="Tasks"
+                    section="tasks"
+                    to={tasksHref}
+                    activeSection={activeSection}
+                  />
+                </div>
+              </>
+            )}
           </nav>
         </aside>
 

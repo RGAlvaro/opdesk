@@ -1,13 +1,21 @@
 """SQLAlchemy user model for authentication and profile data."""
 
+import enum
 import uuid
 from datetime import datetime
 
-from sqlalchemy import Boolean, DateTime, String, Text, func
+from sqlalchemy import Boolean, DateTime, Enum, String, Text, func
 from sqlalchemy.orm import Mapped, mapped_column
 from sqlalchemy.types import Uuid
 
 from app.db.base import Base
+
+
+class UserAccountType(str, enum.Enum):
+    """Separate internal operators from restricted client accounts."""
+
+    INTERNAL = "internal"
+    CLIENT = "client"
 
 
 class User(Base):
@@ -27,6 +35,15 @@ class User(Base):
     bio: Mapped[str | None] = mapped_column(Text, nullable=True)
     is_active: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
     is_superuser: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+    account_type: Mapped[UserAccountType] = mapped_column(
+        Enum(
+            UserAccountType,
+            name="user_account_type",
+            values_callable=lambda values: [v.value for v in values],
+        ),
+        nullable=False,
+        default=UserAccountType.INTERNAL,
+    )
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), nullable=False, server_default=func.now()
     )

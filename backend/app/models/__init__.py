@@ -11,6 +11,7 @@ from app.models.organization import (
 )
 from app.models.project import (
     Project,
+    ProjectClientAccess,
     ProjectMembership,
     ProjectStatus,
     ProjectVisibility,
@@ -21,6 +22,7 @@ from app.models.project import (
     TaskStatus,
     TaskType,
     TaskWatcher,
+    TicketComment,
 )
 from app.models.user import User
 
@@ -34,10 +36,12 @@ __all__ = [
     "Organization",
     "OrganizationMembership",
     "Project",
+    "ProjectClientAccess",
     "ProjectMembership",
     "ProjectStatus",
     "ProjectVisibility",
     "Task",
+    "TicketComment",
     "TaskLabel",
     "TaskLabelAssignment",
     "TaskPriority",
