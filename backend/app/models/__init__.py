@@ -1,5 +1,12 @@
 """Expose SQLAlchemy models so Alembic metadata discovery imports them."""
 
+from app.models.chat import (
+    ChatConversation,
+    ChatConversationParticipant,
+    ChatConversationRead,
+    ChatConversationType,
+    ChatMessage,
+)
 from app.models.notification import Notification, NotificationType
 from app.models.organization import (
     Invitation,
@@ -28,6 +35,11 @@ from app.models.user import User
 
 __all__ = [
     "MembershipRole",
+    "ChatConversation",
+    "ChatConversationParticipant",
+    "ChatConversationRead",
+    "ChatConversationType",
+    "ChatMessage",
     "Invitation",
     "InvitationScope",
     "InvitationStatus",

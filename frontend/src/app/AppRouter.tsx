@@ -14,6 +14,7 @@ import {
   InternalTicketListPage,
   TicketAssignmentRequestsPage,
 } from "../features/client-tickets/ClientTicketPages";
+import { OrganizationChatPage } from "../features/chat/ChatPage";
 import {
   OrganizationDetailPage,
   OrganizationListPage,
@@ -105,6 +106,10 @@ export function AppRouter() {
         <Route
           path="organizations/:organizationId/members"
           element={<OrganizationMembersPage />}
+        />
+        <Route
+          path="organizations/:organizationId/chat"
+          element={<OrganizationChatPage />}
         />
         <Route
           path="organizations/:organizationId/projects"

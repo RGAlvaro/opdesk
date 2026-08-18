@@ -7,6 +7,7 @@ import {
   ListChecks,
   LogOut,
   Mail,
+  MessageCircle,
   Ticket,
   UserRound,
 } from "lucide-react";
@@ -31,6 +32,7 @@ type PrimarySection =
   | "invitations"
   | "notifications"
   | "assignment-requests"
+  | "chat"
   | "client";
 
 const primaryNavBaseClass =
@@ -51,6 +53,9 @@ function activePrimarySection(pathname: string): PrimarySection | undefined {
     return "projects";
   }
   if (/^\/app\/organizations(\/|$)/.test(pathname)) {
+    if (/^\/app\/organizations\/[^/]+\/chat(\/|$)/.test(pathname)) {
+      return "chat";
+    }
     return "organizations";
   }
   if (/^\/app\/invitations(\/|$)/.test(pathname)) {
@@ -160,6 +165,9 @@ export function AppShell() {
     : undefined;
   const tasksHref = activeProjectId
     ? `/app/projects/${activeProjectId}/tasks`
+    : undefined;
+  const chatHref = projectOrganizationId
+    ? `/app/organizations/${projectOrganizationId}/chat`
     : undefined;
 
   /** End the session and return the browser to the public entry page. */
@@ -273,6 +281,15 @@ export function AppShell() {
                     label="Invitations"
                     section="invitations"
                     to="/app/invitations"
+                    activeSection={activeSection}
+                  />
+                  <PrimaryNavItem
+                    icon={
+                      <MessageCircle aria-hidden="true" className="h-4 w-4" />
+                    }
+                    label="Chat"
+                    section="chat"
+                    to={chatHref}
                     activeSection={activeSection}
                   />
                   <PrimaryNavItem

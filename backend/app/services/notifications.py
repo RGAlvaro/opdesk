@@ -193,6 +193,26 @@ class NotificationService:
             resource_id=task.id,
         )
 
+    def notify_chat_unread(
+        self,
+        actor_id: uuid.UUID,
+        conversation_id: uuid.UUID,
+        organization_id: uuid.UUID,
+        recipient_ids: set[uuid.UUID],
+    ) -> None:
+        """Create aggregate unread chat notifications for conversation participants."""
+        recipient_ids.discard(actor_id)
+        for recipient_id in recipient_ids:
+            self._create_once(
+                recipient_user_id=recipient_id,
+                notification_type=NotificationType.CHAT_UNREAD,
+                title="Unread chat messages",
+                body="A chat conversation has unread activity.",
+                action_url=f"/app/organizations/{organization_id}/chat?conversation={conversation_id}",
+                resource_type="chat_conversation",
+                resource_id=conversation_id,
+            )
+
     def _create_once(
         self,
         *,
