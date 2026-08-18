@@ -35,6 +35,45 @@ Known gaps:
 
 ## Entries
 
+### 2026-08-18 — SPEC-307/SPEC-305/SPEC-304 — Collaboration release deployed to production
+
+Role: Ingeniero de software
+Branch: main
+Commit/PR: commit `cc35414`, Production Release run `32133588953`
+Status: Deployed
+
+Summary:
+- Added the `2026-08-18 - Collaboration Release` changelog entry for the production deploy containing merged `SPEC-305` and `SPEC-304`.
+- Fixed the public changelog route test after the new release entry increased the rendered release count.
+- Deployed app revision `cc354148dee2d1f69b3d99d34b3f0aaced3f06b6` to production through the manual `Production Release` workflow.
+- Confirmed the production manifest recorded backup `/srv/opdesk/backups/opdesk-20260818-115050-cc354148dee2d1f69b3d99d34b3f0aac.dump`, `backend_image_build=PASS`, `migrations=PASS`, `migration_drift_check=PASS`, `alembic_current=0012 (head)`, `compose_update=PASS`, `backend_health=PASS`, `frontend=PASS`, `redis=PASS`, and `worker=PASS`.
+
+Validation:
+- command: `python3 scripts/validate_changelog.py --entry "2026-08-18 - Collaboration Release"`: PASS.
+- command: `make changelog-check`: PASS.
+- command: `make release-workflow-check`: PASS.
+- command: `cd frontend && npm run test -- AppRouter.test.tsx --run`: PASS — 23 frontend route tests passed after the changelog test update.
+- command: `make test-frontend`: PASS — 63 frontend tests passed.
+- command: `make lint`: PASS — backend Ruff and frontend ESLint passed.
+- command: `make format-check`: PASS — backend Ruff format check and frontend Prettier check passed.
+- command: `make typecheck`: PASS — backend mypy and frontend `tsc -b` passed.
+- command: `git diff --check`: PASS.
+- command: GitHub Actions `Verify` run `32127525357`: FAIL — release-note commit exposed stale changelog route assertion expecting 2 `Added` sections; `e2e` passed and no production deploy was attempted.
+- command: GitHub Actions `Verify` run `32127831767`: PASS — `verify` passed in 1m47s and `e2e` passed in 2m48s after the test fix.
+- command: GitHub Actions `Production Release` run `32128264461`: FAIL — checkout failed because an incorrect target SHA was supplied; no validation, backup, migration, or production update ran.
+- command: GitHub Actions `Production Release` run `32133588953`: PASS — deployed `cc354148dee2d1f69b3d99d34b3f0aaced3f06b6` in 2m58s.
+- command: `curl -fsS https://rgalvaro.es/health`: PASS — returned `{"status":"ok"}`.
+- command: `curl -I -fsS https://rgalvaro.es/`: PASS — returned `HTTP/2 200`.
+- command: `curl -I -fsS https://rgalvaro.es/changelog`: PASS — returned `HTTP/2 200`.
+- command: `curl -i -sS https://rgalvaro.es/api/v1/users/me`: PASS — returned expected `401 not_authenticated` API envelope.
+- command: `ssh opdesk-vps '... releases/latest-release.txt ... alembic current ... docker compose ps ...'`: PASS — manifest and direct Alembic check report `0012 (head)`; backend, frontend, Caddy, PostgreSQL, Redis, and worker are running with PostgreSQL/Redis private.
+
+Review:
+- decision: APPROVED — `SPEC-305` and `SPEC-304` were approved before merge; `SPEC-307` release automation was previously review approved.
+
+Known gaps:
+- None for this production deployment. Future notification integrations remain outside the deployed specs until specified.
+
 ### 2026-08-18 — SPEC-304 — Organization member chat merged
 
 Role: Ingeniero de software
@@ -56,7 +95,7 @@ Review:
 - decision: APPROVED — review entry below approved `SPEC-304` before merge.
 
 Known gaps:
-- `SPEC-304` is merged but not yet deployed to production.
+- `SPEC-304` was not yet deployed at merge time; it was deployed later on 2026-08-18 through Production Release run `32133588953`.
 
 ### 2026-08-18 — SPEC-304 — Organization member chat approved
 
