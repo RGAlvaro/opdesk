@@ -1,8 +1,8 @@
 # SPEC-304 — Organization Member Chat
 
-Status: Ready
+Status: Implemented
 Owner: Arquitecto de specs
-Last updated: 2026-08-17
+Last updated: 2026-08-18
 
 ## Scope And Required Context
 

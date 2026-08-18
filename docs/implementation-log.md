@@ -35,6 +35,117 @@ Known gaps:
 
 ## Entries
 
+### 2026-08-18 — SPEC-304 — Organization member chat approved
+
+Role: Review agent
+Branch: main
+Commit/PR: Pending
+Status: Reviewed
+
+Summary:
+- Re-reviewed `SPEC-304` after the review fixes.
+- Confirmed the previous blocking gaps are fixed: REST chat message body validation now returns the specified `400 invalid_message` envelope for empty and overlong bodies, and frontend chat tests cover unread state plus conversation clearing.
+- Confirmed internal member chat, direct conversations, organization/project channels, WebSocket delivery, REST history/recovery, client exclusion, tenant-safe project-channel access, aggregate unread notifications, migration `0012`, and project memory align with the spec.
+
+Validation:
+- command: `make test-backend`: PASS — 106 selected backend tests passed, 2 DB tests deselected.
+- command: `make test-frontend`: PASS — 63 frontend tests passed.
+- command: `make lint`: PASS — backend Ruff and frontend ESLint passed.
+- command: `make format-check`: PASS — backend Ruff format check and frontend Prettier check passed.
+- command: `make typecheck`: PASS — backend mypy and frontend `tsc -b` passed.
+- command: elevated `make migrations-check`: PASS — Alembic upgrade/check completed with no new upgrade operations.
+- command: `make memory-check SPEC=SPEC-304`: PASS.
+- command: `git diff --check`: PASS.
+
+Review:
+- decision: APPROVED
+
+Known gaps:
+- None.
+
+### 2026-08-18 — SPEC-304 — Review fixes implemented
+
+Role: Ingeniero de software
+Branch: main
+Commit/PR: Pending
+Status: Implemented
+
+Summary:
+- Fixed the `SPEC-304` review gap where REST chat message body validation could return framework `422` by routing empty and overlong message bodies through service-owned `400 invalid_message` validation.
+- Added backend regression coverage for empty and overlong REST message bodies.
+- Expanded frontend chat tests to cover unread conversation badge rendering and the conversation clear action.
+
+Validation:
+- command: `cd backend && poetry run pytest tests/test_organization_chat_api.py -q`: PASS — 6 SPEC-304 backend tests passed.
+- command: `cd frontend && npm run test -- ChatPage.test.tsx --run`: PASS — 5 SPEC-304 frontend chat tests passed.
+- command: `make test-backend`: PASS — 106 selected backend tests passed, 2 DB tests deselected.
+- command: `make test-frontend`: PASS — 63 frontend tests passed.
+- command: `make lint`: PASS — backend Ruff and frontend ESLint passed.
+- command: `make format-check`: PASS — backend Ruff format check and frontend Prettier check passed.
+- command: `make typecheck`: PASS — backend mypy and frontend `tsc -b` passed.
+- command: `make memory-check SPEC=SPEC-304`: PASS.
+- command: `git diff --check`: PASS.
+- command: `make migrations-check`: NOT RUN — review fix did not change migrations or SQLAlchemy models; prior `SPEC-304` elevated migration validation passed through `0012`.
+
+Review:
+- decision: N/A
+
+Known gaps:
+- `SPEC-304` review fixes are implemented and need re-review.
+
+### 2026-08-18 — SPEC-304 — Organization member chat reviewed
+
+Role: Review agent
+Branch: main
+Commit/PR: Pending
+Status: Reviewed
+
+Summary:
+- Reviewed `SPEC-304` implementation against REST/WebSocket contracts, tenant isolation, client exclusion, project-channel access, unread notifications, frontend route behavior, migration, and project memory.
+- Confirmed the main chat surfaces exist: migration `0012`, chat persistence, REST endpoints, WebSocket endpoint, direct/project/organization conversation support, aggregate `chat.unread` notifications, frontend chat route, and app-shell navigation hidden from client users.
+- Found blocking gaps in API validation error shape and required frontend test coverage.
+
+Validation:
+- command: `cd backend && poetry run pytest tests/test_organization_chat_api.py -q`: PASS — 5 SPEC-304 backend tests passed.
+- command: `make lint`: PASS — backend Ruff and frontend ESLint passed.
+- command: `make typecheck`: PASS — backend mypy and frontend `tsc -b` passed.
+- command: `make memory-check SPEC=SPEC-304`: PASS.
+- command: `git diff --check`: PASS.
+
+Review:
+- decision: CHANGES_REQUESTED
+
+Known gaps:
+- Empty or overlong REST message bodies currently use Pydantic request validation and can return framework `422` instead of the specified `400 invalid_message`; add endpoint-level regression coverage.
+- Frontend tests do not yet cover the required unread-state and conversation-clearing behavior.
+
+### 2026-08-18 — SPEC-304 — Organization member chat implemented
+
+Role: Ingeniero de software
+Branch: main
+Commit/PR: Pending
+Status: Implemented
+
+Summary:
+- Implemented internal organization chat with migration `0012`, chat conversation/message/read persistence, direct conversations, organization and project channels, member-list shared-project ordering, personal conversation clearing, read state, and aggregate `chat.unread` notifications.
+- Added authenticated REST chat APIs plus an in-process WebSocket endpoint that authenticates existing session cookies, persists messages before fan-out, and supports reconnect recovery through REST history.
+- Added a frontend organization chat route with internal-only app-shell navigation, member discovery, project-channel opening, conversation list, explicit connection state, WebSocket send path, REST fallback, refresh, clear, empty/error states, and route-query selected conversation state.
+- Added backend API/WebSocket tests and frontend route tests for `SPEC-304`.
+
+Validation:
+- command: `make test-backend`: PASS — 105 selected backend tests passed, 2 DB tests deselected.
+- command: `make test-frontend`: PASS — 61 frontend tests passed.
+- command: `make lint`: PASS — backend Ruff and frontend ESLint passed.
+- command: `make format-check`: PASS — backend Ruff format check and frontend Prettier check passed.
+- command: `make typecheck`: PASS — backend mypy and frontend `tsc -b` passed.
+- command: elevated `make migrations-check`: PASS — Alembic upgraded through `0012` and check reported no new upgrade operations.
+
+Review:
+- decision: N/A
+
+Known gaps:
+- `SPEC-304` implementation needs review approval before merge/deploy handoff.
+
 ### 2026-08-18 — Repository workflow — Merge memory checkpoint required
 
 Role: Arquitecto de specs

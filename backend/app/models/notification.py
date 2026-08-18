@@ -23,6 +23,7 @@ class NotificationType(str, enum.Enum):
     TASK_STATUS_CHANGED = "task.status_changed"
     TICKET_COMMENT = "ticket.comment"
     TICKET_ASSIGNMENT_REQUESTED = "ticket.assignment_requested"
+    CHAT_UNREAD = "chat.unread"
 
 
 class Notification(Base):
