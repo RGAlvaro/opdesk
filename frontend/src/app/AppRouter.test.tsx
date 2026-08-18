@@ -487,10 +487,17 @@ describe("SPEC-104 frontend app shell and auth UI", () => {
     ).toBeInTheDocument();
     expect(
       screen.getByRole("heading", {
+        name: "2026-08-18 - Collaboration Release",
+      }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", {
         name: "2026-08-14 - Notification Inbox Release",
       }),
     ).toBeInTheDocument();
-    expect(screen.getAllByRole("heading", { name: "Added" })).toHaveLength(2);
+    expect(
+      screen.getByText(/internal team members can use organization chat/i),
+    ).toBeInTheDocument();
     expect(
       screen.getByText(/persistent in-app notification inbox/i),
     ).toBeInTheDocument();
