@@ -1,5 +1,17 @@
 # Changelog
 
+## 2026-08-18 - Collaboration Release
+
+### Added
+
+- Project client accounts can now create tickets, follow ticket status, and participate in ticket comments.
+- Internal team members can use organization chat with direct conversations, organization channels, project channels, unread state, and real-time message delivery.
+- Project teams can manage client access and accepted ticket handoff requests from the authenticated app.
+
+### Changed
+
+- Notifications now include unread chat summaries and ticket collaboration events alongside the existing inbox workflow.
+
 ## 2026-08-14 - Notification Inbox Release
 
 ### Added
