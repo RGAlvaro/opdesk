@@ -35,11 +35,34 @@ Known gaps:
 
 ## Entries
 
+### 2026-08-18 — SPEC-304 — Organization member chat merged
+
+Role: Ingeniero de software
+Branch: main
+Commit/PR: PR #17 https://github.com/RGAlvaro/opdesk/pull/17, merge `6aea60e`
+Status: Merged
+
+Summary:
+- Published the approved `SPEC-304` implementation branch and opened PR #17 for organization member chat.
+- GitHub Actions passed both required checks, then PR #17 was marked ready, squash-merged to `main`, and the remote feature branch was deleted.
+- Confirmed `main` includes migration `0012`, chat persistence, REST/WebSocket chat APIs, aggregate `chat.unread` notifications, organization chat UI, backend/frontend tests, and project memory updates.
+
+Validation:
+- command: `gh pr checks 17 --repo RGAlvaro/opdesk --watch`: PASS — `verify` passed in 1m47s and `e2e` passed in 2m9s.
+- command: `gh pr view 17 --repo RGAlvaro/opdesk --json number,url,state,mergedAt,mergeCommit,headRefName,baseRefName`: PASS — PR #17 is `MERGED` with merge commit `6aea60e`.
+- command: `git pull --ff-only`: PASS — local `main` fast-forwarded to `6aea60e`.
+
+Review:
+- decision: APPROVED — review entry below approved `SPEC-304` before merge.
+
+Known gaps:
+- `SPEC-304` is merged but not yet deployed to production.
+
 ### 2026-08-18 — SPEC-304 — Organization member chat approved
 
 Role: Review agent
 Branch: main
-Commit/PR: Pending
+Commit/PR: PR #17 https://github.com/RGAlvaro/opdesk/pull/17, merge `6aea60e`
 Status: Reviewed
 
 Summary:
