@@ -35,6 +35,51 @@ Known gaps:
 
 ## Entries
 
+### 2026-08-18 — Repository workflow — Merge memory checkpoint required
+
+Role: Arquitecto de specs
+Branch: main
+Commit/PR: Pending
+Status: Ready
+
+Summary:
+- Confirmed the existing memory harness had review-time helpers, but no explicit post-merge checkpoint.
+- Added `make merge-memory-check SPEC=SPEC-XXX` and documented that merge actors must update project memory after PR merges, direct merges, production deploys, or branch cleanup changes current state.
+- Updated `AGENTS.md`, harness docs, workflow notes, and `ADR-005` so future agents treat stale post-merge memory as a workflow violation.
+
+Validation:
+- command: `make merge-memory-check SPEC=<latest merged spec>`: PASS — merge memory for the latest merged feature is structurally valid.
+- command: `git diff --check`: PASS.
+
+Review:
+- decision: N/A
+
+Known gaps:
+- The target validates required merge-memory shape; it does not automatically infer semantic truth from GitHub. Agents must still record factual PR, commit, validation, and known-gap details.
+
+### 2026-08-17 — SPEC-305 — Project clients and tickets merged
+
+Role: Ingeniero de software
+Branch: main
+Commit/PR: PR #16 https://github.com/RGAlvaro/opdesk/pull/16, merge `ba140d3`
+Status: Merged
+
+Summary:
+- Merged `SPEC-305` into `main` through PR #16 after local review approval and GitHub Actions validation.
+- Confirmed `main` includes migrations `0010` and `0011`, restricted client accounts, project client access, client ticket list/create/detail/comment flows, internal ticket management, target-accepted ticket handoff requests, notifications, frontend route coverage, ADRs, and project memory updates.
+- Left `SPEC-304` as the next Ready implementation target; production remains on the previously deployed `SPEC-306` revision until a release workflow deploys the merged client-ticket work.
+
+Validation:
+- command: `gh pr checks 16`: PASS — `verify` passed in 1m49s and `e2e` passed in 2m29s.
+- command: `gh pr view 16 --json number,state,mergedAt,mergeCommit,url`: PASS — PR #16 is `MERGED` with merge commit `ba140d3`.
+- command: `git status -sb`: PASS — local `main` clean and aligned with `origin/main`.
+
+Review:
+- decision: APPROVED — review entry below approved `SPEC-305` before merge.
+
+Known gaps:
+- `SPEC-305` is merged but not yet deployed to production.
+
 ### 2026-08-17 — SPEC-305 — Project clients and tickets approved
 
 Role: Review agent

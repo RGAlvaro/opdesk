@@ -17,7 +17,7 @@ CELERY_RESULT_BACKEND ?= redis://redis:6379/1
 .PHONY: verify verify-no-db test test-backend test-backend-db lint format-check typecheck
 .PHONY: migrations-check migrations-check-compose smoke prod-config prod-smoke-project-check
 .PHONY: prod-data-smoke prod-smoke prod-down changelog-check release-workflow-check compose-up compose-down
-.PHONY: test-frontend test-e2e memory-check review-ready memory-entry
+.PHONY: test-frontend test-e2e memory-check review-ready merge-memory-check memory-entry
 
 verify: verify-no-db migrations-check
 
@@ -39,6 +39,10 @@ memory-check:
 	python3 scripts/memory_check.py --spec "$(SPEC)"
 
 review-ready: memory-check
+
+merge-memory-check:
+	test -n "$(SPEC)" || (echo "Usage: make merge-memory-check SPEC=SPEC-106" && exit 2)
+	python3 scripts/memory_check.py --spec "$(SPEC)" --merged
 
 memory-entry:
 	test -n "$(SPEC)" || (echo "Usage: make memory-entry SPEC=SPEC-106 ROLE='Review agent' STATUS=Reviewed" && exit 2)

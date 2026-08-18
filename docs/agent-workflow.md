@@ -22,6 +22,12 @@ Act as Arquitecto de specs. Read AGENTS.md, docs/project-state.md, specs/README.
 Act as Ingeniero de software. Read AGENTS.md, docs/project-state.md, specs/README.md, relevant docs/decisions/, specs/001-api-conventions.md when API behavior is involved, specs/harness/local-validation.md, and specs/features/[SPEC_FILE]. Implement only this spec. Before editing, provide a short plan. Add or update required tests and run the relevant harness commands. Update docs/project-state.md and docs/implementation-log.md before review.
 ```
 
+## Merge And Publication
+
+```text
+Act as release/merge operator for [SPEC_ID]. Before merging, confirm the PR is not draft, is mergeable, and required checks passed. After merge, update docs/implementation-log.md, docs/project-state.md, and any affected spec index entries with the merged PR, merge commit, validation evidence, review decision, known gaps, and next work. Run make merge-memory-check SPEC=[SPEC_ID]. If memory was stale after the GitHub merge, make and push a follow-up memory commit on main before starting the next spec.
+```
+
 ## Current Handoff
 
 As of 2026-07-06, `main` includes the review-approved implementation through `SPEC-301`, including production Compose, CI, backup/restore validation, deployment documentation, and the managed-sandbox GitHub CLI policy. No integration work remains; product known gaps are intentionally deferred to later sessions.

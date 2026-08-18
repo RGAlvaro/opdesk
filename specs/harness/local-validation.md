@@ -31,6 +31,7 @@ make changelog-check
 make release-workflow-check
 make memory-check SPEC=SPEC-XXX
 make review-ready SPEC=SPEC-XXX
+make merge-memory-check SPEC=SPEC-XXX
 make memory-entry SPEC=SPEC-XXX
 ```
 
@@ -58,6 +59,7 @@ Expected meaning:
 | `make release-workflow-check` | Validate the manual production release workflow, release script syntax, changelog guardrails, and missing-env failure guard |
 | `make memory-check SPEC=SPEC-XXX` | Checks that `docs/project-state.md` and `docs/implementation-log.md` mention the active spec and include required log sections before review handoff |
 | `make review-ready SPEC=SPEC-XXX` | Alias for the current memory readiness check; feature specs still define the validation commands that must also pass |
+| `make merge-memory-check SPEC=SPEC-XXX` | Checks that the newest implementation-log entry for the spec is a merge entry with PR, merge commit, validation evidence, and approved review decision |
 | `make memory-entry SPEC=SPEC-XXX` | Prints a paste-ready implementation-log template without inventing validation evidence |
 
 `make verify` remains the complete pre-review and pre-PR check. It intentionally depends on
@@ -69,6 +71,12 @@ Memory validation is required before a Review agent returns `APPROVED`. The cano
 review decision, not commit or push. The helper targets intentionally validate and scaffold memory;
 they do not write project history automatically because validation evidence and known gaps must stay
 factual.
+
+Merge memory validation is required after a PR or branch is merged. The merge actor must update
+`docs/implementation-log.md`, `docs/project-state.md`, and affected spec indexes before ending the
+turn, then run `make merge-memory-check SPEC=SPEC-XXX`. If the merge already landed and the memory is
+stale on `main`, create a small follow-up memory commit instead of leaving the next agent to infer the
+state from GitHub.
 
 In managed sandbox environments, commands that access host-published PostgreSQL ports or the Docker
 socket must be treated as outside-sandbox validation from the first attempt. Run

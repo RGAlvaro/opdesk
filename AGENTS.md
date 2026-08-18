@@ -68,6 +68,8 @@ Operational memory is part of the workflow, not a post-merge cleanup task:
 3. Commit and push are evidence checkpoints, not the canonical memory-update trigger. Do not rely on commit/push hooks to create project memory.
 4. Use `make memory-entry SPEC=SPEC-XXX` to scaffold a factual implementation-log entry when useful.
 5. Use `make memory-check SPEC=SPEC-XXX` or `make review-ready SPEC=SPEC-XXX` before review approval to catch stale or missing memory. These targets verify memory shape; they do not replace feature-specific validation commands.
+6. Merge is its own evidence checkpoint. After a PR merge, direct merge, production deploy, or branch cleanup changes current state, update `docs/implementation-log.md`, `docs/project-state.md`, and any affected spec index entries before ending the turn.
+7. Run `make merge-memory-check SPEC=SPEC-XXX` after recording merge memory. If the merge completes on GitHub and local memory becomes stale, create and push a small follow-up memory commit on `main` before moving to the next spec.
 
 ### Managed Sandbox GitHub Operations
 

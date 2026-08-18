@@ -1,4 +1,4 @@
-"""Validate that spec work has current operational memory before review approval."""
+"""Validate that spec work has current operational memory before checkpoints."""
 
 from __future__ import annotations
 
@@ -14,13 +14,18 @@ IMPLEMENTATION_LOG = ROOT / "docs" / "implementation-log.md"
 
 
 def parse_args() -> argparse.Namespace:
-    """Collect the active spec ID and optional strict review expectations."""
+    """Collect the active spec ID and optional strict checkpoint expectations."""
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--spec", required=True, help="Spec ID, for example SPEC-106")
     parser.add_argument(
         "--reviewed",
         action="store_true",
         help="Require a reviewed/approved implementation-log entry for the spec.",
+    )
+    parser.add_argument(
+        "--merged",
+        action="store_true",
+        help="Require a merged implementation-log entry for the spec.",
     )
     return parser.parse_args()
 
@@ -77,6 +82,15 @@ def main() -> int:
             require(
                 "decision: APPROVED" in entry,
                 f"latest {spec} log entry must record decision: APPROVED",
+                failures,
+            )
+        if args.merged:
+            require("Status: Merged" in entry, f"latest {spec} log entry must be Status: Merged", failures)
+            require("PR #" in entry, f"latest {spec} log entry must reference the merged PR", failures)
+            require("merge `" in entry, f"latest {spec} log entry must reference the merge commit", failures)
+            require(
+                "decision: APPROVED" in entry,
+                f"latest {spec} log entry must carry forward the approved review decision",
                 failures,
             )
 
