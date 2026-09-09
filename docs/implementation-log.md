@@ -63,7 +63,7 @@ Review:
 - decision: N/A
 
 Known gaps:
-- Multi-backend Redis pub/sub fan-out remains outside V1 by spec and must be added before horizontal backend scaling.
+- Multi-backend Redis pub/sub fan-out remains outside V1 by spec and must be added before horizontal backend scaling. Future spec note: when OpsDesk runs multiple backend replicas, publish notification events through Redis pub/sub or an equivalent shared broker so events created on one backend can reach sockets connected to another backend.
 
 ### 2026-09-09 — SPEC-313 — Merged to main
 
