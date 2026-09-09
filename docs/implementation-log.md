@@ -39,7 +39,7 @@ Known gaps:
 
 Role: Review agent
 Branch: agent/spec-313-cross-browser-a11y
-Commit/PR: Pending
+Commit/PR: commit `66c3610`, PR pending
 Status: Reviewed
 
 Summary:
@@ -68,7 +68,7 @@ Known gaps:
 
 Role: Ingeniero de software
 Branch: agent/spec-313-cross-browser-a11y
-Commit/PR: Pending
+Commit/PR: commit `66c3610`, PR pending
 Status: Implemented
 
 Summary:
@@ -98,7 +98,7 @@ Known gaps:
 
 Role: Arquitecto de specs
 Branch: agent/spec-313-cross-browser-a11y
-Commit/PR: Pending
+Commit/PR: commit `66c3610`, PR pending
 Status: Ready
 
 Summary:
