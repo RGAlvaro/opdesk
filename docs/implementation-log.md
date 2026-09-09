@@ -39,7 +39,7 @@ Known gaps:
 
 Role: Ingeniero de software
 Branch: agent/spec-315-realtime-notifications
-Commit/PR: Pending
+Commit/PR: commit `aa9896f`, PR pending
 Status: Implemented
 
 Summary:
