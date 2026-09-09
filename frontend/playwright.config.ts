@@ -31,5 +31,15 @@ export default defineConfig({
       use: { ...devices["Pixel 7"] },
       testMatch: /critical-workflow\.spec\.ts/,
     },
+    {
+      name: "firefox-smoke",
+      use: { ...devices["Desktop Firefox"] },
+      testMatch: /cross-browser-smoke\.spec\.ts/,
+    },
+    {
+      name: "webkit-smoke",
+      use: { ...devices["Desktop Safari"] },
+      testMatch: /cross-browser-smoke\.spec\.ts/,
+    },
   ],
 });

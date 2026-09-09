@@ -161,7 +161,12 @@ It currently covers the critical recruiter-visible path from signup to organizat
 project creation, task creation, and marking that task done. The expanded E2E suite also covers
 auth protection, login/logout, profile persistence, task filter URL persistence, and task label
 filtering. Desktop Chromium is the default full-suite browser project; mobile Chromium runs the
-critical path.
+critical path. The cross-browser/accessibility hardening suite adds Firefox and WebKit smoke
+coverage for public routes, protected-route redirect, login/logout, and one authenticated workflow.
+Automated accessibility checks run in desktop Chromium with `@axe-core/playwright` against public
+home, changelog, login, authenticated app shell, notifications, project tasks, and the client ticket
+shell. Accessibility checks fail on serious or critical WCAG 2 A/AA violations with route-specific
+context.
 
 GitHub Actions runs E2E as a separate `e2e` job rather than hiding it inside `make verify`. On CI
 failure, the workflow uploads Playwright artifacts from `frontend/test-results`.

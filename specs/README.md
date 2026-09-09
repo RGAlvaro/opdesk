@@ -49,6 +49,10 @@ Use this index for routing. Use `docs/project-state.md` for the compact current 
 | `SPEC-310` | Implemented | Production release changelog | `SPEC-307`, `SPEC-104` | `CHANGELOG.md`, release validation, public changelog route/link |
 | `SPEC-311` | Implemented | Static public portfolio home for OpsDesk and future apps | `SPEC-104`, `SPEC-310` | Public `/` route, app cards, changelog link, frontend tests |
 | `SPEC-312` | Implemented | Expanded Playwright E2E coverage for auth, profile, filters, mobile viewport, and optional CI | `SPEC-104`, `SPEC-105`, `SPEC-106`, `SPEC-309`, `SPEC-311` | `frontend/e2e/`, Playwright config, E2E Compose runner, CI/harness docs |
+| `SPEC-313` | Implemented | Cross-browser and accessibility E2E hardening | `SPEC-312`, `SPEC-305`, `SPEC-306`, `SPEC-311` | Firefox/WebKit Playwright smoke coverage, automated accessibility checks, E2E CI artifacts |
+| `SPEC-314` | Ready | External notification delivery | `SPEC-201`, `SPEC-303`, `SPEC-305`, `SPEC-306`, `SPEC-307` | Resend email delivery provider adapter, Celery delivery jobs, delivery audit, production env/docs |
+| `SPEC-315` | Ready | Real-time notification inbox | `SPEC-306`, `SPEC-304`, `SPEC-307` | Notification WebSocket endpoint, unread-count live updates, polling fallback, frontend cache updates |
+| `SPEC-316` | Ready | Scheduled jobs and operational audit | `SPEC-201`, `SPEC-301`, `SPEC-306`, `SPEC-314` | Celery beat scheduler service, scheduled job audit table, admin audit UI, production Compose/docs |
 
 Implementation order should usually follow spec dependencies:
 
@@ -60,6 +64,9 @@ SPEC-307 is implemented for manual post-launch release automation after the init
 SPEC-308 should be implemented before `SPEC-309` because task labels depend on the expanded project/task surfaces.
 SPEC-310 can be implemented after `SPEC-307`; `SPEC-311` should wait until the personal home-page copy questions are resolved.
 SPEC-312 can be implemented after the initial Playwright critical path exists and should remain separate from product feature work.
+SPEC-313 can be implemented after `SPEC-312` because it builds on the established E2E runner.
+SPEC-315 can be implemented after `SPEC-306` and `SPEC-304` because it reuses persistent notifications and WebSocket session-auth patterns.
+SPEC-314 should be implemented before `SPEC-316` because scheduled delivery retry sweeps depend on external delivery audit state.
 ```
 
 ## Agent Routing
@@ -101,3 +108,7 @@ Use this table to decide which feature spec to open before editing.
 | `CHANGELOG.md`, release notes, public changelog page/link, changelog validation in release workflows | `SPEC-310` |
 | Public `/` portfolio/app hub, OpsDesk app card, ERP coming-soon card, personal developer description | `SPEC-311` |
 | Playwright E2E tests, browser projects, E2E CI job, E2E artifacts, auth/profile/filter browser coverage | `SPEC-312` |
+| Firefox/WebKit E2E coverage, accessibility scans, axe/Playwright checks | `SPEC-313` |
+| Email delivery, external notification providers, delivery audit, notification templates | `SPEC-314` |
+| Real-time notification inbox, notification WebSocket, unread count push updates | `SPEC-315` |
+| Scheduled jobs, Celery beat, operational audit, cleanup/retention jobs | `SPEC-316` |

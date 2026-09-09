@@ -32,6 +32,11 @@ export type E2ELabel = {
   name: string;
 };
 
+export type E2EClientAccess = {
+  id: string;
+  client_user_id: string;
+};
+
 /** Build a unique suffix so repeated local and CI runs do not collide. */
 export function runSuffix() {
   return `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
@@ -221,6 +226,24 @@ export async function assignLabelViaApi(
   await apiJson(page.request, "post", `/api/v1/tasks/${taskId}/labels`, {
     label_id: labelId,
   });
+}
+
+/** Create or grant a restricted client account for one project. */
+export async function createProjectClientViaApi(
+  page: Page,
+  projectId: string,
+  user: E2EUser,
+): Promise<E2EClientAccess> {
+  return apiJson<E2EClientAccess>(
+    page.request,
+    "post",
+    `/api/v1/projects/${projectId}/clients`,
+    {
+      email: user.email,
+      full_name: user.fullName,
+      password: user.password,
+    },
+  );
 }
 
 /** Build a minimal organization and project for an authenticated user. */
