@@ -35,11 +35,35 @@ Known gaps:
 
 ## Entries
 
+### 2026-09-09 — SPEC-313 — PR opened and GitHub Actions passed
+
+Role: Ingeniero de software
+Branch: agent/spec-313-cross-browser-a11y
+Commit/PR: PR #18, commit `1f8800e`, prior GitHub Actions run `34324881133`
+Status: PR open
+
+Summary:
+- Pushed `agent/spec-313-cross-browser-a11y` to GitHub and opened PR #18 against `main`.
+- Confirmed GitHub CLI authentication for account `RGAlvaro` with `repo` and `workflow` scopes before PR operations.
+- Waited for GitHub Actions `Verify` run `34324881133` on PR #18 after the initial push.
+
+Validation:
+- command: `gh auth status`: PASS — authenticated as `RGAlvaro` with `repo` and `workflow` scopes.
+- command: `git push -u origin agent/spec-313-cross-browser-a11y`: PASS.
+- command: `gh pr create --repo RGAlvaro/opdesk --base main --head agent/spec-313-cross-browser-a11y`: PASS — opened PR #18.
+- command: `gh pr checks 18 --repo RGAlvaro/opdesk --watch`: PASS for run `34324881133` — `verify` passed in 1m52s and `e2e` passed in 2m49s before this PR evidence memory commit.
+
+Review:
+- decision: APPROVED before PR creation; PR remains open pending merge.
+
+Known gaps:
+- Final GitHub Actions run after this PR evidence memory commit still needs to pass before merge.
+
 ### 2026-09-07 — SPEC-313 — Cross-browser and accessibility E2E reviewed
 
 Role: Review agent
 Branch: agent/spec-313-cross-browser-a11y
-Commit/PR: commit `66c3610`, PR pending
+Commit/PR: commit `66c3610`, PR #18
 Status: Reviewed
 
 Summary:
@@ -68,7 +92,7 @@ Known gaps:
 
 Role: Ingeniero de software
 Branch: agent/spec-313-cross-browser-a11y
-Commit/PR: commit `66c3610`, PR pending
+Commit/PR: commit `66c3610`, PR #18
 Status: Implemented
 
 Summary:
@@ -98,7 +122,7 @@ Known gaps:
 
 Role: Arquitecto de specs
 Branch: agent/spec-313-cross-browser-a11y
-Commit/PR: commit `66c3610`, PR pending
+Commit/PR: commit `66c3610`, PR #18
 Status: Ready
 
 Summary:
