@@ -35,29 +35,55 @@ Known gaps:
 
 ## Entries
 
+### 2026-09-09 — SPEC-313 — Merged to main
+
+Role: Ingeniero de software
+Branch: main
+Commit/PR: PR #18, merge `8006844`
+Status: Merged
+
+Summary:
+- Merged PR #18 into `main` with the merge strategy after final PR checks passed.
+- Pulled `main` locally to merge commit `8006844`.
+- Updated project memory so the next handoff moves to `SPEC-315`.
+
+Validation:
+- command: `gh pr view 18 --repo RGAlvaro/opdesk --json mergeStateStatus,statusCheckRollup,url,headRefOid`: PASS before merge — merge state `CLEAN`, `verify` and `e2e` successful on head `971da56`.
+- command: `gh pr merge 18 --repo RGAlvaro/opdesk --merge --delete-branch`: PASS.
+- command: `git switch main`: PASS.
+- command: `git pull --ff-only`: PASS — fast-forwarded `main` to merge commit `8006844`.
+- command: GitHub Actions `Verify` run `34325273247`: PASS before merge — `verify` passed in 1m57s and `e2e` passed in 2m52s.
+
+Review:
+- decision: APPROVED before merge
+
+Known gaps:
+- None for `SPEC-313` merge handoff. Visual snapshots remain outside `SPEC-313` by design.
+
 ### 2026-09-09 — SPEC-313 — PR opened and GitHub Actions passed
 
 Role: Ingeniero de software
 Branch: agent/spec-313-cross-browser-a11y
-Commit/PR: PR #18, commit `1f8800e`, prior GitHub Actions run `34324881133`
-Status: PR open
+Commit/PR: PR #18, commit `971da56`, GitHub Actions runs `34324881133` and `34325273247`
+Status: PR merged
 
 Summary:
 - Pushed `agent/spec-313-cross-browser-a11y` to GitHub and opened PR #18 against `main`.
 - Confirmed GitHub CLI authentication for account `RGAlvaro` with `repo` and `workflow` scopes before PR operations.
-- Waited for GitHub Actions `Verify` run `34324881133` on PR #18 after the initial push.
+- Waited for GitHub Actions `Verify` run `34324881133` on PR #18 after the initial push, then pushed PR evidence commit `971da56` and waited for final run `34325273247`.
 
 Validation:
 - command: `gh auth status`: PASS — authenticated as `RGAlvaro` with `repo` and `workflow` scopes.
 - command: `git push -u origin agent/spec-313-cross-browser-a11y`: PASS.
 - command: `gh pr create --repo RGAlvaro/opdesk --base main --head agent/spec-313-cross-browser-a11y`: PASS — opened PR #18.
 - command: `gh pr checks 18 --repo RGAlvaro/opdesk --watch`: PASS for run `34324881133` — `verify` passed in 1m52s and `e2e` passed in 2m49s before this PR evidence memory commit.
+- command: `gh pr checks 18 --repo RGAlvaro/opdesk --watch`: PASS for final run `34325273247` — `verify` passed in 1m57s and `e2e` passed in 2m52s on PR head `971da56`.
 
 Review:
-- decision: APPROVED before PR creation; PR remains open pending merge.
+- decision: APPROVED before PR creation; PR merged after final checks.
 
 Known gaps:
-- Final GitHub Actions run after this PR evidence memory commit still needs to pass before merge.
+- None for PR validation.
 
 ### 2026-09-07 — SPEC-313 — Cross-browser and accessibility E2E reviewed
 
