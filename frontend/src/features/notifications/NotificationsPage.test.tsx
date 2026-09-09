@@ -1,7 +1,7 @@
 // Frontend route tests for the SPEC-306 notification inbox.
 
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { render, screen, waitFor } from "@testing-library/react";
+import { act, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { ReactNode } from "react";
 import { MemoryRouter } from "react-router-dom";
@@ -37,6 +37,44 @@ const notification = {
   read_at: null,
   created_at: "2026-08-14T10:00:00Z",
 };
+
+class MockWebSocket {
+  static instances: MockWebSocket[] = [];
+  static OPEN = 1;
+  readyState = MockWebSocket.OPEN;
+  listeners = new Map<string, Array<(event: MessageEvent | Event) => void>>();
+
+  /** Track each notification socket and simulate a successful connection. */
+  constructor(readonly url: string) {
+    MockWebSocket.instances.push(this);
+    queueMicrotask(() => this.emit("open", new Event("open")));
+  }
+
+  /** Register browser WebSocket listeners used by the notification hook. */
+  addEventListener(
+    type: string,
+    listener: (event: MessageEvent | Event) => void,
+  ) {
+    this.listeners.set(type, [...(this.listeners.get(type) ?? []), listener]);
+  }
+
+  /** Notification sockets are receive-only in this spec. */
+  send() {
+    return undefined;
+  }
+
+  /** Close the socket and let tests emit close explicitly when needed. */
+  close() {
+    this.readyState = 3;
+  }
+
+  /** Emit one WebSocket event to registered listeners. */
+  emit(type: string, event: MessageEvent | Event) {
+    for (const listener of this.listeners.get(type) ?? []) {
+      listener(event);
+    }
+  }
+}
 
 /** Build a JSON fetch response for mocked backend calls. */
 function jsonResponse(body: unknown, status = 200) {
@@ -79,9 +117,12 @@ function renderRoute(initialPath: string) {
 
 beforeEach(() => {
   vi.restoreAllMocks();
+  MockWebSocket.instances = [];
+  vi.stubGlobal("WebSocket", MockWebSocket);
 });
 
 afterEach(() => {
+  vi.useRealTimers();
   vi.unstubAllGlobals();
 });
 
@@ -146,5 +187,84 @@ describe("SPEC-306 notification inbox UI", () => {
     expect(
       await screen.findByRole("heading", { name: "My invitations" }),
     ).toBeInTheDocument();
+  });
+
+  it("updates the badge and inbox when a real-time notification arrives", async () => {
+    let unreadCount = 0;
+    const fetchMock = vi.fn((input: RequestInfo | URL) => {
+      const url = String(input);
+      if (url.endsWith("/api/v1/users/me")) {
+        return Promise.resolve(jsonResponse(user));
+      }
+      if (url.endsWith("/api/v1/notifications/unread-count")) {
+        return Promise.resolve(jsonResponse({ unread_count: unreadCount }));
+      }
+      if (url.endsWith("/api/v1/notifications")) {
+        return Promise.resolve(jsonResponse(page([notification])));
+      }
+      return Promise.resolve(jsonResponse({ items: [] }));
+    });
+    vi.stubGlobal("fetch", fetchMock);
+
+    renderRoute("/app/notifications");
+
+    expect(
+      await screen.findByRole("heading", { name: "Notifications" }),
+    ).toBeInTheDocument();
+    await waitFor(() => expect(MockWebSocket.instances).toHaveLength(1));
+    expect(MockWebSocket.instances[0].listeners.get("message")).toHaveLength(1);
+
+    unreadCount = 1;
+    await act(async () => {
+      MockWebSocket.instances[0].emit(
+        "message",
+        new MessageEvent("message", {
+          data: JSON.stringify({
+            type: "notification.created",
+            notification,
+            unread_count: 1,
+          }),
+        }),
+      );
+    });
+
+    expect(await screen.findByText("Organization invitation")).toBeVisible();
+    expect(await screen.findByText("1")).toBeVisible();
+    expect(MockWebSocket.instances[0].url).toContain(
+      "/api/v1/notifications/ws",
+    );
+  });
+
+  it("invalidates REST state and reconnects after a socket close", async () => {
+    const fetchMock = vi.fn((input: RequestInfo | URL) => {
+      const url = String(input);
+      if (url.endsWith("/api/v1/users/me")) {
+        return Promise.resolve(jsonResponse(user));
+      }
+      if (url.endsWith("/api/v1/notifications/unread-count")) {
+        return Promise.resolve(jsonResponse({ unread_count: 0 }));
+      }
+      if (url.endsWith("/api/v1/notifications")) {
+        return Promise.resolve(jsonResponse(page([])));
+      }
+      return Promise.resolve(jsonResponse({ items: [] }));
+    });
+    vi.stubGlobal("fetch", fetchMock);
+
+    renderRoute("/app/notifications");
+
+    await waitFor(() => expect(MockWebSocket.instances).toHaveLength(1));
+    vi.useFakeTimers();
+    await act(async () => {
+      MockWebSocket.instances[0].emit("close", new Event("close"));
+      await vi.advanceTimersByTimeAsync(5_000);
+    });
+
+    expect(MockWebSocket.instances).toHaveLength(2);
+    expect(
+      fetchMock.mock.calls.filter(([url]) =>
+        String(url).endsWith("/api/v1/notifications/unread-count"),
+      ).length,
+    ).toBeGreaterThanOrEqual(2);
   });
 });

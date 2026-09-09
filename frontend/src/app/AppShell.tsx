@@ -21,7 +21,10 @@ import {
 import { ReactNode } from "react";
 
 import { useLogout, useSession } from "../features/auth/session";
-import { useUnreadNotificationCount } from "../features/notifications/api";
+import {
+  useNotificationRealtime,
+  useUnreadNotificationCount,
+} from "../features/notifications/api";
 import { useProject } from "../features/projects/api";
 import { useTask } from "../features/tasks/api";
 
@@ -153,6 +156,7 @@ export function AppShell() {
   const project = useProject(routeProjectId);
   const task = useTask(routeTaskId);
   const unreadNotifications = useUnreadNotificationCount();
+  useNotificationRealtime(Boolean(user));
   const activeSection = activePrimarySection(location.pathname);
   const isClient = user?.account_type === "client";
   const activeProjectId = routeProjectId ?? task.data?.project_id;

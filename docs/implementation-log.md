@@ -35,6 +35,36 @@ Known gaps:
 
 ## Entries
 
+### 2026-09-09 — SPEC-315 — Real-time notification inbox implemented
+
+Role: Ingeniero de software
+Branch: agent/spec-315-realtime-notifications
+Commit/PR: Pending
+Status: Implemented
+
+Summary:
+- Added authenticated `WS /api/v1/notifications/ws` support with in-process recipient-scoped connection tracking.
+- Registered a notification event publisher so persisted notification create/read/mark-all-read changes emit best-effort real-time events with REST-compatible payloads and unread counts.
+- Connected the authenticated app shell to a notification WebSocket hook that patches React Query unread/list caches, avoids duplicate list entries, invalidates REST state for recovery, and keeps a 30s polling fallback.
+- Updated chat frontend tests to account for the new app-wide notification socket.
+- Marked `SPEC-315` Implemented in the spec and spec index.
+
+Validation:
+- command: `cd backend && poetry run pytest tests/test_in_app_notifications_api.py`: PASS — 6 notification API/WebSocket tests passed.
+- command: `cd frontend && npm run test -- NotificationsPage.test.tsx`: PASS — 3 notification UI/WebSocket tests passed.
+- command: `make test-backend`: PASS — 109 selected backend tests passed, 2 DB tests deselected.
+- command: `make test-frontend`: PASS — 65 frontend tests passed.
+- command: `make lint`: PASS.
+- command: `make format-check`: PASS.
+- command: `make typecheck`: PASS.
+- command: elevated `make smoke`: PASS — Docker/local backend health, Redis `PONG`, worker, Adminer, and Vite frontend checks passed.
+
+Review:
+- decision: N/A
+
+Known gaps:
+- Multi-backend Redis pub/sub fan-out remains outside V1 by spec and must be added before horizontal backend scaling.
+
 ### 2026-09-09 — SPEC-313 — Merged to main
 
 Role: Ingeniero de software

@@ -282,10 +282,18 @@ describe("SPEC-304 organization chat UI", () => {
     );
 
     await waitFor(() => {
-      expect(MockWebSocket.instances).toHaveLength(1);
+      expect(
+        MockWebSocket.instances.some((socket) =>
+          socket.url.includes("/api/v1/chat/ws"),
+        ),
+      ).toBe(true);
     });
+    const chatSocket = MockWebSocket.instances.find((socket) =>
+      socket.url.includes("/api/v1/chat/ws"),
+    );
+    expect(chatSocket).toBeDefined();
     await waitFor(() => {
-      expect(MockWebSocket.instances[0].sent[0]).toContain("subscribe");
+      expect(chatSocket?.sent[0]).toContain("subscribe");
     });
 
     await user.type(
@@ -294,7 +302,7 @@ describe("SPEC-304 organization chat UI", () => {
     );
     await user.click(screen.getByRole("button", { name: "Send" }));
 
-    const sentFrames = MockWebSocket.instances[0].sent;
+    const sentFrames = chatSocket?.sent ?? [];
     expect(sentFrames[sentFrames.length - 1]).toContain("Hello chat");
     expect(fetchMock).toHaveBeenCalledWith(
       `/api/v1/organizations/${organizationId}/chat/direct-conversations`,
