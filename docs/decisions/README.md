@@ -47,6 +47,8 @@ ADR-009-managed-sandbox-github-cli.md
 - `ADR-010-background-jobs-and-notifications.md`
 - `ADR-011-client-accounts-and-ticket-access.md`
 - `ADR-012-websocket-chat-transport.md`
+- `ADR-013-resend-email-delivery.md`
+- `ADR-014-celery-beat-and-operational-audit.md`
 
 ## Template
 

@@ -35,6 +35,142 @@ Known gaps:
 
 ## Entries
 
+### 2026-09-09 — SPEC-313 — PR opened and GitHub Actions passed
+
+Role: Ingeniero de software
+Branch: agent/spec-313-cross-browser-a11y
+Commit/PR: PR #18, commit `1f8800e`, prior GitHub Actions run `34324881133`
+Status: PR open
+
+Summary:
+- Pushed `agent/spec-313-cross-browser-a11y` to GitHub and opened PR #18 against `main`.
+- Confirmed GitHub CLI authentication for account `RGAlvaro` with `repo` and `workflow` scopes before PR operations.
+- Waited for GitHub Actions `Verify` run `34324881133` on PR #18 after the initial push.
+
+Validation:
+- command: `gh auth status`: PASS — authenticated as `RGAlvaro` with `repo` and `workflow` scopes.
+- command: `git push -u origin agent/spec-313-cross-browser-a11y`: PASS.
+- command: `gh pr create --repo RGAlvaro/opdesk --base main --head agent/spec-313-cross-browser-a11y`: PASS — opened PR #18.
+- command: `gh pr checks 18 --repo RGAlvaro/opdesk --watch`: PASS for run `34324881133` — `verify` passed in 1m52s and `e2e` passed in 2m49s before this PR evidence memory commit.
+
+Review:
+- decision: APPROVED before PR creation; PR remains open pending merge.
+
+Known gaps:
+- Final GitHub Actions run after this PR evidence memory commit still needs to pass before merge.
+
+### 2026-09-07 — SPEC-313 — Cross-browser and accessibility E2E reviewed
+
+Role: Review agent
+Branch: agent/spec-313-cross-browser-a11y
+Commit/PR: commit `66c3610`, PR #18
+Status: Reviewed
+
+Summary:
+- Reviewed `SPEC-313` implementation against cross-browser Playwright project coverage, accessibility scan coverage, harness documentation, CI artifact behavior, dependency changes, and project memory.
+- Confirmed Firefox/WebKit smoke coverage exercises public routes, protected-route redirect, signup/login/logout, app shell, organization creation, project visibility, and post-logout protection.
+- Confirmed Chromium accessibility checks scan public home, changelog, login, authenticated app shell, notifications inbox, project task list, and client ticket shell with route-specific serious/critical violation output.
+- Confirmed existing Chromium desktop full suite and Chromium mobile critical path remain configured.
+
+Validation:
+- command: `make memory-check SPEC=SPEC-313`: PASS.
+- command: `git diff --check`: PASS.
+- command: `cd frontend && npm run typecheck`: PASS.
+- command: `cd frontend && npm run format:check`: PASS.
+- command: `cd frontend && npm run lint`: PASS.
+- command: prior implementation `make test-e2e`: PASS — reviewed evidence recorded 11 passed and 1 expected skip across Chromium desktop, Chromium mobile, Firefox smoke, WebKit smoke, and accessibility scans.
+- command: prior implementation `make test-frontend`: PASS — 63 frontend tests passed.
+- command: prior implementation elevated `make smoke`: PASS.
+
+Review:
+- decision: APPROVED
+
+Known gaps:
+- Visual snapshot testing remains outside `SPEC-313` by design.
+
+### 2026-09-07 — SPEC-313 — Cross-browser and accessibility E2E implemented
+
+Role: Ingeniero de software
+Branch: agent/spec-313-cross-browser-a11y
+Commit/PR: commit `66c3610`, PR #18
+Status: Implemented
+
+Summary:
+- Added `@axe-core/playwright` as a frontend dev dependency for rendered-page accessibility scans.
+- Extended Playwright projects with `firefox-smoke` and `webkit-smoke` while keeping Chromium desktop as the full-suite project and Chromium mobile on the critical path.
+- Added Firefox/WebKit smoke coverage for public home, changelog, protected-route redirect, signup/logout/login, organization creation, project visibility, and post-logout route protection.
+- Added Chromium accessibility coverage for public home, changelog, login, authenticated app shell, notifications inbox, project task list, and client ticket shell, failing on serious/critical WCAG 2 A/AA violations with route-specific context.
+- Updated E2E helpers for project client setup and updated harness documentation for the expanded browser/accessibility behavior.
+
+Validation:
+- command: `make test-e2e`: PASS — Docker/local Compose build, backend Alembic upgrade/check, and Playwright completed with 11 passed and 1 expected skip across Chromium desktop, Chromium mobile, Firefox smoke, WebKit smoke, and accessibility scans.
+- command: `make test-frontend`: PASS — 63 frontend tests passed.
+- command: `make lint`: PASS — backend Ruff and frontend ESLint passed.
+- command: `make format-check`: PASS — backend Ruff format check and frontend Prettier check passed.
+- command: `make typecheck`: PASS — backend mypy and frontend `tsc -b` passed.
+- command: elevated `make smoke`: PASS — backend health, Redis `PONG`, worker running, Adminer, and Vite frontend checks passed.
+- command: `make memory-check SPEC=SPEC-313`: PASS.
+- command: `git diff --check`: PASS.
+
+Review:
+- decision: N/A
+
+Known gaps:
+- `SPEC-313` implementation needs review approval. Visual snapshots remain outside this spec by design.
+
+### 2026-09-07 — SPEC-314/SPEC-316 — Notification delivery and scheduler decisions resolved
+
+Role: Arquitecto de specs
+Branch: agent/spec-313-cross-browser-a11y
+Commit/PR: commit `66c3610`, PR #18
+Status: Ready
+
+Summary:
+- Moved `SPEC-314` to Ready with Resend as the production email provider, email notifications enabled by default, all enumerated first-slice events eligible for email, and delivery audit retained indefinitely until manual deletion.
+- Moved `SPEC-316` to Ready with Celery beat as scheduler, first-job order set to scheduler heartbeat/health audit, external delivery retry sweep, expired invitation state maintenance, and stale ticket assignment request reminders.
+- Added owner/admin operational audit UI and API requirements to `SPEC-316`.
+- Added `ADR-013` for Resend email delivery and `ADR-014` for Celery beat plus operational audit decisions.
+- Updated `specs/README.md` and `docs/project-state.md` so all four planned specs are Ready and dependency-aware next work is clear.
+
+Validation:
+- command: `git diff --check`: PASS.
+- command: `make memory-check SPEC=SPEC-314`: PASS.
+- command: `make memory-check SPEC=SPEC-316`: PASS.
+
+Review:
+- decision: N/A
+
+Known gaps:
+- None for spec readiness; implementation remains pending.
+
+### 2026-09-07 — SPEC-313/SPEC-314/SPEC-315/SPEC-316 — Known gaps converted into planned specs
+
+Role: Arquitecto de specs
+Branch: main
+Commit/PR: Pending
+Status: Planned
+
+Summary:
+- Added `SPEC-313` as Ready for cross-browser Playwright smoke coverage and automated accessibility checks.
+- Added `SPEC-314` as Draft for external email notification delivery, provider adapter, delivery audit, and production configuration.
+- Added `SPEC-315` as Ready for real-time notification inbox updates over WebSockets with REST recovery and polling fallback.
+- Added `SPEC-316` as Draft for scheduled jobs, scheduler service topology, and persistent operational audit.
+- Updated `specs/README.md` and `docs/project-state.md` with new spec routing, dependencies, readiness state, known gaps, and next likely work.
+
+Validation:
+- command: `git diff --check`: PASS.
+- command: `make memory-check SPEC=SPEC-313`: PASS.
+- command: `make memory-check SPEC=SPEC-314`: PASS.
+- command: `make memory-check SPEC=SPEC-315`: PASS.
+- command: `make memory-check SPEC=SPEC-316`: PASS.
+
+Review:
+- decision: N/A
+
+Known gaps:
+- `SPEC-314` needs product/operations decisions for production email provider, user preference defaults, first emailed event types, and delivery audit retention.
+- `SPEC-316` needs decisions for first scheduled jobs, notification/audit retention, audit UI scope, and final scheduler mechanism.
+
 ### 2026-08-18 — SPEC-307/SPEC-305/SPEC-304 — Collaboration release deployed to production
 
 Role: Ingeniero de software
