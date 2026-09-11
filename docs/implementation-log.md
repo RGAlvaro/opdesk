@@ -35,6 +35,60 @@ Known gaps:
 
 ## Entries
 
+### 2026-09-11 — SPEC-314 — External notification delivery reviewed
+
+Role: Review agent
+Branch: agent/spec-314-external-notifications
+Commit/PR: Pending
+Status: Reviewed
+
+Summary:
+- Reviewed `SPEC-314` implementation against delivery eligibility, Resend/console provider behavior, audit persistence, retry/suppression states, idempotency, production configuration, and memory requirements.
+- Tightened default delivery logging so worker diagnostics include safe ids/status/error fields without logging recipient email, subject, provider payloads, tokens, or message bodies.
+
+Validation:
+- command: `make test-backend`: PASS — 115 selected backend tests passed and 2 DB tests were deselected.
+- command: `make lint`: PASS.
+- command: `make format-check`: PASS.
+- command: `make typecheck`: PASS.
+- command: `make memory-check SPEC=SPEC-314`: PASS.
+- command: `git diff --check`: PASS.
+- command: `make migrations-check`: FAIL in current environment — elevated rerun could not connect to PostgreSQL at `127.0.0.1:5432`; prior implementation validation passed this command before the logging-only review adjustment.
+- command: `make prod-config`: FAIL in current environment — elevated rerun could not find `docker` in this WSL distro; prior implementation validation passed this command before the logging-only review adjustment.
+
+Review:
+- decision: APPROVED
+
+Known gaps:
+- No blocking `SPEC-314` gaps. Scheduled retry sweeps through Celery beat remain in `SPEC-316`; manual delivery-audit cleanup remains future scope per `SPEC-314` retention decision.
+
+### 2026-09-09 — SPEC-314 — External notification delivery implemented
+
+Role: Ingeniero de software
+Branch: agent/spec-314-external-notifications
+Commit/PR: Pending
+Status: Implemented
+
+Summary:
+- Added `notification_deliveries` audit persistence with migration `0013`, email channel/status enums, retry indexes, and notification/channel idempotency.
+- Added console and Resend email providers, safe plain-text email composition, post-commit delivery job enqueueing, bounded retry state, suppression for inactive/missing recipients, and Celery tasks for one delivery plus due-delivery sweeps.
+- Added `ticket.created` notification fan-out for client-created tickets, production/local email env wiring, deployment docs, and network-free backend tests for adapter, service, worker, retry, suppression, and idempotency behavior.
+- Brief future-spec note: if OpsDesk runs multiple backend replicas, notification WebSocket fan-out should use Redis pub/sub or an equivalent shared broker so events from one backend reach sockets connected to another backend.
+
+Validation:
+- command: `make test-backend`: PASS — 115 selected backend tests passed and 2 DB tests were deselected.
+- command: `make migrations-check`: PASS — Alembic upgraded PostgreSQL through `0013` and reported no new upgrade operations.
+- command: `make lint`: PASS.
+- command: `make format-check`: PASS.
+- command: `make typecheck`: PASS.
+- command: `make prod-config`: PASS — production Compose renders backend/worker Resend env wiring with placeholders.
+
+Review:
+- decision: N/A — implementation pending review.
+
+Known gaps:
+- No `SPEC-314` implementation gaps known before review. Scheduled retry sweeps through Celery beat remain in `SPEC-316`; manual delivery-audit cleanup remains future scope per `SPEC-314` retention decision.
+
 ### 2026-09-09 — SPEC-313 — Merged to main
 
 Role: Ingeniero de software
