@@ -35,6 +35,31 @@ Known gaps:
 
 ## Entries
 
+### 2026-09-11 — SPEC-314 — Merged to main
+
+Role: Ingeniero de software
+Branch: main
+Commit/PR: PR #19, merge `70fcbee`
+Status: Merged
+
+Summary:
+- Merged PR #19 into `main` with the merge strategy after final PR checks passed.
+- Pulled `main` locally to merge commit `70fcbee`.
+- Updated project memory so the next handoff moves to `SPEC-315`.
+
+Validation:
+- command: `gh pr view 19 --repo RGAlvaro/opdesk --json mergeStateStatus,statusCheckRollup,url,headRefOid,baseRefName,headRefName`: PASS before merge — merge state `CLEAN`, `verify` and `e2e` successful on head `a05b2f6`.
+- command: `gh pr merge 19 --repo RGAlvaro/opdesk --merge --delete-branch`: PASS.
+- command: `git switch main`: PASS.
+- command: `git pull --ff-only`: PASS — fast-forwarded `main` to merge commit `70fcbee`.
+- command: GitHub Actions `Verify` run `34577119234`: PASS before merge — `verify` passed in 1m54s and `e2e` passed in 3m10s.
+
+Review:
+- decision: APPROVED before merge.
+
+Known gaps:
+- None for `SPEC-314` merge handoff. Scheduled retry sweeps through Celery beat remain in `SPEC-316`; manual delivery-audit cleanup remains future scope per `SPEC-314`.
+
 ### 2026-09-11 — SPEC-314 — PR opened and GitHub Actions passed
 
 Role: Ingeniero de software
