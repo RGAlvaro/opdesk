@@ -1,8 +1,8 @@
 # SPEC-314 — External Notification Delivery
 
-Status: Ready
+Status: Implemented
 Owner: Arquitecto de specs
-Last updated: 2026-09-07
+Last updated: 2026-09-09
 
 ## Scope And Required Context
 

@@ -2,10 +2,16 @@
 
 import uuid
 
-from sqlalchemy import func, select
+from sqlalchemy import func, or_, select
 from sqlalchemy.orm import Session
 
-from app.models.notification import Notification, NotificationType
+from app.models.notification import (
+    Notification,
+    NotificationDelivery,
+    NotificationDeliveryChannel,
+    NotificationDeliveryStatus,
+    NotificationType,
+)
 
 
 class NotificationRepository:
@@ -92,5 +98,47 @@ class NotificationRepository:
                 Notification.resource_type == resource_type,
                 Notification.resource_id == resource_id,
                 Notification.read_at.is_(None),
+            )
+        )
+
+    def add_delivery(self, delivery: NotificationDelivery) -> NotificationDelivery:
+        """Stage and flush one external delivery audit row."""
+        self.db.add(delivery)
+        self.db.flush()
+        return delivery
+
+    def get_delivery(self, delivery_id: uuid.UUID) -> NotificationDelivery | None:
+        """Load one delivery audit row by public identifier."""
+        return self.db.get(NotificationDelivery, delivery_id)
+
+    def get_delivery_for_notification(
+        self, notification_id: uuid.UUID, channel: NotificationDeliveryChannel
+    ) -> NotificationDelivery | None:
+        """Find the channel delivery audit row for one notification."""
+        return self.db.scalar(
+            select(NotificationDelivery).where(
+                NotificationDelivery.notification_id == notification_id,
+                NotificationDelivery.channel == channel,
+            )
+        )
+
+    def get_notification(self, notification_id: uuid.UUID) -> Notification | None:
+        """Load one notification by id for worker-side delivery."""
+        return self.db.get(Notification, notification_id)
+
+    def list_due_deliveries(self, limit: int) -> list[NotificationDelivery]:
+        """List pending deliveries ready for worker retry sweeps."""
+        return list(
+            self.db.scalars(
+                select(NotificationDelivery)
+                .where(
+                    NotificationDelivery.status == NotificationDeliveryStatus.PENDING,
+                    or_(
+                        NotificationDelivery.next_attempt_at.is_(None),
+                        NotificationDelivery.next_attempt_at <= func.now(),
+                    ),
+                )
+                .order_by(NotificationDelivery.created_at.asc(), NotificationDelivery.id.asc())
+                .limit(limit)
             )
         )

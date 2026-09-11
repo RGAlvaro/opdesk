@@ -7,7 +7,13 @@ from app.models.chat import (
     ChatConversationType,
     ChatMessage,
 )
-from app.models.notification import Notification, NotificationType
+from app.models.notification import (
+    Notification,
+    NotificationDelivery,
+    NotificationDeliveryChannel,
+    NotificationDeliveryStatus,
+    NotificationType,
+)
 from app.models.organization import (
     Invitation,
     InvitationScope,
@@ -44,6 +50,9 @@ __all__ = [
     "InvitationScope",
     "InvitationStatus",
     "Notification",
+    "NotificationDelivery",
+    "NotificationDeliveryChannel",
+    "NotificationDeliveryStatus",
     "NotificationType",
     "Organization",
     "OrganizationMembership",

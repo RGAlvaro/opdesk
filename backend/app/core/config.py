@@ -26,6 +26,12 @@ class Settings(BaseSettings):
     celery_result_backend: str = Field(default="redis://localhost:6379/1")
     celery_task_always_eager: bool = Field(default=False)
     celery_task_eager_propagates: bool = Field(default=True)
+    email_notifications_enabled: bool = Field(default=True)
+    email_delivery_provider: Literal["console", "resend"] = Field(default="console")
+    public_app_url: str = Field(default="http://localhost:5173")
+    resend_api_key: str | None = Field(default=None)
+    resend_from_email: str | None = Field(default=None)
+    email_provider_timeout_seconds: float = Field(default=5.0)
 
     model_config = SettingsConfigDict(
         env_file=".env",
