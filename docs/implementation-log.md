@@ -35,6 +35,109 @@ Known gaps:
 
 ## Entries
 
+### 2026-09-11 — SPEC-314 — Merged to main
+
+Role: Ingeniero de software
+Branch: main
+Commit/PR: PR #19, merge `70fcbee`
+Status: Merged
+
+Summary:
+- Merged PR #19 into `main` with the merge strategy after final PR checks passed.
+- Pulled `main` locally to merge commit `70fcbee`.
+- Updated project memory so the next handoff moves to `SPEC-315`.
+
+Validation:
+- command: `gh pr view 19 --repo RGAlvaro/opdesk --json mergeStateStatus,statusCheckRollup,url,headRefOid,baseRefName,headRefName`: PASS before merge — merge state `CLEAN`, `verify` and `e2e` successful on head `a05b2f6`.
+- command: `gh pr merge 19 --repo RGAlvaro/opdesk --merge --delete-branch`: PASS.
+- command: `git switch main`: PASS.
+- command: `git pull --ff-only`: PASS — fast-forwarded `main` to merge commit `70fcbee`.
+- command: GitHub Actions `Verify` run `34577119234`: PASS before merge — `verify` passed in 1m54s and `e2e` passed in 3m10s.
+
+Review:
+- decision: APPROVED before merge.
+
+Known gaps:
+- None for `SPEC-314` merge handoff. Scheduled retry sweeps through Celery beat remain in `SPEC-316`; manual delivery-audit cleanup remains future scope per `SPEC-314`.
+
+### 2026-09-11 — SPEC-314 — PR opened and GitHub Actions passed
+
+Role: Ingeniero de software
+Branch: agent/spec-314-external-notifications
+Commit/PR: PR #19, commit `7e4540b`, GitHub Actions run `34576823985`
+Status: Reviewed
+
+Summary:
+- Committed reviewed `SPEC-314` implementation and opened PR #19 against `main`.
+- Confirmed GitHub CLI authentication for account `RGAlvaro` with `repo` and `workflow` scopes before PR operations.
+- Waited for GitHub Actions on PR #19; both required jobs passed on run `34576823985`.
+
+Validation:
+- command: `gh auth status`: PASS — authenticated as `RGAlvaro` with `repo` and `workflow` scopes.
+- command: `git push -u origin agent/spec-314-external-notifications`: PASS.
+- command: `gh pr create --repo RGAlvaro/opdesk --base main --head agent/spec-314-external-notifications`: PASS — opened PR #19.
+- command: `gh pr checks 19 --repo RGAlvaro/opdesk --watch`: PASS — `verify` passed in 2m1s and `e2e` passed in 2m41s on run `34576823985`.
+
+Review:
+- decision: APPROVED before PR creation.
+
+Known gaps:
+- None for PR validation. Scheduled retry sweeps through Celery beat remain in `SPEC-316`; manual delivery-audit cleanup remains future scope per `SPEC-314`.
+
+### 2026-09-11 — SPEC-314 — External notification delivery reviewed
+
+Role: Review agent
+Branch: agent/spec-314-external-notifications
+Commit/PR: Pending
+Status: Reviewed
+
+Summary:
+- Reviewed `SPEC-314` implementation against delivery eligibility, Resend/console provider behavior, audit persistence, retry/suppression states, idempotency, production configuration, and memory requirements.
+- Tightened default delivery logging so worker diagnostics include safe ids/status/error fields without logging recipient email, subject, provider payloads, tokens, or message bodies.
+
+Validation:
+- command: `make test-backend`: PASS — 115 selected backend tests passed and 2 DB tests were deselected.
+- command: `make lint`: PASS.
+- command: `make format-check`: PASS.
+- command: `make typecheck`: PASS.
+- command: `make memory-check SPEC=SPEC-314`: PASS.
+- command: `git diff --check`: PASS.
+- command: `make migrations-check`: FAIL in current environment — elevated rerun could not connect to PostgreSQL at `127.0.0.1:5432`; prior implementation validation passed this command before the logging-only review adjustment.
+- command: `make prod-config`: FAIL in current environment — elevated rerun could not find `docker` in this WSL distro; prior implementation validation passed this command before the logging-only review adjustment.
+
+Review:
+- decision: APPROVED
+
+Known gaps:
+- No blocking `SPEC-314` gaps. Scheduled retry sweeps through Celery beat remain in `SPEC-316`; manual delivery-audit cleanup remains future scope per `SPEC-314` retention decision.
+
+### 2026-09-09 — SPEC-314 — External notification delivery implemented
+
+Role: Ingeniero de software
+Branch: agent/spec-314-external-notifications
+Commit/PR: Pending
+Status: Implemented
+
+Summary:
+- Added `notification_deliveries` audit persistence with migration `0013`, email channel/status enums, retry indexes, and notification/channel idempotency.
+- Added console and Resend email providers, safe plain-text email composition, post-commit delivery job enqueueing, bounded retry state, suppression for inactive/missing recipients, and Celery tasks for one delivery plus due-delivery sweeps.
+- Added `ticket.created` notification fan-out for client-created tickets, production/local email env wiring, deployment docs, and network-free backend tests for adapter, service, worker, retry, suppression, and idempotency behavior.
+- Brief future-spec note: if OpsDesk runs multiple backend replicas, notification WebSocket fan-out should use Redis pub/sub or an equivalent shared broker so events from one backend reach sockets connected to another backend.
+
+Validation:
+- command: `make test-backend`: PASS — 115 selected backend tests passed and 2 DB tests were deselected.
+- command: `make migrations-check`: PASS — Alembic upgraded PostgreSQL through `0013` and reported no new upgrade operations.
+- command: `make lint`: PASS.
+- command: `make format-check`: PASS.
+- command: `make typecheck`: PASS.
+- command: `make prod-config`: PASS — production Compose renders backend/worker Resend env wiring with placeholders.
+
+Review:
+- decision: N/A — implementation pending review.
+
+Known gaps:
+- No `SPEC-314` implementation gaps known before review. Scheduled retry sweeps through Celery beat remain in `SPEC-316`; manual delivery-audit cleanup remains future scope per `SPEC-314` retention decision.
+
 ### 2026-09-09 — SPEC-315 — Real-time notification inbox implemented
 
 Role: Ingeniero de software

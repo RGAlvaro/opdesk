@@ -143,6 +143,9 @@ class ClientTicketService:
             created_by_id=actor.id,
         )
         self.tasks.add(ticket)
+        recipients = set(self.client_tickets.list_owner_admin_user_ids(ticket.organization_id))
+        recipients.update(self.projects.list_member_user_ids(ticket.project_id))
+        NotificationService(self.db).notify_ticket_created(actor.id, ticket, recipients)
         self.db.commit()
         self.db.refresh(ticket)
         return ticket

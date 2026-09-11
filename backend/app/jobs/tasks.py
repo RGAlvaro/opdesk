@@ -9,6 +9,7 @@ from app.notifications.assignment import (
     TaskAssignmentNotificationPayload,
     process_task_assignment_notification,
 )
+from app.notifications.delivery import ExternalNotificationDeliveryService
 
 logger = logging.getLogger(__name__)
 
@@ -50,5 +51,53 @@ def send_task_assignment_notification(
             exc.__class__.__name__,
         )
         raise
+    finally:
+        db.close()
+
+
+@celery_app.task(  # type: ignore[untyped-decorator]
+    name="notifications.external_delivery",
+)
+def send_external_notification_delivery(delivery_id: str) -> str:
+    """Process one external notification delivery audit row."""
+    try:
+        parsed_delivery_id = uuid.UUID(delivery_id)
+    except ValueError as exc:
+        logger.warning(
+            "external_notification_delivery invalid_payload delivery_id=%s error_class=%s",
+            delivery_id,
+            exc.__class__.__name__,
+        )
+        return "invalid"
+    db = SessionLocal()
+    try:
+        result = ExternalNotificationDeliveryService(db).process_delivery(parsed_delivery_id)
+        logger.info(
+            "external_notification_delivery processed delivery_id=%s result=%s",
+            parsed_delivery_id,
+            result,
+        )
+        return result
+    except Exception as exc:
+        logger.exception(
+            "external_notification_delivery failed delivery_id=%s error_class=%s",
+            parsed_delivery_id,
+            exc.__class__.__name__,
+        )
+        raise
+    finally:
+        db.close()
+
+
+@celery_app.task(  # type: ignore[untyped-decorator]
+    name="notifications.external_delivery_due",
+)
+def process_due_external_notification_deliveries(limit: int = 100) -> int:
+    """Sweep pending external deliveries whose retry time has arrived."""
+    db = SessionLocal()
+    try:
+        processed = ExternalNotificationDeliveryService(db).process_due_deliveries(limit)
+        logger.info("external_notification_delivery due_processed count=%s", processed)
+        return processed
     finally:
         db.close()

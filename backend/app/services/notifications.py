@@ -1,5 +1,6 @@
 """Business rules for persistent in-app notification inbox behavior."""
 
+import logging
 import uuid
 from collections.abc import Callable
 from datetime import UTC, datetime
@@ -16,6 +17,8 @@ from app.models.user import User
 from app.repositories.notifications import NotificationRepository
 from app.repositories.projects import ProjectRepository
 from app.repositories.tasks import TaskRepository
+
+logger = logging.getLogger(__name__)
 
 NotificationEventPublisher = Callable[[uuid.UUID, dict[str, Any]], None]
 PendingNotificationEvent = tuple[uuid.UUID, dict[str, Any]]
@@ -222,6 +225,22 @@ class NotificationService:
                 resource_id=task.id,
             )
 
+    def notify_ticket_created(
+        self, actor_id: uuid.UUID, task: Task, recipient_ids: set[uuid.UUID]
+    ) -> None:
+        """Notify internal responders that a client-created ticket needs review."""
+        recipient_ids.discard(actor_id)
+        for recipient_id in recipient_ids:
+            self._create_once(
+                recipient_user_id=recipient_id,
+                notification_type=NotificationType.TICKET_CREATED,
+                title="New client ticket",
+                body=f"{task.title} was submitted by a client.",
+                action_url=f"/app/tickets/{task.id}",
+                resource_type="ticket",
+                resource_id=task.id,
+            )
+
     def notify_ticket_assignment_requested(
         self, actor_id: uuid.UUID, task: Task, target_user_id: uuid.UUID
     ) -> None:
@@ -289,6 +308,16 @@ class NotificationService:
                 resource_id=resource_id,
             )
         )
+        try:
+            from app.notifications.delivery import ExternalNotificationDeliveryService
+
+            ExternalNotificationDeliveryService(self.db).enqueue_email_delivery(notification)
+        except Exception as exc:
+            logger.exception(
+                "external_notification_delivery prepare_failed notification_id=%s error_class=%s",
+                notification.id,
+                exc.__class__.__name__,
+            )
         self._publish_created(notification, self.notifications.unread_count(recipient_user_id))
         return notification
 

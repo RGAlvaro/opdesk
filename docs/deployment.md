@@ -44,9 +44,19 @@ Required production values:
 | `PROD_HTTPS_PORT` | Host HTTPS port, normally `443`. |
 | `CELERY_BROKER_URL` | Redis broker URL, defaults to `redis://redis:6379/0`. |
 | `CELERY_RESULT_BACKEND` | Redis result backend URL, defaults to `redis://redis:6379/1`. |
+| `PROD_PUBLIC_APP_URL` | Public OpsDesk origin used for absolute links in transactional email. |
+| `PROD_EMAIL_DELIVERY_PROVIDER` | Production email provider; defaults to `resend`. |
+| `PROD_RESEND_API_KEY` | Resend API key for transactional notification delivery. |
+| `PROD_RESEND_FROM_EMAIL` | Verified sender address, for example `OpsDesk <notifications@example.com>`. |
+| `EMAIL_NOTIFICATIONS_ENABLED` | Optional kill switch; defaults to `true`. |
+| `EMAIL_PROVIDER_TIMEOUT_SECONDS` | Optional provider request timeout; defaults to `5`. |
 
 Production Compose forces `APP_ENV=production`, `DEBUG=false`, `AUTH_COOKIE_SECURE=true`, and
 keeps PostgreSQL and Redis off public host ports.
+
+Local and CI environments default to `EMAIL_DELIVERY_PROVIDER=console`, which records delivery
+success without contacting Resend. Production uses Resend only when the server-side env file
+provides the required provider variables above.
 
 Do not build `PROD_DATABASE_URL` by pasting a raw strong password directly into the URL. URL-encode
 reserved characters first, otherwise passwords containing characters such as `@`, `:`, `/`, `?`, or
