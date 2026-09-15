@@ -35,6 +35,110 @@ Known gaps:
 
 ## Entries
 
+### 2026-09-15 — SPEC-316 — PR opened
+
+Role: Ingeniero de software
+Branch: agent/spec-316-scheduled-audit
+Commit/PR: PR #21, commit `6b1c6f5`
+Status: Reviewed
+
+Summary:
+- Pushed the reviewed `SPEC-316` branch to `origin/agent/spec-316-scheduled-audit`.
+- Opened PR #21 against `main` after review approval.
+
+Validation:
+- command: `gh auth status`: PASS — authenticated as `RGAlvaro` with `repo` and `workflow` scopes.
+- command: `git push -u origin agent/spec-316-scheduled-audit`: PASS.
+- command: `gh pr create --repo RGAlvaro/opdesk --base main --head agent/spec-316-scheduled-audit`: PASS — opened PR #21.
+
+Review:
+- decision: APPROVED
+
+Known gaps:
+- No blocking `SPEC-316` gaps. Production must run exactly one scheduler instance; horizontal scheduler locking remains future scope if multiple scheduler replicas are ever needed.
+
+### 2026-09-15 — SPEC-316 — Scheduled jobs audit review fixes approved
+
+Role: Review agent
+Branch: agent/spec-316-scheduled-audit
+Commit/PR: Pending
+Status: Reviewed
+
+Summary:
+- Re-reviewed the `SPEC-316` fix commit `faf032f` against the prior review findings.
+- Confirmed scheduled-job failure audit rows now persist a generic safe summary instead of raw exception text.
+- Confirmed stale ticket assignment reminder reruns keep idempotent notification behavior and report `records_changed=0` when no new notification is created.
+
+Validation:
+- command: `cd backend && poetry run pytest tests/test_operational_audit.py`: PASS — 6 focused scheduled-job/audit tests passed.
+- command: `cd backend && poetry run ruff check app/services/operational_audit.py tests/test_operational_audit.py`: PASS.
+- command: `make test-backend`: PASS — 124 backend tests passed and 2 DB tests were deselected.
+- command: `cd backend && poetry run mypy app`: PASS.
+- command: `make memory-check SPEC=SPEC-316`: PASS.
+- command: `git diff --check HEAD~1..HEAD`: PASS.
+
+Review:
+- decision: APPROVED
+
+Known gaps:
+- No blocking `SPEC-316` gaps. Production must run exactly one scheduler instance; horizontal scheduler locking remains future scope if multiple scheduler replicas are ever needed.
+
+### 2026-09-15 — SPEC-316 — Scheduled jobs audit review fixes implemented
+
+Role: Ingeniero de software
+Branch: agent/spec-316-scheduled-audit
+Commit/PR: Pending
+Status: Implemented
+
+Summary:
+- Replaced persisted scheduled-job failure details with a generic safe summary based on the exception class so raw exception text, tokens, provider payloads, or message bodies are not stored in audit rows.
+- Corrected stale ticket assignment reminder audit counts so idempotent reruns report `records_changed=0` when an unread reminder already exists.
+- Added regression assertions for sensitive failure text redaction and idempotent reminder change counts.
+
+Validation:
+- command: `cd backend && poetry run pytest tests/test_operational_audit.py`: PASS — 6 focused scheduled-job/audit tests passed with the new regression assertions.
+- command: `cd backend && poetry run ruff check app/services/operational_audit.py tests/test_operational_audit.py`: PASS.
+- command: `cd backend && poetry run ruff format --check app/services/operational_audit.py tests/test_operational_audit.py`: PASS.
+- command: `make test-backend`: PASS — 124 backend tests passed and 2 DB tests were deselected.
+- command: `cd backend && poetry run mypy app`: PASS.
+
+Review:
+- decision: N/A — review fixes pending re-review.
+
+Known gaps:
+- No `SPEC-316` implementation gaps known after review fixes. Production must run exactly one scheduler instance; horizontal scheduler locking remains future scope if multiple scheduler replicas are ever needed.
+
+### 2026-09-15 — SPEC-316 — Scheduled jobs and operational audit implemented
+
+Role: Ingeniero de software
+Branch: agent/spec-316-scheduled-audit
+Commit/PR: Pending
+Status: Implemented
+
+Summary:
+- Added persistent `operational_audit_runs` storage with Alembic migration `0014`, repository/service/schema layers, and owner/admin-only audit listing API.
+- Added Celery beat scheduling for heartbeat, external notification delivery retry sweeps, expired invitation maintenance, and stale ticket assignment request reminders, with each run recorded as started, succeeded, failed, or skipped.
+- Added an admin operational audit UI, navigation visibility for organization owners/admins, frontend API hooks, and regression coverage for authorization and filtering.
+- Updated local/production Compose, smoke checks, production release script checks, deployment docs, README, and spec indexes so the scheduler service is part of the operational contract.
+
+Validation:
+- command: `cd backend && poetry run pytest tests/test_operational_audit.py`: PASS — 6 focused backend scheduled-job/audit tests passed.
+- command: `cd frontend && npm run test -- AppRouter.test.tsx`: PASS — focused router/audit UI coverage passed.
+- command: `make test-backend`: PASS — 124 backend tests passed and 2 DB tests were deselected.
+- command: `make test-frontend`: PASS — 67 frontend tests passed.
+- command: `make lint`: PASS.
+- command: `make format-check`: PASS.
+- command: `make typecheck`: PASS.
+- command: `make migrations-check`: PASS — Alembic upgraded through `0014` and reported no new upgrade operations.
+- command: `make prod-config`: PASS — production Compose renders the private scheduler service.
+- command: `make smoke`: PASS — Docker/local backend health, Redis `PONG`, worker, scheduler, Adminer, and Vite frontend checks passed.
+
+Review:
+- decision: N/A — implementation pending review.
+
+Known gaps:
+- No `SPEC-316` implementation gaps known before review. Production must run exactly one scheduler instance; horizontal scheduler locking remains future scope if multiple scheduler replicas are ever needed.
+
 ### 2026-09-15 — SPEC-315 — Merged to main
 
 Role: Ingeniero de software

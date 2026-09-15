@@ -106,6 +106,21 @@ const assignmentRequest = {
   responded_at: null,
 };
 
+const auditRun = {
+  id: "bf464c94-e5fc-4911-a4ac-ed08b2b9ed30",
+  job_name: "external_delivery_retry_sweep",
+  scheduled_for: null,
+  started_at: "2026-09-15T09:00:00Z",
+  finished_at: "2026-09-15T09:00:03Z",
+  status: "succeeded",
+  records_seen: 4,
+  records_changed: 2,
+  error_code: null,
+  error_message: null,
+  created_at: "2026-09-15T09:00:00Z",
+  updated_at: "2026-09-15T09:00:03Z",
+};
+
 /** Build a JSON fetch response for mocked backend calls. */
 function jsonResponse(body: unknown, status = 200) {
   return new Response(JSON.stringify(body), {
@@ -174,6 +189,9 @@ function mockFetch(...responses: Response[]) {
     }
     if (url.includes("/api/v1/notifications")) {
       return Promise.resolve(jsonResponse(page([])));
+    }
+    if (url.endsWith("/api/v1/organizations")) {
+      return Promise.resolve(jsonResponse(page([organization])));
     }
     if (url.includes("/api/v1/client/projects")) {
       return Promise.resolve(jsonResponse({ items: [project] }));
@@ -456,6 +474,93 @@ describe("SPEC-104 frontend app shell and auth UI", () => {
         expect.objectContaining({ method: "POST" }),
       ),
     );
+  });
+
+  it("shows operational audit navigation and filters for owner/admin users", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn((input: RequestInfo | URL) => {
+        const url = String(input);
+        if (url.includes("/api/v1/users/me")) {
+          return Promise.resolve(jsonResponse(user));
+        }
+        if (url.includes("/api/v1/notifications/unread-count")) {
+          return Promise.resolve(jsonResponse({ unread_count: 0 }));
+        }
+        if (url.endsWith("/api/v1/organizations")) {
+          return Promise.resolve(jsonResponse(page([organization])));
+        }
+        if (url.includes("/api/v1/admin/operational-audit")) {
+          return Promise.resolve(jsonResponse(page([auditRun])));
+        }
+        return Promise.resolve(jsonResponse(page([])));
+      }),
+    );
+    const actor = userEvent.setup();
+
+    renderRoute("/app/admin/operational-audit");
+
+    expect(
+      await screen.findByRole("link", { name: /operational audit/i }),
+    ).toBeInTheDocument();
+    expect(
+      await screen.findByRole("heading", { name: "Operational audit" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText("external_delivery_retry_sweep"),
+    ).toBeInTheDocument();
+    await actor.selectOptions(screen.getByLabelText("Status"), "succeeded");
+    await actor.click(screen.getByRole("button", { name: /filter/i }));
+
+    await waitFor(() =>
+      expect(
+        vi
+          .mocked(fetch)
+          .mock.calls.some(([url]) => String(url).includes("status=succeeded")),
+      ).toBe(true),
+    );
+  });
+
+  it("hides operational audit navigation and renders API denial for members", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn((input: RequestInfo | URL) => {
+        const url = String(input);
+        if (url.includes("/api/v1/users/me")) {
+          return Promise.resolve(jsonResponse(user));
+        }
+        if (url.includes("/api/v1/notifications/unread-count")) {
+          return Promise.resolve(jsonResponse({ unread_count: 0 }));
+        }
+        if (url.endsWith("/api/v1/organizations")) {
+          return Promise.resolve(
+            jsonResponse(page([{ ...organization, role: "member" }])),
+          );
+        }
+        if (url.includes("/api/v1/admin/operational-audit")) {
+          return Promise.resolve(
+            apiError(
+              "insufficient_role",
+              "Your organization role is insufficient.",
+              403,
+            ),
+          );
+        }
+        return Promise.resolve(jsonResponse(page([])));
+      }),
+    );
+
+    renderRoute("/app/admin/operational-audit");
+
+    expect(
+      await screen.findByRole("heading", { name: "Operational audit" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByRole("link", { name: /operational audit/i }),
+    ).not.toBeInTheDocument();
+    expect(
+      await screen.findByText("Your organization role is insufficient."),
+    ).toBeInTheDocument();
   });
 
   it("keeps the ERP coming-soon card without fake app navigation", async () => {

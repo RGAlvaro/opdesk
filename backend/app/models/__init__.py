@@ -14,6 +14,7 @@ from app.models.notification import (
     NotificationDeliveryStatus,
     NotificationType,
 )
+from app.models.operational import OperationalAuditRun, OperationalAuditStatus
 from app.models.organization import (
     Invitation,
     InvitationScope,
@@ -56,6 +57,8 @@ __all__ = [
     "NotificationType",
     "Organization",
     "OrganizationMembership",
+    "OperationalAuditRun",
+    "OperationalAuditStatus",
     "Project",
     "ProjectClientAccess",
     "ProjectMembership",

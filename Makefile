@@ -83,6 +83,7 @@ smoke:
 	curl --fail --retry 10 --retry-delay 1 --retry-all-errors http://localhost:8000/health
 	docker compose exec -T redis redis-cli ping
 	docker compose ps --status running --services worker | grep -x worker
+	docker compose ps --status running --services scheduler | grep -x scheduler
 	curl --fail --retry 10 --retry-delay 1 --retry-all-errors http://127.0.0.1:$(ADMINER_PORT)
 	curl --fail --retry 10 --retry-delay 1 --retry-all-errors http://127.0.0.1:$(FRONTEND_PORT)
 
@@ -107,6 +108,7 @@ prod-smoke: prod-data-smoke
 	curl --fail --retry 20 --retry-delay 1 --retry-all-errors http://127.0.0.1:$(PROD_HTTP_PORT)/health
 	POSTGRES_PASSWORD="$(PROD_POSTGRES_PASSWORD)" PROD_DATABASE_URL="$(PROD_DATABASE_URL)" AUTH_SECRET_KEY="$(PROD_AUTH_SECRET_KEY)" CELERY_BROKER_URL="$(CELERY_BROKER_URL)" CELERY_RESULT_BACKEND="$(CELERY_RESULT_BACKEND)" CADDY_SITE_ADDRESS=":80" PROD_HTTP_PORT="$(PROD_HTTP_PORT)" PROD_HTTPS_PORT="$(PROD_HTTPS_PORT)" docker compose --project-name "$(PROD_COMPOSE_PROJECT)" -f docker-compose.prod.yml exec -T redis redis-cli ping
 	POSTGRES_PASSWORD="$(PROD_POSTGRES_PASSWORD)" PROD_DATABASE_URL="$(PROD_DATABASE_URL)" AUTH_SECRET_KEY="$(PROD_AUTH_SECRET_KEY)" CELERY_BROKER_URL="$(CELERY_BROKER_URL)" CELERY_RESULT_BACKEND="$(CELERY_RESULT_BACKEND)" CADDY_SITE_ADDRESS=":80" PROD_HTTP_PORT="$(PROD_HTTP_PORT)" PROD_HTTPS_PORT="$(PROD_HTTPS_PORT)" docker compose --project-name "$(PROD_COMPOSE_PROJECT)" -f docker-compose.prod.yml ps --status running --services worker | grep -x worker
+	POSTGRES_PASSWORD="$(PROD_POSTGRES_PASSWORD)" PROD_DATABASE_URL="$(PROD_DATABASE_URL)" AUTH_SECRET_KEY="$(PROD_AUTH_SECRET_KEY)" CELERY_BROKER_URL="$(CELERY_BROKER_URL)" CELERY_RESULT_BACKEND="$(CELERY_RESULT_BACKEND)" CADDY_SITE_ADDRESS=":80" PROD_HTTP_PORT="$(PROD_HTTP_PORT)" PROD_HTTPS_PORT="$(PROD_HTTPS_PORT)" docker compose --project-name "$(PROD_COMPOSE_PROJECT)" -f docker-compose.prod.yml ps --status running --services scheduler | grep -x scheduler
 	curl --fail --retry 20 --retry-delay 1 --retry-all-errors http://127.0.0.1:$(PROD_HTTP_PORT)/
 
 prod-down: prod-smoke-project-check

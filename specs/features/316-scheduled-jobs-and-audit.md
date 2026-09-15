@@ -1,8 +1,8 @@
 # SPEC-316 — Scheduled Jobs And Operational Audit
 
-Status: Ready
+Status: Implemented
 Owner: Arquitecto de specs
-Last updated: 2026-09-07
+Last updated: 2026-09-15
 
 ## Scope And Required Context
 

@@ -9,7 +9,7 @@ The current implementation covers local development, core product workflows, and
 - `SPEC-010` and `SPEC-011`: backend scaffold, local PostgreSQL, Alembic, health checks, Docker Compose, validation harness, and local Adminer.
 - `SPEC-101`, `SPEC-102`, and `SPEC-103`: authentication/users, organizations/RBAC, projects, and tasks.
 - `SPEC-104`, `SPEC-105`, and `SPEC-106`: React app shell, auth/profile UI, organization UI, and project/task UI.
-- `SPEC-301`: production Compose, Caddy routing, CI verification, and deployment/backup documentation.
+- `SPEC-301`, `SPEC-314`, `SPEC-315`, and `SPEC-316`: production Compose, Caddy routing, Redis/Celery worker, scheduler, external notifications, real-time notification inbox, CI verification, and deployment/backup documentation.
 
 ## Local Setup
 
@@ -96,4 +96,4 @@ make prod-config
 
 ## Production Deployment
 
-Production deployment uses `docker-compose.prod.yml` with Caddy as the only public entry point, a private backend service, a private static frontend service, and private PostgreSQL. See `docs/deployment.md` for environment variables, startup, smoke checks, backup, and restore.
+Production deployment uses `docker-compose.prod.yml` with Caddy as the only public entry point, private backend/frontend services, private PostgreSQL/Redis, one Celery worker, and one Celery beat scheduler. See `docs/deployment.md` for environment variables, startup, smoke checks, backup, and restore.

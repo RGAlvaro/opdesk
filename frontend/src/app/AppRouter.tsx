@@ -24,6 +24,7 @@ import {
 } from "../features/organizations/OrganizationPages";
 import { MyInvitationsPage } from "../features/organizations/InvitationsPage";
 import { NotificationsPage } from "../features/notifications/NotificationsPage";
+import { OperationalAuditPage } from "../features/operational-audit/OperationalAuditPage";
 import {
   ProjectDetailPage,
   ProjectListPage,
@@ -89,6 +90,10 @@ export function AppRouter() {
         <Route path="profile" element={<ProfilePage />} />
         <Route path="invitations" element={<MyInvitationsPage />} />
         <Route path="notifications" element={<NotificationsPage />} />
+        <Route
+          path="admin/operational-audit"
+          element={<OperationalAuditPage />}
+        />
         <Route
           path="ticket-assignment-requests"
           element={<TicketAssignmentRequestsPage />}

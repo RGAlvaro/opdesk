@@ -6,22 +6,23 @@ This file is the compact operational state for agents. Use it to orient quickly 
 
 ## Current Work
 
-- Active branch: `main`
+- Active branch: `agent/spec-316-scheduled-audit`
 - Current state: `SPEC-307` release automation was re-reviewed and approved on 2026-07-30 after the pre-backup data-service recreation fix; GitHub Actions production secrets were configured on 2026-08-03 and the first manual workflow execution completed successfully on 2026-08-11, first validation-only and then with production deploy enabled. `SPEC-308` was implemented, review-fixed, deployed to production, and smoke-checked on 2026-08-11 with migration `0006`, profile/email-change APIs, backend-owned organization slug suffixing, project/task metadata APIs, task watchers, frontend metadata forms/display states, and backend/frontend tests. `SPEC-309` was merged to `main` on 2026-08-12 with migration `0007`, project-scoped task label APIs, task label assignments, `label_id` task filtering, frontend label management/filtering/display, and backend tests. `SPEC-310` was merged to `main` through PR #11 on 2026-08-12 with root `CHANGELOG.md`, changelog format validation, production workflow changelog-entry enforcement before secrets/SSH, public `/changelog` route, landing-page release-notes link, frontend route coverage, deployment docs, and harness docs. `SPEC-311` was merged to `main` through PR #12 on 2026-08-12 with a static public portfolio home, recruiter-facing developer copy, OpsDesk available app card, ERP coming-soon card with no fake link, changelog navigation, generated portfolio hub bitmap asset, and frontend tests. Production is available at `https://rgalvaro.es/` and `https://www.rgalvaro.es/`. `SPEC-303`, `SPEC-306`, `SPEC-305`, and `SPEC-304` are merged and deployed through the 2026-08-18 Collaboration Release at app revision `cc354148dee2d1f69b3d99d34b3f0aaced3f06b6`, Alembic `0012 (head)`. On 2026-09-07 the known gaps were converted into Ready specs: `SPEC-313`, `SPEC-314`, `SPEC-315`, and `SPEC-316`. `SPEC-313` is now merged to `main` through PR #18 at merge commit `8006844` with `@axe-core/playwright`, Firefox/WebKit smoke projects, Chromium accessibility scans for public/authenticated/client surfaces, updated Playwright config, harness docs, local validation passing, and GitHub Actions `Verify` run `34325273247` passing on the final PR head.
 - Current local `SPEC-314` state: merged to `main` through PR #19 at merge commit `70fcbee` on 2026-09-11 with Resend/console email delivery, delivery audit migration `0013`, Celery delivery tasks, `ticket.created` notification fan-out, production env/docs, safer delivery logs, and GitHub Actions `Verify` run `34577119234` passing before merge.
-- Active spec: `SPEC-315` merged to `main` through PR #20 at merge commit `cac6268`; `SPEC-316` is next.
+- Active spec: `SPEC-316` implemented and review approved on `agent/spec-316-scheduled-audit`; PR #21 is open against `main`.
 - Current local `SPEC-315` state: merged to `main` with authenticated notification WebSockets, in-process recipient fan-out, unread/list cache updates, REST polling fallback, review approval, and GitHub Actions `Verify` run `34943597736` passing before merge.
+- Current local `SPEC-316` state: implemented with Celery beat scheduler service, persistent operational audit run records, owner/admin audit API and UI, scheduled external delivery retry sweeps, expired invitation maintenance, stale ticket assignment reminder re-emits, migration `0014`, production Compose/docs updates, and local validation passing. Review fixes corrected safe failure summaries so raw exception text is not persisted and corrected idempotent reminder `records_changed` counts.
 - Documentation checkpoint: agent operational memory was restructured on 2026-06-16 with this file, central touch-to-spec routing, per-spec scope/context blocks, and `ADR-005`; on 2026-06-24 the base workflow added review-gated memory checks and implementation-log scaffolding targets; on 2026-08-18 merge memory became an explicit checkpoint with `make merge-memory-check SPEC=SPEC-XXX`; `ADR-009` records the managed-sandbox GitHub CLI policy.
 - Recent validation recorded in `docs/implementation-log.md`: the 2026-08-18 Collaboration Release deployed merged `SPEC-305` and `SPEC-304` to production through Production Release run `32133588953` after local changelog/test/lint/format/typecheck validation, GitHub Actions `Verify` run `32127831767`, backup, migrations, drift check, compose update, public smoke checks, and direct VPS manifest/Alembic checks passed.
-- Current validation baseline: production is deployed at app revision `cc354148dee2d1f69b3d99d34b3f0aaced3f06b6` with Alembic `0012 (head)`, including merged `SPEC-305` and merged `SPEC-304`.
+- Current validation baseline: `SPEC-316` local implementation validation passed focused backend/frontend tests, full backend/frontend suites, lint, format, typecheck, migrations, production config rendering, and Docker/local smoke with scheduler running. Production remains deployed at app revision `cc354148dee2d1f69b3d99d34b3f0aaced3f06b6` with Alembic `0012 (head)`, including merged `SPEC-305` and merged `SPEC-304`.
 - Harness note: managed-sandbox agents should run migration validation targets with elevated execution from the first attempt because host PostgreSQL TCP access and the Docker socket can be blocked by the sandbox even when services are healthy.
 - CI harness note: GitHub official actions were updated to `@v6` in `verify.yml` and `production-release.yml`; GitHub Actions `Verify` run `31516781996` passed without the prior Node 20 deprecation annotation.
 
 ## Next Handoff
 
-- Next role: Ingeniero de software for `SPEC-316`.
-- Next likely integration work: create/switch to a `SPEC-316` implementation branch and implement scheduled jobs/audit; keep `SPEC-301` production docs aligned if a Celery beat service is added.
-- Keep `SPEC-301` production docs aligned if future scheduled jobs or a Celery beat service are added.
+- Next role: Ingeniero de software for `SPEC-316` PR checks.
+- Next likely integration work: wait for GitHub Actions on PR #21, then merge if checks pass.
+- Keep `SPEC-301` production docs aligned if future scheduled jobs or scheduler topology changes are added.
 
 ## Implemented Specs
 
@@ -52,16 +53,17 @@ This file is the compact operational state for agents. Use it to orient quickly 
 | `SPEC-313` | Cross-browser and accessibility E2E hardening | `frontend/e2e/`, `frontend/playwright.config.ts`, `@axe-core/playwright`, harness docs | Implemented, review approved, CI passed, and merged through PR #18 |
 | `SPEC-314` | External notification delivery | Resend/console email provider, Celery delivery jobs, delivery audit migration `0013`, production env/docs | Merged through PR #19 at `70fcbee`; GitHub Actions passed before merge |
 | `SPEC-315` | Real-time notification inbox | Notification WebSocket endpoint, unread-count live updates, polling fallback, frontend cache updates | Merged through PR #20 at `cac6268`; GitHub Actions passed before merge |
+| `SPEC-316` | Scheduled jobs and operational audit | Celery beat scheduler service, scheduled job audit table, admin audit UI, production Compose/docs | Implemented and review approved on PR #21; checks pending |
 
 ## Ready Specs
 
 | Spec | Scope | Primary surfaces | Readiness notes |
 |---|---|---|---|
-| `SPEC-316` | Scheduled jobs and operational audit | Celery beat scheduler, operational audit table, owner/admin audit UI, production Compose/docs | Ready; implement after `SPEC-314` if delivery retry sweep is included |
+| None | None | None | No Ready spec selected after `SPEC-316`; choose the next scope after review/merge |
 
 ## Next Likely Work
 
-1. Implement `SPEC-316` Celery beat scheduled jobs/audit, unless delivery retry sweeps are prioritized first.
+1. Wait for GitHub Actions on PR #21, then merge if checks pass.
 2. Keep production release memory current after any future deploy, rollback, or branch cleanup.
 
 ## Known Gaps
@@ -71,10 +73,14 @@ This file is the compact operational state for agents. Use it to orient quickly 
 - `SPEC-305` and `SPEC-304` are deployed to production. Pending ticket assignment request listing revalidates current organization/project access, and accepting a pending assignment request revalidates current explicit assignment eligibility before setting `assignee_id`. Worker-initiated reassignment uses persisted target-accepted handoff requests. `SPEC-315` now implements notification WebSocket delivery with REST polling fallback; Redis pub/sub fan-out remains future scope before horizontal backend scaling.
 - `SPEC-307` is implemented, review approved, and the first real VPS workflow run passed on 2026-08-11.
 - Production is currently deployed at `https://rgalvaro.es/` and `https://www.rgalvaro.es/`.
-- `SPEC-314` implements Resend-backed real email delivery and delivery audit with indefinite retention. `SPEC-316` is now Ready for Celery beat scheduled jobs and persistent operational audit with owner/admin UI and indefinite retention.
+- `SPEC-314` implements Resend-backed real email delivery and delivery audit with indefinite retention. `SPEC-316` now implements Celery beat scheduled jobs and persistent operational audit with owner/admin UI and indefinite retention. Production must run exactly one scheduler instance; horizontal scheduler locking remains future scope if multiple scheduler replicas are ever needed.
 
 ## Validation Baseline
 
+- Latest `SPEC-316` review-fix validation: `cd backend && poetry run pytest tests/test_operational_audit.py` PASS with 6 focused scheduled-job/audit tests and regression assertions for safe failure summaries plus idempotent reminder change counts; `cd backend && poetry run ruff check app/services/operational_audit.py tests/test_operational_audit.py` PASS; `cd backend && poetry run ruff format --check app/services/operational_audit.py tests/test_operational_audit.py` PASS; `make test-backend` PASS with 124 backend tests and 2 DB tests deselected; `cd backend && poetry run mypy app` PASS.
+- Latest `SPEC-316` review validation: `cd backend && poetry run pytest tests/test_operational_audit.py` PASS with 6 focused scheduled-job/audit tests; `cd backend && poetry run ruff check app/services/operational_audit.py tests/test_operational_audit.py` PASS; `make test-backend` PASS with 124 backend tests and 2 DB tests deselected; `cd backend && poetry run mypy app` PASS; `make memory-check SPEC=SPEC-316` PASS; `git diff --check HEAD~1..HEAD` PASS. Review decision APPROVED on 2026-09-15.
+- Latest `SPEC-316` PR publication: branch `agent/spec-316-scheduled-audit` pushed at `6b1c6f5`; PR #21 opened against `main` on 2026-09-15 after review approval.
+- Latest `SPEC-316` implementation validation: `cd backend && poetry run pytest tests/test_operational_audit.py` PASS with 6 focused scheduled-job/audit tests; `cd frontend && npm run test -- AppRouter.test.tsx` PASS with focused router/audit UI coverage; `make test-backend` PASS with 124 backend tests and 2 DB tests deselected; `make test-frontend` PASS with 67 frontend tests; `make lint` PASS; `make format-check` PASS; `make typecheck` PASS; `make migrations-check` PASS with Alembic upgrade through `0014` and no new upgrade operations; `make prod-config` PASS with private scheduler service rendering; `make smoke` PASS with Docker/local backend health, Redis `PONG`, worker, scheduler, Adminer, and Vite frontend checks.
 - Latest `SPEC-314` implementation validation: `make test-backend` PASS with 115 selected backend tests and 2 DB tests deselected; `make migrations-check` PASS with Alembic upgrade through `0013` and no new upgrade operations; `make lint` PASS; `make format-check` PASS; `make typecheck` PASS; `make prod-config` PASS with backend/worker Resend env wiring.
 - Latest `SPEC-314` review validation: `make test-backend` PASS with 115 selected backend tests and 2 DB tests deselected; `make lint` PASS; `make format-check` PASS; `make typecheck` PASS; `make memory-check SPEC=SPEC-314` PASS; `git diff --check` PASS. Elevated `make migrations-check` could not connect to PostgreSQL at `127.0.0.1:5432`, and elevated `make prod-config` could not find `docker` in this WSL distro; both had passed before the review-only logging adjustment.
 - Latest `SPEC-314` PR validation: GitHub Actions run `34576823985` passed `verify` in 2m1s and `e2e` in 2m41s on PR #19 before this evidence-memory update.

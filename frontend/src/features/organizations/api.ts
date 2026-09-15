@@ -66,10 +66,11 @@ export function listMyInvitations() {
 }
 
 /** Keep the current user's organization list in React Query cache. */
-export function useOrganizations() {
+export function useOrganizations(enabled = true) {
   return useQuery({
     queryKey: organizationsQueryKey,
     queryFn: listOrganizations,
+    enabled,
     staleTime: organizationStaleTimeMs,
   });
 }

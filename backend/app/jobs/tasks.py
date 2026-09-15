@@ -2,6 +2,7 @@
 
 import logging
 import uuid
+from typing import Any
 
 from app.db.session import SessionLocal
 from app.jobs.celery_app import celery_app
@@ -10,6 +11,13 @@ from app.notifications.assignment import (
     process_task_assignment_notification,
 )
 from app.notifications.delivery import ExternalNotificationDeliveryService
+from app.services.operational_audit import (
+    OperationalAuditService,
+    expired_invitations_job_name,
+    external_delivery_retry_job_name,
+    heartbeat_job_name,
+    ticket_assignment_reminders_job_name,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -99,5 +107,79 @@ def process_due_external_notification_deliveries(limit: int = 100) -> int:
         processed = ExternalNotificationDeliveryService(db).process_due_deliveries(limit)
         logger.info("external_notification_delivery due_processed count=%s", processed)
         return processed
+    finally:
+        db.close()
+
+
+@celery_app.task(  # type: ignore[untyped-decorator]
+    name="operational.scheduler_heartbeat",
+)
+def run_scheduler_heartbeat() -> dict[str, Any]:
+    """Record one scheduler heartbeat audit row."""
+    db = SessionLocal()
+    try:
+        service = OperationalAuditService(db)
+        audit = service.run_job(heartbeat_job_name, service.scheduler_heartbeat)
+        return {"audit_id": str(audit.id), "status": audit.status.value}
+    finally:
+        db.close()
+
+
+@celery_app.task(  # type: ignore[untyped-decorator]
+    name="operational.external_delivery_retry_sweep",
+)
+def run_external_delivery_retry_sweep(limit: int = 100) -> dict[str, Any]:
+    """Run the scheduled external notification delivery retry sweep."""
+    db = SessionLocal()
+    try:
+        service = OperationalAuditService(db)
+        audit = service.run_job(
+            external_delivery_retry_job_name,
+            lambda: service.external_delivery_retry_sweep(limit),
+        )
+        return {
+            "audit_id": str(audit.id),
+            "status": audit.status.value,
+            "records_changed": audit.records_changed,
+        }
+    finally:
+        db.close()
+
+
+@celery_app.task(  # type: ignore[untyped-decorator]
+    name="operational.expired_invitation_maintenance",
+)
+def run_expired_invitation_maintenance() -> dict[str, Any]:
+    """Mark expired pending invitations without deleting invitation history."""
+    db = SessionLocal()
+    try:
+        service = OperationalAuditService(db)
+        audit = service.run_job(expired_invitations_job_name, service.expire_pending_invitations)
+        return {
+            "audit_id": str(audit.id),
+            "status": audit.status.value,
+            "records_changed": audit.records_changed,
+        }
+    finally:
+        db.close()
+
+
+@celery_app.task(  # type: ignore[untyped-decorator]
+    name="operational.stale_ticket_assignment_request_reminders",
+)
+def run_stale_ticket_assignment_request_reminders() -> dict[str, Any]:
+    """Create reminder notifications for old pending ticket handoff requests."""
+    db = SessionLocal()
+    try:
+        service = OperationalAuditService(db)
+        audit = service.run_job(
+            ticket_assignment_reminders_job_name,
+            service.remind_stale_assignment_requests,
+        )
+        return {
+            "audit_id": str(audit.id),
+            "status": audit.status.value,
+            "records_changed": audit.records_changed,
+        }
     finally:
         db.close()
