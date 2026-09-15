@@ -1,6 +1,7 @@
 // Authenticated application shell with navigation, user chrome, and nested pages.
 
 import {
+  Activity,
   Bell,
   Building2,
   FolderKanban,
@@ -25,6 +26,7 @@ import {
   useNotificationRealtime,
   useUnreadNotificationCount,
 } from "../features/notifications/api";
+import { useOrganizations } from "../features/organizations/api";
 import { useProject } from "../features/projects/api";
 import { useTask } from "../features/tasks/api";
 
@@ -34,6 +36,7 @@ type PrimarySection =
   | "tasks"
   | "invitations"
   | "notifications"
+  | "operational-audit"
   | "assignment-requests"
   | "chat"
   | "client";
@@ -66,6 +69,9 @@ function activePrimarySection(pathname: string): PrimarySection | undefined {
   }
   if (/^\/app\/notifications(\/|$)/.test(pathname)) {
     return "notifications";
+  }
+  if (/^\/app\/admin\/operational-audit(\/|$)/.test(pathname)) {
+    return "operational-audit";
   }
   if (/^\/app\/ticket-assignment-requests(\/|$)/.test(pathname)) {
     return "assignment-requests";
@@ -159,6 +165,17 @@ export function AppShell() {
   useNotificationRealtime(Boolean(user));
   const activeSection = activePrimarySection(location.pathname);
   const isClient = user?.account_type === "client";
+  const organizations = useOrganizations(
+    Boolean(user) && !isClient && activeSection === "operational-audit",
+  );
+  const organizationItems = Array.isArray(organizations.data?.items)
+    ? organizations.data.items
+    : [];
+  const canSeeOperationalAudit =
+    !isClient &&
+    organizationItems.some((organization) =>
+      ["owner", "admin"].includes(organization.role),
+    );
   const activeProjectId = routeProjectId ?? task.data?.project_id;
   const projectOrganizationId =
     activeOrganizationId ??
@@ -280,6 +297,15 @@ export function AppShell() {
                     activeSection={activeSection}
                     badge={unreadNotifications.data?.unread_count}
                   />
+                  {canSeeOperationalAudit ? (
+                    <PrimaryNavItem
+                      icon={<Activity aria-hidden="true" className="h-4 w-4" />}
+                      label="Operational audit"
+                      section="operational-audit"
+                      to="/app/admin/operational-audit"
+                      activeSection={activeSection}
+                    />
+                  ) : null}
                   <PrimaryNavItem
                     icon={<Mail aria-hidden="true" className="h-4 w-4" />}
                     label="Invitations"

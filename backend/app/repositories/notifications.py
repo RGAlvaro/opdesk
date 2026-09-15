@@ -142,3 +142,20 @@ class NotificationRepository:
                 .limit(limit)
             )
         )
+
+    def count_due_deliveries(self, limit: int) -> int:
+        """Count pending deliveries due for retry, capped to the sweep limit."""
+        due_ids = (
+            select(NotificationDelivery.id)
+            .where(
+                NotificationDelivery.status == NotificationDeliveryStatus.PENDING,
+                or_(
+                    NotificationDelivery.next_attempt_at.is_(None),
+                    NotificationDelivery.next_attempt_at <= func.now(),
+                ),
+            )
+            .order_by(NotificationDelivery.created_at.asc(), NotificationDelivery.id.asc())
+            .limit(limit)
+            .subquery()
+        )
+        return self.db.scalar(select(func.count()).select_from(due_ids)) or 0

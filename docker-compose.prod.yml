@@ -86,6 +86,29 @@ services:
         condition: service_healthy
     restart: unless-stopped
 
+  scheduler:
+    build:
+      context: ./backend
+    command: celery -A app.jobs.celery_app.celery_app beat --loglevel=info
+    environment:
+      APP_ENV: production
+      DEBUG: "false"
+      DATABASE_URL: ${PROD_DATABASE_URL:?Set PROD_DATABASE_URL for production with URL-encoded credentials}
+      CELERY_BROKER_URL: ${CELERY_BROKER_URL:-redis://redis:6379/0}
+      CELERY_RESULT_BACKEND: ${CELERY_RESULT_BACKEND:-redis://redis:6379/1}
+      EMAIL_NOTIFICATIONS_ENABLED: ${EMAIL_NOTIFICATIONS_ENABLED:-true}
+      EMAIL_DELIVERY_PROVIDER: ${PROD_EMAIL_DELIVERY_PROVIDER:-resend}
+      PUBLIC_APP_URL: ${PROD_PUBLIC_APP_URL:?Set PROD_PUBLIC_APP_URL for production email links}
+      RESEND_API_KEY: ${PROD_RESEND_API_KEY:?Set PROD_RESEND_API_KEY for production email delivery}
+      RESEND_FROM_EMAIL: ${PROD_RESEND_FROM_EMAIL:?Set PROD_RESEND_FROM_EMAIL for production email delivery}
+      EMAIL_PROVIDER_TIMEOUT_SECONDS: ${EMAIL_PROVIDER_TIMEOUT_SECONDS:-5}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+
   frontend:
     build:
       context: .

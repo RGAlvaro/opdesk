@@ -38,7 +38,7 @@ fail_with_rollback() {
   {
     echo "::error::${message}"
     echo "Rollback: redeploy the previous release directory with RELEASE_REF set to that commit."
-    echo "Database restore is manual only: stop backend and worker, then restore the chosen dump explicitly."
+    echo "Database restore is manual only: stop backend, worker, and scheduler, then restore the chosen dump explicitly."
   } >&2
   exit 1
 }
@@ -123,6 +123,10 @@ add_summary "redis=PASS"
 "${compose[@]}" ps --status running --services worker | grep -x worker >/dev/null \
   || fail_with_rollback "Worker running-state check failed."
 add_summary "worker=PASS"
+
+"${compose[@]}" ps --status running --services scheduler | grep -x scheduler >/dev/null \
+  || fail_with_rollback "Scheduler running-state check failed."
+add_summary "scheduler=PASS"
 
 {
   printf 'timestamp_utc=%s\n' "${timestamp}"

@@ -52,7 +52,7 @@ Use this index for routing. Use `docs/project-state.md` for the compact current 
 | `SPEC-313` | Implemented | Cross-browser and accessibility E2E hardening | `SPEC-312`, `SPEC-305`, `SPEC-306`, `SPEC-311` | Firefox/WebKit Playwright smoke coverage, automated accessibility checks, E2E CI artifacts |
 | `SPEC-314` | Implemented | External notification delivery | `SPEC-201`, `SPEC-303`, `SPEC-305`, `SPEC-306`, `SPEC-307` | Resend email delivery provider adapter, Celery delivery jobs, delivery audit, production env/docs |
 | `SPEC-315` | Implemented | Real-time notification inbox | `SPEC-306`, `SPEC-304`, `SPEC-307` | Notification WebSocket endpoint, unread-count live updates, polling fallback, frontend cache updates |
-| `SPEC-316` | Ready | Scheduled jobs and operational audit | `SPEC-201`, `SPEC-301`, `SPEC-306`, `SPEC-314` | Celery beat scheduler service, scheduled job audit table, admin audit UI, production Compose/docs |
+| `SPEC-316` | Implemented | Scheduled jobs and operational audit | `SPEC-201`, `SPEC-301`, `SPEC-306`, `SPEC-314` | Celery beat scheduler service, scheduled job audit table, admin audit UI, production Compose/docs |
 
 Implementation order should usually follow spec dependencies:
 

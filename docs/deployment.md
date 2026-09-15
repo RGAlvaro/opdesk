@@ -1,7 +1,7 @@
 # Production Deployment
 
 This guide covers the OpsDesk production path for `SPEC-301`: one VPS, Docker Compose, Caddy,
-PostgreSQL, Redis, backend API, Celery worker, and the built React frontend.
+PostgreSQL, Redis, backend API, Celery worker, Celery beat scheduler, and the built React frontend.
 
 ## Services
 
@@ -16,6 +16,7 @@ Private Compose-network services:
 - `postgres`: PostgreSQL with a named persistent volume.
 - `redis`: private Celery broker/result backend.
 - `worker`: Celery worker for background notification jobs.
+- `scheduler`: single Celery beat scheduler for periodic maintenance jobs.
 
 ## Required Server Variables
 
@@ -98,13 +99,15 @@ Check health through Caddy:
 curl --fail https://opsdesk.example.com/health
 ```
 
-Check private Redis and worker state from the VPS:
+Check private Redis, worker, and scheduler state from the VPS:
 
 ```bash
 docker compose --project-name opdesk-prod --env-file .env.production \
   -f docker-compose.prod.yml exec -T redis redis-cli ping
 docker compose --project-name opdesk-prod --env-file .env.production \
   -f docker-compose.prod.yml ps worker
+docker compose --project-name opdesk-prod --env-file .env.production \
+  -f docker-compose.prod.yml ps scheduler
 ```
 
 For a local production smoke test without TLS, use:
@@ -149,7 +152,7 @@ The remote script expects the VPS to keep `.env.production` at the deploy root a
 stable Compose project name `opdesk-prod`. It creates a PostgreSQL custom-format backup
 under `/srv/opdesk/backups`, runs Alembic migrations through the production backend
 environment, rebuilds/starts `docker-compose.prod.yml`, verifies `/health`, the frontend
-route, Redis `PING`, and the worker running state, then writes a non-secret release
+route, Redis `PING`, and the worker/scheduler running state, then writes a non-secret release
 manifest to `/srv/opdesk/releases/latest-release.txt`.
 
 To validate the workflow path without production secrets, run the manual workflow with
@@ -170,7 +173,7 @@ application revision, run the `Production Release` workflow again with `target_r
 the previous known-good commit or tag and `deploy_to_production=true`.
 
 If a database restore is required, treat it as a separate destructive operator action:
-select the backup intentionally, stop `backend` and `worker`, run the restore command
+select the backup intentionally, stop `backend`, `worker`, and `scheduler`, run the restore command
 from the section below, and then start the stack again. Restoring a database backup can
 delete production data written after that backup was created.
 
@@ -195,7 +198,7 @@ Stop the app services that may write to the database:
 
 ```bash
 docker compose --project-name opdesk-prod --env-file .env.production \
-  -f docker-compose.prod.yml stop backend worker
+  -f docker-compose.prod.yml stop backend worker scheduler
 ```
 
 Restore a backup. This replaces the current application schema and data, so verify the selected
@@ -220,5 +223,6 @@ docker compose --project-name opdesk-prod --env-file .env.production \
 - Run `make verify` locally before deployment when Docker/PostgreSQL are available.
 - Run `make prod-config` in CI or locally to validate production Compose structure with safe placeholder secrets.
 - `make prod-data-smoke` applies migrations and proves a custom-format backup can restore a marker row inside the isolated smoke project.
+- Production V1 expects exactly one `scheduler` service; do not scale it above one replica without a later locking/scaling spec.
 - Rotate `AUTH_SECRET_KEY` carefully; existing browser sessions become invalid.
 - Keep `.env.production` and backup files out of Git.

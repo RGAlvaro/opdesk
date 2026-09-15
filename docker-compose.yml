@@ -70,6 +70,28 @@ services:
       redis:
         condition: service_healthy
 
+  scheduler:
+    build:
+      context: ./backend
+    command: celery -A app.jobs.celery_app.celery_app beat --loglevel=info
+    environment:
+      APP_ENV: ${APP_ENV:-local}
+      DEBUG: ${DEBUG:-true}
+      DATABASE_URL: ${DATABASE_URL:-postgresql+psycopg://opdesk:opdesk_dev_password@postgres:5432/opdesk}
+      CELERY_BROKER_URL: ${CELERY_BROKER_URL:-redis://redis:6379/0}
+      CELERY_RESULT_BACKEND: ${CELERY_RESULT_BACKEND:-redis://redis:6379/1}
+      EMAIL_NOTIFICATIONS_ENABLED: ${EMAIL_NOTIFICATIONS_ENABLED:-true}
+      EMAIL_DELIVERY_PROVIDER: ${EMAIL_DELIVERY_PROVIDER:-console}
+      PUBLIC_APP_URL: ${PUBLIC_APP_URL:-http://localhost:5173}
+      RESEND_API_KEY: ${RESEND_API_KEY:-}
+      RESEND_FROM_EMAIL: ${RESEND_FROM_EMAIL:-}
+      EMAIL_PROVIDER_TIMEOUT_SECONDS: ${EMAIL_PROVIDER_TIMEOUT_SECONDS:-5}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
   frontend:
     build:
       context: .

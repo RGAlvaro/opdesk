@@ -76,10 +76,7 @@ Current production services:
 - `frontend`
 - `redis`
 - `worker`
-
-Future services:
-
-- `beat` only if scheduled jobs exist
+- `scheduler`
 
 ## Required Files
 
