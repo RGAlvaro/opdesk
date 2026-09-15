@@ -6,11 +6,11 @@ This file is the compact operational state for agents. Use it to orient quickly 
 
 ## Current Work
 
-- Active branch: `agent/spec-315-realtime-notifications`
+- Active branch: `main`
 - Current state: `SPEC-307` release automation was re-reviewed and approved on 2026-07-30 after the pre-backup data-service recreation fix; GitHub Actions production secrets were configured on 2026-08-03 and the first manual workflow execution completed successfully on 2026-08-11, first validation-only and then with production deploy enabled. `SPEC-308` was implemented, review-fixed, deployed to production, and smoke-checked on 2026-08-11 with migration `0006`, profile/email-change APIs, backend-owned organization slug suffixing, project/task metadata APIs, task watchers, frontend metadata forms/display states, and backend/frontend tests. `SPEC-309` was merged to `main` on 2026-08-12 with migration `0007`, project-scoped task label APIs, task label assignments, `label_id` task filtering, frontend label management/filtering/display, and backend tests. `SPEC-310` was merged to `main` through PR #11 on 2026-08-12 with root `CHANGELOG.md`, changelog format validation, production workflow changelog-entry enforcement before secrets/SSH, public `/changelog` route, landing-page release-notes link, frontend route coverage, deployment docs, and harness docs. `SPEC-311` was merged to `main` through PR #12 on 2026-08-12 with a static public portfolio home, recruiter-facing developer copy, OpsDesk available app card, ERP coming-soon card with no fake link, changelog navigation, generated portfolio hub bitmap asset, and frontend tests. Production is available at `https://rgalvaro.es/` and `https://www.rgalvaro.es/`. `SPEC-303`, `SPEC-306`, `SPEC-305`, and `SPEC-304` are merged and deployed through the 2026-08-18 Collaboration Release at app revision `cc354148dee2d1f69b3d99d34b3f0aaced3f06b6`, Alembic `0012 (head)`. On 2026-09-07 the known gaps were converted into Ready specs: `SPEC-313`, `SPEC-314`, `SPEC-315`, and `SPEC-316`. `SPEC-313` is now merged to `main` through PR #18 at merge commit `8006844` with `@axe-core/playwright`, Firefox/WebKit smoke projects, Chromium accessibility scans for public/authenticated/client surfaces, updated Playwright config, harness docs, local validation passing, and GitHub Actions `Verify` run `34325273247` passing on the final PR head.
 - Current local `SPEC-314` state: merged to `main` through PR #19 at merge commit `70fcbee` on 2026-09-11 with Resend/console email delivery, delivery audit migration `0013`, Celery delivery tasks, `ticket.created` notification fan-out, production env/docs, safer delivery logs, and GitHub Actions `Verify` run `34577119234` passing before merge.
-- Active spec: `SPEC-315` reviewed and approved locally after integrating `main`; PR #20 is open with GitHub Actions passing on run `34943274026`.
-- Current local `SPEC-315` state: implemented in commit `aa9896f` on `agent/spec-315-realtime-notifications` with authenticated notification WebSockets, in-process recipient fan-out, unread/list cache updates, REST polling fallback, and local validation passing. The branch now includes the merged `SPEC-314` baseline, review memory, and PR validation memory.
+- Active spec: `SPEC-315` merged to `main` through PR #20 at merge commit `cac6268`; `SPEC-316` is next.
+- Current local `SPEC-315` state: merged to `main` with authenticated notification WebSockets, in-process recipient fan-out, unread/list cache updates, REST polling fallback, review approval, and GitHub Actions `Verify` run `34943597736` passing before merge.
 - Documentation checkpoint: agent operational memory was restructured on 2026-06-16 with this file, central touch-to-spec routing, per-spec scope/context blocks, and `ADR-005`; on 2026-06-24 the base workflow added review-gated memory checks and implementation-log scaffolding targets; on 2026-08-18 merge memory became an explicit checkpoint with `make merge-memory-check SPEC=SPEC-XXX`; `ADR-009` records the managed-sandbox GitHub CLI policy.
 - Recent validation recorded in `docs/implementation-log.md`: the 2026-08-18 Collaboration Release deployed merged `SPEC-305` and `SPEC-304` to production through Production Release run `32133588953` after local changelog/test/lint/format/typecheck validation, GitHub Actions `Verify` run `32127831767`, backup, migrations, drift check, compose update, public smoke checks, and direct VPS manifest/Alembic checks passed.
 - Current validation baseline: production is deployed at app revision `cc354148dee2d1f69b3d99d34b3f0aaced3f06b6` with Alembic `0012 (head)`, including merged `SPEC-305` and merged `SPEC-304`.
@@ -19,8 +19,8 @@ This file is the compact operational state for agents. Use it to orient quickly 
 
 ## Next Handoff
 
-- Next role: Ingeniero de software for merge follow-through on `SPEC-315`.
-- Next likely integration work: merge PR #20 after the final memory-only commit checks pass; `SPEC-316` scheduled jobs/audit remains next unless delivery retry sweeps are prioritized first.
+- Next role: Ingeniero de software for `SPEC-316`.
+- Next likely integration work: create/switch to a `SPEC-316` implementation branch and implement scheduled jobs/audit; keep `SPEC-301` production docs aligned if a Celery beat service is added.
 - Keep `SPEC-301` production docs aligned if future scheduled jobs or a Celery beat service are added.
 
 ## Implemented Specs
@@ -51,7 +51,7 @@ This file is the compact operational state for agents. Use it to orient quickly 
 | `SPEC-304` | Internal organization member chat | Chat persistence, REST/WebSocket chat APIs, organization chat UI, aggregate unread chat notifications, migration `0012` | Implemented, review approved, merged through PR #17, and production deployed |
 | `SPEC-313` | Cross-browser and accessibility E2E hardening | `frontend/e2e/`, `frontend/playwright.config.ts`, `@axe-core/playwright`, harness docs | Implemented, review approved, CI passed, and merged through PR #18 |
 | `SPEC-314` | External notification delivery | Resend/console email provider, Celery delivery jobs, delivery audit migration `0013`, production env/docs | Merged through PR #19 at `70fcbee`; GitHub Actions passed before merge |
-| `SPEC-315` | Real-time notification inbox | Notification WebSocket endpoint, unread-count live updates, polling fallback, frontend cache updates | Review approved; PR #20 open with Actions passing before PR validation memory |
+| `SPEC-315` | Real-time notification inbox | Notification WebSocket endpoint, unread-count live updates, polling fallback, frontend cache updates | Merged through PR #20 at `cac6268`; GitHub Actions passed before merge |
 
 ## Ready Specs
 
@@ -61,9 +61,8 @@ This file is the compact operational state for agents. Use it to orient quickly 
 
 ## Next Likely Work
 
-1. Merge PR #20 for `SPEC-315` after the final memory-only commit checks pass.
-2. Implement `SPEC-316` Celery beat scheduled jobs/audit after `SPEC-315`, unless delivery retry sweeps are prioritized first.
-3. Keep production release memory current after any future deploy, rollback, or branch cleanup.
+1. Implement `SPEC-316` Celery beat scheduled jobs/audit, unless delivery retry sweeps are prioritized first.
+2. Keep production release memory current after any future deploy, rollback, or branch cleanup.
 
 ## Known Gaps
 
@@ -86,6 +85,7 @@ This file is the compact operational state for agents. Use it to orient quickly 
 - Latest `SPEC-315` implementation validation: `cd backend && poetry run pytest tests/test_in_app_notifications_api.py` PASS with 6 notification API/WebSocket tests; `cd frontend && npm run test -- NotificationsPage.test.tsx` PASS with 3 notification UI/WebSocket tests; `make test-backend` PASS with 109 selected backend tests and 2 DB tests deselected; `make test-frontend` PASS with 65 frontend tests; `make lint` PASS; `make format-check` PASS; `make typecheck` PASS; elevated `make smoke` PASS with Docker/local backend health, Redis `PONG`, worker running, Adminer, and Vite frontend checks.
 - Latest `SPEC-315` review validation: `make test-backend` PASS with 118 selected backend tests and 2 DB tests deselected; `make test-frontend` PASS with 65 frontend tests; `make lint` PASS; `make format-check` PASS; `make typecheck` PASS; `make smoke` PASS with Docker/local backend health, Redis `PONG`, worker running, Adminer, and Vite frontend checks; `make memory-check SPEC=SPEC-315` PASS; `git diff --check` PASS.
 - Latest `SPEC-315` PR validation: GitHub Actions run `34943274026` passed `verify` in 1m56s and `e2e` in 2m52s on PR #20 before this evidence-memory update.
+- Latest `SPEC-315` merge validation: PR #20 merged to `main` as `cac6268` on 2026-09-15 after GitHub Actions `Verify` run `34943597736` passed with `verify` in 1m47s and `e2e` in 3m7s.
 - Latest `SPEC-304` implementation validation: `make test-backend` PASS with 105 selected backend tests and 2 DB tests deselected; `make test-frontend` PASS with 61 frontend tests; `make lint` PASS; `make format-check` PASS; `make typecheck` PASS; elevated `make migrations-check` PASS with Alembic upgrade through `0012` and no new upgrade operations.
 - Latest `SPEC-304` review-fix validation: `make test-backend` PASS with 106 selected backend tests and 2 DB tests deselected; `make test-frontend` PASS with 63 frontend tests; `make lint` PASS; `make format-check` PASS; `make typecheck` PASS; `make memory-check SPEC=SPEC-304` PASS; `git diff --check` PASS. `make migrations-check` was not rerun after review fixes because no migrations or SQLAlchemy models changed after the prior elevated `0012` pass.
 - Latest `SPEC-304` review approval validation: `make test-backend` PASS with 106 selected backend tests and 2 DB tests deselected; `make test-frontend` PASS with 63 frontend tests; `make lint` PASS; `make format-check` PASS; `make typecheck` PASS; elevated `make migrations-check` PASS with Alembic reporting no new upgrade operations; `make memory-check SPEC=SPEC-304` PASS; `git diff --check` PASS.

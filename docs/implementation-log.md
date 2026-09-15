@@ -35,6 +35,31 @@ Known gaps:
 
 ## Entries
 
+### 2026-09-15 — SPEC-315 — Merged to main
+
+Role: Ingeniero de software
+Branch: main
+Commit/PR: PR #20, merge `cac6268`
+Status: Merged
+
+Summary:
+- Merged PR #20 into `main` with the merge strategy after final PR checks passed.
+- Pulled `main` locally to merge commit `cac6268`.
+- Updated project memory so the next handoff moves to `SPEC-316`.
+
+Validation:
+- command: `gh pr view 20 --repo RGAlvaro/opdesk --json mergeStateStatus,statusCheckRollup,headRefOid,baseRefName,headRefName,url`: PASS before merge — merge state `CLEAN`, `verify` and `e2e` successful on head `f3dca14`.
+- command: `gh pr merge 20 --repo RGAlvaro/opdesk --merge --delete-branch`: PASS.
+- command: `git switch main`: PASS.
+- command: `git pull --ff-only`: PASS — fast-forwarded `main` to merge commit `cac6268`.
+- command: GitHub Actions `Verify` run `34943597736`: PASS before merge — `verify` passed in 1m47s and `e2e` passed in 3m7s.
+
+Review:
+- decision: APPROVED before merge.
+
+Known gaps:
+- Multi-backend Redis pub/sub fan-out remains outside V1 by spec and must be added before horizontal backend scaling.
+
 ### 2026-09-15 — SPEC-315 — PR opened and GitHub Actions passed
 
 Role: Ingeniero de software
