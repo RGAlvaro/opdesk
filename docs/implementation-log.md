@@ -35,6 +35,30 @@ Known gaps:
 
 ## Entries
 
+### 2026-09-15 — SPEC-315 — PR opened and GitHub Actions passed
+
+Role: Ingeniero de software
+Branch: agent/spec-315-realtime-notifications
+Commit/PR: PR #20, commit `a9c12d9`, GitHub Actions run `34943274026`
+Status: Reviewed
+
+Summary:
+- Pushed the reviewed `SPEC-315` branch and opened PR #20 against `main`.
+- Confirmed GitHub CLI authentication for account `RGAlvaro` with `repo` and `workflow` scopes before PR operations.
+- Waited for GitHub Actions on PR #20; both required jobs passed on run `34943274026`.
+
+Validation:
+- command: `gh auth status`: PASS — authenticated as `RGAlvaro` with `repo` and `workflow` scopes.
+- command: `git push -u origin agent/spec-315-realtime-notifications`: PASS.
+- command: `gh pr create --repo RGAlvaro/opdesk --base main --head agent/spec-315-realtime-notifications`: PASS — opened PR #20.
+- command: `gh pr checks 20 --repo RGAlvaro/opdesk --watch`: PASS — `verify` passed in 1m56s and `e2e` passed in 2m52s on run `34943274026`.
+
+Review:
+- decision: APPROVED before PR creation.
+
+Known gaps:
+- Multi-backend Redis pub/sub fan-out remains outside V1 by spec and must be added before horizontal backend scaling.
+
 ### 2026-09-15 — SPEC-315 — Real-time notification inbox reviewed
 
 Role: Review agent
