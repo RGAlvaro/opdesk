@@ -35,6 +35,34 @@ Known gaps:
 
 ## Entries
 
+### 2026-09-15 — SPEC-315 — Real-time notification inbox reviewed
+
+Role: Review agent
+Branch: agent/spec-315-realtime-notifications
+Commit/PR: Pending
+Status: Reviewed
+
+Summary:
+- Reviewed `SPEC-315` against authenticated notification WebSocket delivery, recipient isolation, post-commit fan-out, read-state events, frontend unread/list cache updates, reconnect behavior, REST polling fallback, tests, and project memory.
+- Confirmed the branch includes the merged `SPEC-314` baseline after resolving the notification-service and memory conflicts from `main`.
+- Kept the documented multi-backend fan-out limitation as future scope before horizontal backend scaling.
+
+Validation:
+- command: `make test-backend`: PASS — 118 selected backend tests passed and 2 DB tests were deselected.
+- command: `make test-frontend`: PASS — 65 frontend tests passed.
+- command: `make lint`: PASS.
+- command: `make format-check`: PASS.
+- command: `make typecheck`: PASS.
+- command: `make smoke`: PASS — Docker/local backend health, Redis `PONG`, worker, Adminer, and Vite frontend checks passed.
+- command: `make memory-check SPEC=SPEC-315`: PASS.
+- command: `git diff --check`: PASS.
+
+Review:
+- decision: APPROVED
+
+Known gaps:
+- Multi-backend Redis pub/sub fan-out remains outside V1 by spec and must be added before horizontal backend scaling.
+
 ### 2026-09-11 — SPEC-314 — Merged to main
 
 Role: Ingeniero de software
