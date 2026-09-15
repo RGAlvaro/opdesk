@@ -35,6 +35,30 @@ Known gaps:
 
 ## Entries
 
+### 2026-09-15 — Technical documentation maintenance harness added
+
+Role: Arquitecto de specs
+Branch: main
+Commit/PR: Pending
+Status: Ready
+
+Summary:
+- Added `docs/technical-documentation.md` as the canonical full internal technical documentation source for the current OpsDesk architecture.
+- Added `scripts/check_technical_docs.py` and `make technical-docs-check` to validate required documentation sections, stack terms, current Alembic head, local/production Compose services, and ASCII-only PDF-friendly content.
+- Added `make technical-docs-check` to `verify-no-db` so future architecture/runtime changes must keep the technical documentation current before review.
+- Documented the new target in `specs/harness/local-validation.md` and in the technical documentation maintenance section.
+
+Validation:
+- command: `make technical-docs-check`: PASS.
+- command: `python3 -m py_compile scripts/check_technical_docs.py`: PASS.
+- command: `git diff --check`: PASS.
+
+Review:
+- decision: N/A
+
+Known gaps:
+- No PDF converter is installed in the current environment; the Markdown document remains the canonical source until a PDF conversion tool such as Pandoc is added.
+
 ### 2026-09-15 — SPEC-316 — Merged to main
 
 Role: Ingeniero de software
