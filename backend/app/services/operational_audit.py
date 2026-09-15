@@ -9,6 +9,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.api.errors import APIError
+from app.models.notification import NotificationType
 from app.models.operational import OperationalAuditRun, OperationalAuditStatus
 from app.models.organization import Invitation, InvitationStatus, MembershipRole
 from app.models.project import Task, TicketAssignmentRequest, TicketAssignmentRequestStatus
@@ -101,7 +102,7 @@ class OperationalAuditService:
             audit_run.status = OperationalAuditStatus.FAILED
             audit_run.finished_at = datetime.now(UTC)
             audit_run.error_code = exc.__class__.__name__
-            audit_run.error_message = self._sanitize_error_message(str(exc))
+            audit_run.error_message = self._safe_error_summary(exc.__class__.__name__)
             self.db.add(audit_run)
             self.db.commit()
             logger.exception(
@@ -174,17 +175,26 @@ class OperationalAuditService:
             )
         )
         notifier = NotificationService(self.db)
+        changed = 0
         for request in requests:
             task = self.db.get(Task, request.task_id)
             if task is None:
                 continue
+            existing = self.notifications.find_unread_for_resource(
+                recipient_user_id=request.target_user_id,
+                notification_type=NotificationType.TICKET_ASSIGNMENT_REQUESTED,
+                resource_type="ticket",
+                resource_id=task.id,
+            )
             notifier.notify_ticket_assignment_requested(
                 request.requested_by_id,
                 task,
                 request.target_user_id,
             )
+            if existing is None and request.target_user_id != request.requested_by_id:
+                changed += 1
         self.db.commit()
-        return JobRunResult(records_seen=len(requests), records_changed=len(requests))
+        return JobRunResult(records_seen=len(requests), records_changed=changed)
 
     def _require_owner_admin_context(self, actor: User) -> None:
         """Require an internal account with at least one owner/admin membership."""
@@ -198,7 +208,6 @@ class OperationalAuditService:
             raise APIError(403, "insufficient_role", "Your organization role is insufficient.")
 
     @staticmethod
-    def _sanitize_error_message(message: str) -> str:
-        """Bound stored error text so audit rows never contain raw payloads."""
-        cleaned = " ".join(message.split())
-        return cleaned[:255] if cleaned else "Scheduled job failed."
+    def _safe_error_summary(error_code: str) -> str:
+        """Store a generic failure summary without raw exception text."""
+        return f"Scheduled job failed with {error_code}."

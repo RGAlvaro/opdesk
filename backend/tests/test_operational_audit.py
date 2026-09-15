@@ -193,6 +193,9 @@ def test_run_job_records_success_and_failure(api_client: tuple[TestClient, Sessi
     assert failure.error_code == "RuntimeError"
     assert failure.error_message is not None
     assert len(failure.error_message) <= 255
+    assert "secret" not in failure.error_message
+    assert "token" not in failure.error_message
+    assert "abc" not in failure.error_message
 
 
 def test_external_delivery_retry_sweep_audits_due_delivery(
@@ -339,7 +342,9 @@ def test_stale_assignment_request_reminders_are_idempotent(
     )
 
     assert first.records_seen == 1
+    assert first.records_changed == 1
     assert second.records_seen == 1
+    assert second.records_changed == 0
     assert len(notifications) == 1
 
 

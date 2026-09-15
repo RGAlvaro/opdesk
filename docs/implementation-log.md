@@ -35,6 +35,31 @@ Known gaps:
 
 ## Entries
 
+### 2026-09-15 — SPEC-316 — Scheduled jobs audit review fixes implemented
+
+Role: Ingeniero de software
+Branch: agent/spec-316-scheduled-audit
+Commit/PR: Pending
+Status: Implemented
+
+Summary:
+- Replaced persisted scheduled-job failure details with a generic safe summary based on the exception class so raw exception text, tokens, provider payloads, or message bodies are not stored in audit rows.
+- Corrected stale ticket assignment reminder audit counts so idempotent reruns report `records_changed=0` when an unread reminder already exists.
+- Added regression assertions for sensitive failure text redaction and idempotent reminder change counts.
+
+Validation:
+- command: `cd backend && poetry run pytest tests/test_operational_audit.py`: PASS — 6 focused scheduled-job/audit tests passed with the new regression assertions.
+- command: `cd backend && poetry run ruff check app/services/operational_audit.py tests/test_operational_audit.py`: PASS.
+- command: `cd backend && poetry run ruff format --check app/services/operational_audit.py tests/test_operational_audit.py`: PASS.
+- command: `make test-backend`: PASS — 124 backend tests passed and 2 DB tests were deselected.
+- command: `cd backend && poetry run mypy app`: PASS.
+
+Review:
+- decision: N/A — review fixes pending re-review.
+
+Known gaps:
+- No `SPEC-316` implementation gaps known after review fixes. Production must run exactly one scheduler instance; horizontal scheduler locking remains future scope if multiple scheduler replicas are ever needed.
+
 ### 2026-09-15 — SPEC-316 — Scheduled jobs and operational audit implemented
 
 Role: Ingeniero de software
