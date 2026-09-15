@@ -35,6 +35,28 @@ Known gaps:
 
 ## Entries
 
+### 2026-09-15 — SPEC-316 — PR opened
+
+Role: Ingeniero de software
+Branch: agent/spec-316-scheduled-audit
+Commit/PR: PR #21, commit `6b1c6f5`
+Status: Reviewed
+
+Summary:
+- Pushed the reviewed `SPEC-316` branch to `origin/agent/spec-316-scheduled-audit`.
+- Opened PR #21 against `main` after review approval.
+
+Validation:
+- command: `gh auth status`: PASS — authenticated as `RGAlvaro` with `repo` and `workflow` scopes.
+- command: `git push -u origin agent/spec-316-scheduled-audit`: PASS.
+- command: `gh pr create --repo RGAlvaro/opdesk --base main --head agent/spec-316-scheduled-audit`: PASS — opened PR #21.
+
+Review:
+- decision: APPROVED
+
+Known gaps:
+- No blocking `SPEC-316` gaps. Production must run exactly one scheduler instance; horizontal scheduler locking remains future scope if multiple scheduler replicas are ever needed.
+
 ### 2026-09-15 — SPEC-316 — Scheduled jobs audit review fixes approved
 
 Role: Review agent
