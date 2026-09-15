@@ -35,6 +35,31 @@ Known gaps:
 
 ## Entries
 
+### 2026-09-15 — SPEC-316 — Merged to main
+
+Role: Ingeniero de software
+Branch: main
+Commit/PR: PR #21, merge `e0b1bea`
+Status: Merged
+
+Summary:
+- Confirmed PR #21 was not draft, merge state was `CLEAN`, and required GitHub Actions checks passed.
+- Merged PR #21 into `main` with the merge strategy and deleted the remote feature branch through GitHub.
+- Switched local checkout to `main` and fast-forwarded to merge commit `e0b1bea`.
+
+Validation:
+- command: `gh pr view 21 --repo RGAlvaro/opdesk --json url,headRefOid,mergeStateStatus,statusCheckRollup,isDraft,baseRefName,headRefName`: PASS before merge — PR was not draft, merge state `CLEAN`, `verify` and `e2e` succeeded on head `dfaeac2`.
+- command: `gh pr merge 21 --repo RGAlvaro/opdesk --merge --delete-branch`: PASS.
+- command: `git switch main`: PASS.
+- command: `git pull --ff-only`: PASS — fast-forwarded local `main` to merge commit `e0b1bea`.
+- command: GitHub Actions `Verify` run `34958845792`: PASS before merge — `verify` passed in 1m49s and `e2e` passed in 2m44s.
+
+Review:
+- decision: APPROVED
+
+Known gaps:
+- No blocking `SPEC-316` gaps. Production must run exactly one scheduler instance; horizontal scheduler locking remains future scope if multiple scheduler replicas are ever needed.
+
 ### 2026-09-15 — SPEC-316 — PR opened
 
 Role: Ingeniero de software
