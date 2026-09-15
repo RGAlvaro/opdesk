@@ -35,6 +35,32 @@ Known gaps:
 
 ## Entries
 
+### 2026-09-15 — SPEC-316 — Scheduled jobs audit review fixes approved
+
+Role: Review agent
+Branch: agent/spec-316-scheduled-audit
+Commit/PR: Pending
+Status: Reviewed
+
+Summary:
+- Re-reviewed the `SPEC-316` fix commit `faf032f` against the prior review findings.
+- Confirmed scheduled-job failure audit rows now persist a generic safe summary instead of raw exception text.
+- Confirmed stale ticket assignment reminder reruns keep idempotent notification behavior and report `records_changed=0` when no new notification is created.
+
+Validation:
+- command: `cd backend && poetry run pytest tests/test_operational_audit.py`: PASS — 6 focused scheduled-job/audit tests passed.
+- command: `cd backend && poetry run ruff check app/services/operational_audit.py tests/test_operational_audit.py`: PASS.
+- command: `make test-backend`: PASS — 124 backend tests passed and 2 DB tests were deselected.
+- command: `cd backend && poetry run mypy app`: PASS.
+- command: `make memory-check SPEC=SPEC-316`: PASS.
+- command: `git diff --check HEAD~1..HEAD`: PASS.
+
+Review:
+- decision: APPROVED
+
+Known gaps:
+- No blocking `SPEC-316` gaps. Production must run exactly one scheduler instance; horizontal scheduler locking remains future scope if multiple scheduler replicas are ever needed.
+
 ### 2026-09-15 — SPEC-316 — Scheduled jobs audit review fixes implemented
 
 Role: Ingeniero de software
