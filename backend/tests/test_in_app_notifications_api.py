@@ -10,9 +10,11 @@ from fastapi.testclient import TestClient
 from sqlalchemy import create_engine, select
 from sqlalchemy.orm import Session, sessionmaker
 from sqlalchemy.pool import StaticPool
+from starlette.websockets import WebSocketDisconnect
 
 import app.services.security as security_service
 import app.services.tasks as task_service_module
+from app.api.notifications import manager as notification_ws_manager
 from app.core.config import Settings, get_settings
 from app.db.base import Base
 from app.db.session import get_db
@@ -69,11 +71,13 @@ def api_client() -> Generator[tuple[TestClient, Session], None, None]:
 
     app.dependency_overrides[get_db] = override_get_db
     app.dependency_overrides[get_settings] = override_get_settings
+    notification_ws_manager.clear()
     try:
         with TestClient(app, backend_options={"use_uvloop": True}) as client:
             yield client, session
     finally:
         app.dependency_overrides.clear()
+        notification_ws_manager.clear()
         session.close()
         Base.metadata.drop_all(engine)
         engine.dispose()
@@ -310,3 +314,90 @@ def test_project_and_task_events_create_notifications(
         NotificationType.TASK_STATUS_CHANGED,
     }
     assert owner_notifications == []
+
+
+def test_notification_websocket_rejects_unauthenticated_users(
+    api_client: tuple[TestClient, Session],
+) -> None:
+    """Unauthenticated notification WebSocket attempts are closed by policy."""
+    client, _session = api_client
+
+    with pytest.raises(WebSocketDisconnect):
+        with client.websocket_connect("/api/v1/notifications/ws"):
+            pass
+
+
+def test_notification_websocket_delivers_created_events_to_recipient_only(
+    api_client: tuple[TestClient, Session],
+) -> None:
+    """Created notifications fan out only to the active recipient connection."""
+    client, session = api_client
+    owner = create_user(client, session, "owner315@example.com")
+    target = create_user(client, session, "target315@example.com")
+    other = create_user(client, session, "other315@example.com")
+    login_as(client, owner)
+    organization = create_organization(client, "Realtime Ops")
+
+    login_as(client, target)
+    with client.websocket_connect("/api/v1/notifications/ws") as target_socket:
+        login_as(client, owner)
+        invite_response = client.post(
+            f"/api/v1/organizations/{organization['id']}/invitations",
+            json={"email": target.email, "role": "member"},
+        )
+        event = target_socket.receive_json()
+
+    assert invite_response.status_code == 201
+    assert event["type"] == "notification.created"
+    assert event["notification"]["recipient_user_id"] == str(target.id)
+    assert event["notification"]["resource_id"] == invite_response.json()["id"]
+    assert event["unread_count"] == 1
+    assert other.id not in notification_ws_manager.connections
+
+
+def test_notification_websocket_delivers_read_state_events(
+    api_client: tuple[TestClient, Session],
+) -> None:
+    """Read and mark-all-read operations publish unread count changes."""
+    client, session = api_client
+    user = create_user(client, session, "reader315@example.com")
+    session.add_all(
+        [
+            Notification(
+                recipient_user_id=user.id,
+                type=NotificationType.PROJECT_UPDATED,
+                title="Project updated",
+                resource_type="project",
+                resource_id=uuid.uuid4(),
+            ),
+            Notification(
+                recipient_user_id=user.id,
+                type=NotificationType.TASK_ASSIGNED,
+                title="Task assigned",
+                resource_type="task",
+                resource_id=uuid.uuid4(),
+            ),
+        ]
+    )
+    session.commit()
+    notification = session.scalar(
+        select(Notification).where(Notification.recipient_user_id == user.id)
+    )
+    assert notification is not None
+
+    login_as(client, user)
+    with client.websocket_connect("/api/v1/notifications/ws") as websocket:
+        patch_response = client.patch(
+            f"/api/v1/notifications/{notification.id}",
+            json={"read": True},
+        )
+        read_event = websocket.receive_json()
+        mark_all_response = client.post("/api/v1/notifications/mark-all-read")
+        all_read_event = websocket.receive_json()
+
+    assert patch_response.status_code == 200
+    assert read_event["type"] == "notification.read"
+    assert read_event["notification"]["id"] == str(notification.id)
+    assert read_event["unread_count"] == 1
+    assert mark_all_response.status_code == 204
+    assert all_read_event == {"type": "notifications.mark_all_read", "unread_count": 0}

@@ -2,8 +2,11 @@
 
 import logging
 import uuid
+from collections.abc import Callable
 from datetime import UTC, datetime
+from typing import Any
 
+from sqlalchemy import event
 from sqlalchemy.orm import Session
 
 from app.api.errors import APIError
@@ -16,6 +19,34 @@ from app.repositories.projects import ProjectRepository
 from app.repositories.tasks import TaskRepository
 
 logger = logging.getLogger(__name__)
+
+NotificationEventPublisher = Callable[[uuid.UUID, dict[str, Any]], None]
+PendingNotificationEvent = tuple[uuid.UUID, dict[str, Any]]
+
+notification_event_publisher: NotificationEventPublisher | None = None
+pending_notification_events_key = "pending_notification_events"
+
+
+def set_notification_event_publisher(publisher: NotificationEventPublisher | None) -> None:
+    """Register the in-process real-time publisher used by API startup wiring."""
+    global notification_event_publisher
+    notification_event_publisher = publisher
+
+
+@event.listens_for(Session, "after_commit")
+def publish_notification_events_after_commit(session: Session) -> None:
+    """Publish queued notification events only after the database commit succeeds."""
+    events: list[PendingNotificationEvent] = session.info.pop(pending_notification_events_key, [])
+    if notification_event_publisher is None:
+        return
+    for recipient_user_id, payload in events:
+        notification_event_publisher(recipient_user_id, payload)
+
+
+@event.listens_for(Session, "after_rollback")
+def discard_notification_events_after_rollback(session: Session) -> None:
+    """Drop queued notification events when the owning transaction rolls back."""
+    session.info.pop(pending_notification_events_key, None)
 
 
 class NotificationService:
@@ -47,6 +78,12 @@ class NotificationService:
             raise APIError(404, "notification_not_found", "Notification was not found.")
         notification.read_at = datetime.now(UTC) if read else None
         self.db.add(notification)
+        self.db.flush()
+        self._publish_read_state(
+            notification,
+            "notification.read",
+            self.notifications.unread_count(actor.id),
+        )
         self.db.commit()
         self.db.refresh(notification)
         return notification
@@ -57,6 +94,8 @@ class NotificationService:
         for notification in self.notifications.mark_all_read(actor.id):
             notification.read_at = now
             self.db.add(notification)
+        self.db.flush()
+        self._publish_mark_all_read(actor.id, self.notifications.unread_count(actor.id))
         self.db.commit()
 
     def notify_invitation_created(self, invitation: Invitation, organization_name: str) -> None:
@@ -94,6 +133,12 @@ class NotificationService:
             if notification is not None:
                 notification.read_at = datetime.now(UTC)
                 self.db.add(notification)
+                self.db.flush()
+                self._publish_read_state(
+                    notification,
+                    "notification.read",
+                    self.notifications.unread_count(invitation.target_user_id),
+                )
 
     def notify_project_membership(self, project: Project, user_id: uuid.UUID) -> None:
         """Notify a user that explicit project access was added."""
@@ -273,4 +318,62 @@ class NotificationService:
                 notification.id,
                 exc.__class__.__name__,
             )
+        self._publish_created(notification, self.notifications.unread_count(recipient_user_id))
         return notification
+
+    def _publish_created(self, notification: Notification, unread_count: int) -> None:
+        """Emit a best-effort created event after the row has been flushed."""
+        self._queue_publish(
+            notification.recipient_user_id,
+            {
+                "type": "notification.created",
+                "notification": self._event_notification(notification),
+                "unread_count": unread_count,
+            },
+        )
+
+    def _publish_read_state(
+        self, notification: Notification, event_type: str, unread_count: int
+    ) -> None:
+        """Emit a best-effort read-state event for active current-user sessions."""
+        self._queue_publish(
+            notification.recipient_user_id,
+            {
+                "type": event_type,
+                "notification": self._event_notification(notification),
+                "unread_count": unread_count,
+            },
+        )
+
+    def _publish_mark_all_read(self, recipient_user_id: uuid.UUID, unread_count: int) -> None:
+        """Emit a compact event after all current-user notifications are read."""
+        self._queue_publish(
+            recipient_user_id,
+            {
+                "type": "notifications.mark_all_read",
+                "unread_count": unread_count,
+            },
+        )
+
+    @staticmethod
+    def _event_notification(notification: Notification) -> dict[str, Any]:
+        """Build the WebSocket payload shape from a persisted notification row."""
+        return {
+            "id": str(notification.id),
+            "recipient_user_id": str(notification.recipient_user_id),
+            "type": notification.type.value,
+            "title": notification.title,
+            "body": notification.body,
+            "action_url": notification.action_url,
+            "resource_type": notification.resource_type,
+            "resource_id": str(notification.resource_id) if notification.resource_id else None,
+            "read_at": notification.read_at.isoformat() if notification.read_at else None,
+            "created_at": notification.created_at.isoformat(),
+        }
+
+    def _queue_publish(self, recipient_user_id: uuid.UUID, payload: dict[str, Any]) -> None:
+        """Queue one event on the active session so rollback cannot leak it."""
+        events: list[PendingNotificationEvent] = self.db.info.setdefault(
+            pending_notification_events_key, []
+        )
+        events.append((recipient_user_id, payload))

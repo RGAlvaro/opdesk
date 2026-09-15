@@ -35,6 +35,58 @@ Known gaps:
 
 ## Entries
 
+### 2026-09-15 — SPEC-315 — PR opened and GitHub Actions passed
+
+Role: Ingeniero de software
+Branch: agent/spec-315-realtime-notifications
+Commit/PR: PR #20, commit `a9c12d9`, GitHub Actions run `34943274026`
+Status: Reviewed
+
+Summary:
+- Pushed the reviewed `SPEC-315` branch and opened PR #20 against `main`.
+- Confirmed GitHub CLI authentication for account `RGAlvaro` with `repo` and `workflow` scopes before PR operations.
+- Waited for GitHub Actions on PR #20; both required jobs passed on run `34943274026`.
+
+Validation:
+- command: `gh auth status`: PASS — authenticated as `RGAlvaro` with `repo` and `workflow` scopes.
+- command: `git push -u origin agent/spec-315-realtime-notifications`: PASS.
+- command: `gh pr create --repo RGAlvaro/opdesk --base main --head agent/spec-315-realtime-notifications`: PASS — opened PR #20.
+- command: `gh pr checks 20 --repo RGAlvaro/opdesk --watch`: PASS — `verify` passed in 1m56s and `e2e` passed in 2m52s on run `34943274026`.
+
+Review:
+- decision: APPROVED before PR creation.
+
+Known gaps:
+- Multi-backend Redis pub/sub fan-out remains outside V1 by spec and must be added before horizontal backend scaling.
+
+### 2026-09-15 — SPEC-315 — Real-time notification inbox reviewed
+
+Role: Review agent
+Branch: agent/spec-315-realtime-notifications
+Commit/PR: Pending
+Status: Reviewed
+
+Summary:
+- Reviewed `SPEC-315` against authenticated notification WebSocket delivery, recipient isolation, post-commit fan-out, read-state events, frontend unread/list cache updates, reconnect behavior, REST polling fallback, tests, and project memory.
+- Confirmed the branch includes the merged `SPEC-314` baseline after resolving the notification-service and memory conflicts from `main`.
+- Kept the documented multi-backend fan-out limitation as future scope before horizontal backend scaling.
+
+Validation:
+- command: `make test-backend`: PASS — 118 selected backend tests passed and 2 DB tests were deselected.
+- command: `make test-frontend`: PASS — 65 frontend tests passed.
+- command: `make lint`: PASS.
+- command: `make format-check`: PASS.
+- command: `make typecheck`: PASS.
+- command: `make smoke`: PASS — Docker/local backend health, Redis `PONG`, worker, Adminer, and Vite frontend checks passed.
+- command: `make memory-check SPEC=SPEC-315`: PASS.
+- command: `git diff --check`: PASS.
+
+Review:
+- decision: APPROVED
+
+Known gaps:
+- Multi-backend Redis pub/sub fan-out remains outside V1 by spec and must be added before horizontal backend scaling.
+
 ### 2026-09-11 — SPEC-314 — Merged to main
 
 Role: Ingeniero de software
@@ -137,6 +189,36 @@ Review:
 
 Known gaps:
 - No `SPEC-314` implementation gaps known before review. Scheduled retry sweeps through Celery beat remain in `SPEC-316`; manual delivery-audit cleanup remains future scope per `SPEC-314` retention decision.
+
+### 2026-09-09 — SPEC-315 — Real-time notification inbox implemented
+
+Role: Ingeniero de software
+Branch: agent/spec-315-realtime-notifications
+Commit/PR: commit `aa9896f`, PR pending
+Status: Implemented
+
+Summary:
+- Added authenticated `WS /api/v1/notifications/ws` support with in-process recipient-scoped connection tracking.
+- Registered a notification event publisher so persisted notification create/read/mark-all-read changes emit best-effort real-time events with REST-compatible payloads and unread counts.
+- Connected the authenticated app shell to a notification WebSocket hook that patches React Query unread/list caches, avoids duplicate list entries, invalidates REST state for recovery, and keeps a 30s polling fallback.
+- Updated chat frontend tests to account for the new app-wide notification socket.
+- Marked `SPEC-315` Implemented in the spec and spec index.
+
+Validation:
+- command: `cd backend && poetry run pytest tests/test_in_app_notifications_api.py`: PASS — 6 notification API/WebSocket tests passed.
+- command: `cd frontend && npm run test -- NotificationsPage.test.tsx`: PASS — 3 notification UI/WebSocket tests passed.
+- command: `make test-backend`: PASS — 109 selected backend tests passed, 2 DB tests deselected.
+- command: `make test-frontend`: PASS — 65 frontend tests passed.
+- command: `make lint`: PASS.
+- command: `make format-check`: PASS.
+- command: `make typecheck`: PASS.
+- command: elevated `make smoke`: PASS — Docker/local backend health, Redis `PONG`, worker, Adminer, and Vite frontend checks passed.
+
+Review:
+- decision: N/A
+
+Known gaps:
+- Multi-backend Redis pub/sub fan-out remains outside V1 by spec and must be added before horizontal backend scaling. Future spec note: when OpsDesk runs multiple backend replicas, publish notification events through Redis pub/sub or an equivalent shared broker so events created on one backend can reach sockets connected to another backend.
 
 ### 2026-09-09 — SPEC-313 — Merged to main
 

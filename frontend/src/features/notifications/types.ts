@@ -7,7 +7,10 @@ export type NotificationType =
   | "project.updated"
   | "task.assigned"
   | "task.created"
-  | "task.status_changed";
+  | "task.status_changed"
+  | "ticket.comment"
+  | "ticket.assignment_requested"
+  | "chat.unread";
 
 export type Notification = {
   id: string;
@@ -32,3 +35,14 @@ export type NotificationListResponse = {
 export type NotificationUnreadCountResponse = {
   unread_count: number;
 };
+
+export type NotificationRealtimeEvent =
+  | {
+      type: "notification.created" | "notification.read";
+      notification: Notification;
+      unread_count: number;
+    }
+  | {
+      type: "notifications.mark_all_read";
+      unread_count: number;
+    };
