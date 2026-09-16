@@ -41,6 +41,7 @@ import { AppShell } from "./AppShell";
 import { ChangelogPage } from "./ChangelogPage";
 import { DashboardPage } from "./DashboardPage";
 import { LandingPage } from "./LandingPage";
+import { CopyrightPage, CookiesPage, TermsPage } from "./LegalPages";
 
 /** Map URLs to route guards, public pages, and authenticated app content. */
 function AppIndexPage() {
@@ -56,6 +57,9 @@ export function AppRouter() {
   return (
     <Routes>
       <Route path="/" element={<LandingPage />} />
+      <Route path="/terms" element={<TermsPage />} />
+      <Route path="/copyright" element={<CopyrightPage />} />
+      <Route path="/cookies" element={<CookiesPage />} />
       <Route
         path="/login"
         element={

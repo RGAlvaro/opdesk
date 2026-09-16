@@ -260,6 +260,18 @@ describe("SPEC-104 frontend app shell and auth UI", () => {
     expect(
       screen.getAllByRole("link", { name: /changelog|release notes/i })[0],
     ).toHaveAttribute("href", "/changelog");
+    expect(screen.getByRole("link", { name: "Terms" })).toHaveAttribute(
+      "href",
+      "/terms",
+    );
+    expect(screen.getByRole("link", { name: "Copyright" })).toHaveAttribute(
+      "href",
+      "/copyright",
+    );
+    expect(screen.getByRole("link", { name: "Cookies" })).toHaveAttribute(
+      "href",
+      "/cookies",
+    );
     expect(fetchMock).not.toHaveBeenCalled();
   });
 
@@ -608,6 +620,25 @@ describe("SPEC-104 frontend app shell and auth UI", () => {
     ).toBeInTheDocument();
     expect(fetchMock).not.toHaveBeenCalled();
   });
+
+  it.each([
+    ["/terms", "Terminos y condiciones", /plantilla informativa/i],
+    ["/copyright", "Copyright", /todos los derechos reservados/i],
+    ["/cookies", "Politica de cookies", /access_token/i],
+  ])(
+    "renders public legal page %s without authentication",
+    async (path, heading, expectedText) => {
+      const fetchMock = mockFetch();
+
+      renderRoute(path);
+
+      expect(
+        await screen.findByRole("heading", { name: heading }),
+      ).toBeInTheDocument();
+      expect(screen.getByText(expectedText)).toBeInTheDocument();
+      expect(fetchMock).not.toHaveBeenCalled();
+    },
+  );
 
   it("redirects authenticated visitors away from public routes", async () => {
     mockFetch(jsonResponse(user));

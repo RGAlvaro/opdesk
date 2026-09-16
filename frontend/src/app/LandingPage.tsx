@@ -170,6 +170,15 @@ export function LandingPage() {
             <Link to="/changelog" className="hover:text-brand">
               Changelog
             </Link>
+            <Link to="/terms" className="hover:text-brand">
+              Terms
+            </Link>
+            <Link to="/copyright" className="hover:text-brand">
+              Copyright
+            </Link>
+            <Link to="/cookies" className="hover:text-brand">
+              Cookies
+            </Link>
             <Link to="/signup" className="hover:text-brand">
               Create account
             </Link>

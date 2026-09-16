@@ -35,6 +35,59 @@ Known gaps:
 
 ## Entries
 
+### 2026-09-16 — SPEC-317 — Public legal pages implemented
+
+Role: Ingeniero de software
+Branch: main
+Commit/PR: Pending
+Status: Implemented
+
+Summary:
+- Added `SPEC-317` for public terms, copyright, and cookie-policy pages before the next production deployment.
+- Added public frontend routes `/terms`, `/copyright`, and `/cookies` with static legal text and production review caveats.
+- Added landing footer links to the legal pages and frontend route coverage for the pages and footer links.
+- Updated technical documentation route inventory and documented the remaining pre-production privacy-policy gap.
+
+Validation:
+- command: `cd frontend && ./node_modules/.bin/vitest run src/app/AppRouter.test.tsx --testNamePattern "public legal|portfolio home" --reporter verbose --maxWorkers 1`: PASS — legal route tests and landing footer link test passed.
+- command: `cd frontend && ./node_modules/.bin/vitest run src/app/AppRouter.test.tsx --maxWorkers 1`: PASS — 28 router tests passed.
+- command: `cd frontend && npm run format:check -- src/app/AppRouter.test.tsx src/app/AppRouter.tsx src/app/LandingPage.tsx src/app/LegalPages.tsx`: PASS.
+- command: `cd frontend && npm run lint`: PASS.
+- command: `cd frontend && npm run typecheck`: PASS.
+- command: `make technical-docs-check`: PASS.
+- command: `git diff --check`: PASS.
+
+Review:
+- decision: N/A — implementation pending review.
+
+Known gaps:
+- A full privacy policy remains needed before production use that relies on real user account/profile data beyond portfolio evaluation.
+- The public legal text is a conservative template and should be reviewed with final responsible-party/contact details before being relied on legally.
+
+### 2026-09-15 — Technical documentation maintenance harness added
+
+Role: Arquitecto de specs
+Branch: main
+Commit/PR: Pending
+Status: Ready
+
+Summary:
+- Added `docs/technical-documentation.md` as the canonical full internal technical documentation source for the current OpsDesk architecture.
+- Added `scripts/check_technical_docs.py` and `make technical-docs-check` to validate required documentation sections, stack terms, current Alembic head, local/production Compose services, and ASCII-only PDF-friendly content.
+- Added `make technical-docs-check` to `verify-no-db` so future architecture/runtime changes must keep the technical documentation current before review.
+- Documented the new target in `specs/harness/local-validation.md` and in the technical documentation maintenance section.
+
+Validation:
+- command: `make technical-docs-check`: PASS.
+- command: `python3 -m py_compile scripts/check_technical_docs.py`: PASS.
+- command: `git diff --check`: PASS.
+
+Review:
+- decision: N/A
+
+Known gaps:
+- No PDF converter is installed in the current environment; the Markdown document remains the canonical source until a PDF conversion tool such as Pandoc is added.
+
 ### 2026-09-15 — SPEC-316 — Merged to main
 
 Role: Ingeniero de software

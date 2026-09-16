@@ -17,6 +17,7 @@ make test
 make test-backend
 make test-frontend
 make test-e2e
+make technical-docs-check
 make lint
 make format-check
 make typecheck
@@ -45,6 +46,7 @@ Expected meaning:
 | `make test-backend` | Backend unit/integration/API tests |
 | `make test-frontend` | Frontend unit/component tests |
 | `make test-e2e` | Critical Playwright browser flow against Docker/local frontend and backend services |
+| `make technical-docs-check` | Validate that `docs/technical-documentation.md` tracks current core architecture facts, Alembic head, Compose services, PDF-friendly structure, and required stack sections |
 | `make lint` | Backend and frontend lint |
 | `make format-check` | Formatting checks without modifying files |
 | `make typecheck` | Backend and frontend type checks where configured |

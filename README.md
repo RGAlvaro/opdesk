@@ -10,6 +10,7 @@ The current implementation covers local development, core product workflows, and
 - `SPEC-101`, `SPEC-102`, and `SPEC-103`: authentication/users, organizations/RBAC, projects, and tasks.
 - `SPEC-104`, `SPEC-105`, and `SPEC-106`: React app shell, auth/profile UI, organization UI, and project/task UI.
 - `SPEC-301`, `SPEC-314`, `SPEC-315`, and `SPEC-316`: production Compose, Caddy routing, Redis/Celery worker, scheduler, external notifications, real-time notification inbox, CI verification, and deployment/backup documentation.
+- `SPEC-317`: public terms, copyright, and cookie-policy pages for production readiness.
 
 ## Local Setup
 

@@ -9,10 +9,12 @@ This file is the compact operational state for agents. Use it to orient quickly 
 - Active branch: `main`
 - Current state: `SPEC-307` release automation was re-reviewed and approved on 2026-07-30 after the pre-backup data-service recreation fix; GitHub Actions production secrets were configured on 2026-08-03 and the first manual workflow execution completed successfully on 2026-08-11, first validation-only and then with production deploy enabled. `SPEC-308` was implemented, review-fixed, deployed to production, and smoke-checked on 2026-08-11 with migration `0006`, profile/email-change APIs, backend-owned organization slug suffixing, project/task metadata APIs, task watchers, frontend metadata forms/display states, and backend/frontend tests. `SPEC-309` was merged to `main` on 2026-08-12 with migration `0007`, project-scoped task label APIs, task label assignments, `label_id` task filtering, frontend label management/filtering/display, and backend tests. `SPEC-310` was merged to `main` through PR #11 on 2026-08-12 with root `CHANGELOG.md`, changelog format validation, production workflow changelog-entry enforcement before secrets/SSH, public `/changelog` route, landing-page release-notes link, frontend route coverage, deployment docs, and harness docs. `SPEC-311` was merged to `main` through PR #12 on 2026-08-12 with a static public portfolio home, recruiter-facing developer copy, OpsDesk available app card, ERP coming-soon card with no fake link, changelog navigation, generated portfolio hub bitmap asset, and frontend tests. Production is available at `https://rgalvaro.es/` and `https://www.rgalvaro.es/`. `SPEC-303`, `SPEC-306`, `SPEC-305`, and `SPEC-304` are merged and deployed through the 2026-08-18 Collaboration Release at app revision `cc354148dee2d1f69b3d99d34b3f0aaced3f06b6`, Alembic `0012 (head)`. On 2026-09-07 the known gaps were converted into Ready specs: `SPEC-313`, `SPEC-314`, `SPEC-315`, and `SPEC-316`. `SPEC-313` is now merged to `main` through PR #18 at merge commit `8006844` with `@axe-core/playwright`, Firefox/WebKit smoke projects, Chromium accessibility scans for public/authenticated/client surfaces, updated Playwright config, harness docs, local validation passing, and GitHub Actions `Verify` run `34325273247` passing on the final PR head.
 - Current local `SPEC-314` state: merged to `main` through PR #19 at merge commit `70fcbee` on 2026-09-11 with Resend/console email delivery, delivery audit migration `0013`, Celery delivery tasks, `ticket.created` notification fan-out, production env/docs, safer delivery logs, and GitHub Actions `Verify` run `34577119234` passing before merge.
-- Active spec: none. `SPEC-316` merged to `main` through PR #21 at merge commit `e0b1bea`.
+- Active spec: `SPEC-317` implemented locally on `main` and pending review.
 - Current local `SPEC-315` state: merged to `main` with authenticated notification WebSockets, in-process recipient fan-out, unread/list cache updates, REST polling fallback, review approval, and GitHub Actions `Verify` run `34943597736` passing before merge.
 - Current local `SPEC-316` state: merged to `main` through PR #21 with Celery beat scheduler service, persistent operational audit run records, owner/admin audit API and UI, scheduled external delivery retry sweeps, expired invitation maintenance, stale ticket assignment reminder re-emits, migration `0014`, production Compose/docs updates, safe failure summaries, and idempotent reminder `records_changed` counts.
+- Current local `SPEC-317` state: implemented with public `/terms`, `/copyright`, and `/cookies` routes, landing footer legal links, static Spanish legal template text, route tests, and technical documentation route updates.
 - Documentation checkpoint: agent operational memory was restructured on 2026-06-16 with this file, central touch-to-spec routing, per-spec scope/context blocks, and `ADR-005`; on 2026-06-24 the base workflow added review-gated memory checks and implementation-log scaffolding targets; on 2026-08-18 merge memory became an explicit checkpoint with `make merge-memory-check SPEC=SPEC-XXX`; `ADR-009` records the managed-sandbox GitHub CLI policy.
+- Technical documentation checkpoint: `docs/technical-documentation.md` is the full internal architecture document and `make technical-docs-check` validates required sections, current Alembic head, Compose services, required stack terms, and PDF-friendly ASCII content. `verify-no-db` now includes this target so architecture/runtime changes must update the technical documentation.
 - Recent validation recorded in `docs/implementation-log.md`: the 2026-08-18 Collaboration Release deployed merged `SPEC-305` and `SPEC-304` to production through Production Release run `32133588953` after local changelog/test/lint/format/typecheck validation, GitHub Actions `Verify` run `32127831767`, backup, migrations, drift check, compose update, public smoke checks, and direct VPS manifest/Alembic checks passed.
 - Current validation baseline: `SPEC-316` local implementation validation passed focused backend/frontend tests, full backend/frontend suites, lint, format, typecheck, migrations, production config rendering, and Docker/local smoke with scheduler running. Production remains deployed at app revision `cc354148dee2d1f69b3d99d34b3f0aaced3f06b6` with Alembic `0012 (head)`, including merged `SPEC-305` and merged `SPEC-304`.
 - Harness note: managed-sandbox agents should run migration validation targets with elevated execution from the first attempt because host PostgreSQL TCP access and the Docker socket can be blocked by the sandbox even when services are healthy.
@@ -20,8 +22,8 @@ This file is the compact operational state for agents. Use it to orient quickly 
 
 ## Next Handoff
 
-- Next role: Arquitecto de specs or product owner to choose the next scope.
-- Next likely integration work: choose the next Ready spec or define the next operational/product spec after `SPEC-316`.
+- Next role: Review agent for `SPEC-317`.
+- Next likely integration work: review public legal pages, then commit/push/PR if approved.
 - Keep `SPEC-301` production docs aligned if future scheduled jobs or scheduler topology changes are added.
 
 ## Implemented Specs
@@ -54,6 +56,7 @@ This file is the compact operational state for agents. Use it to orient quickly 
 | `SPEC-314` | External notification delivery | Resend/console email provider, Celery delivery jobs, delivery audit migration `0013`, production env/docs | Merged through PR #19 at `70fcbee`; GitHub Actions passed before merge |
 | `SPEC-315` | Real-time notification inbox | Notification WebSocket endpoint, unread-count live updates, polling fallback, frontend cache updates | Merged through PR #20 at `cac6268`; GitHub Actions passed before merge |
 | `SPEC-316` | Scheduled jobs and operational audit | Celery beat scheduler service, scheduled job audit table, admin audit UI, production Compose/docs | Merged through PR #21 at `e0b1bea`; GitHub Actions passed before merge |
+| `SPEC-317` | Public legal pages | Public terms, copyright, cookies routes, landing footer legal links | Implemented locally on `main`; pending review |
 
 ## Ready Specs
 
@@ -63,7 +66,7 @@ This file is the compact operational state for agents. Use it to orient quickly 
 
 ## Next Likely Work
 
-1. Choose the next Ready spec or define the next operational/product spec after `SPEC-316`.
+1. Review `SPEC-317`, then commit/push/PR if approved.
 2. Keep production release memory current after any future deploy, rollback, or branch cleanup.
 
 ## Known Gaps
@@ -74,6 +77,7 @@ This file is the compact operational state for agents. Use it to orient quickly 
 - `SPEC-307` is implemented, review approved, and the first real VPS workflow run passed on 2026-08-11.
 - Production is currently deployed at `https://rgalvaro.es/` and `https://www.rgalvaro.es/`.
 - `SPEC-314` implements Resend-backed real email delivery and delivery audit with indefinite retention. `SPEC-316` now implements Celery beat scheduled jobs and persistent operational audit with owner/admin UI and indefinite retention. Production must run exactly one scheduler instance; horizontal scheduler locking remains future scope if multiple scheduler replicas are ever needed.
+- `SPEC-317` adds public legal pages for terms, copyright, and cookies. A full privacy policy remains a pre-production legal gap because the app processes user account/profile data.
 
 ## Validation Baseline
 
@@ -82,6 +86,8 @@ This file is the compact operational state for agents. Use it to orient quickly 
 - Latest `SPEC-316` PR publication: branch `agent/spec-316-scheduled-audit` pushed at `6b1c6f5`; PR #21 opened against `main` on 2026-09-15 after review approval.
 - Latest `SPEC-316` merge validation: PR #21 merged to `main` as `e0b1bea` on 2026-09-15 after GitHub Actions `Verify` run `34958845792` passed with `verify` in 1m49s and `e2e` in 2m44s; local `main` fast-forwarded to `e0b1bea`.
 - Latest `SPEC-316` implementation validation: `cd backend && poetry run pytest tests/test_operational_audit.py` PASS with 6 focused scheduled-job/audit tests; `cd frontend && npm run test -- AppRouter.test.tsx` PASS with focused router/audit UI coverage; `make test-backend` PASS with 124 backend tests and 2 DB tests deselected; `make test-frontend` PASS with 67 frontend tests; `make lint` PASS; `make format-check` PASS; `make typecheck` PASS; `make migrations-check` PASS with Alembic upgrade through `0014` and no new upgrade operations; `make prod-config` PASS with private scheduler service rendering; `make smoke` PASS with Docker/local backend health, Redis `PONG`, worker, scheduler, Adminer, and Vite frontend checks.
+- Latest technical documentation harness validation: `make technical-docs-check` PASS; `python3 -m py_compile scripts/check_technical_docs.py` PASS; `git diff --check` PASS on 2026-09-15.
+- Latest `SPEC-317` implementation validation: `cd frontend && ./node_modules/.bin/vitest run src/app/AppRouter.test.tsx --testNamePattern "public legal|portfolio home" --reporter verbose --maxWorkers 1` PASS with legal route/footer tests; `cd frontend && ./node_modules/.bin/vitest run src/app/AppRouter.test.tsx --maxWorkers 1` PASS with 28 router tests; `cd frontend && npm run format:check -- src/app/AppRouter.test.tsx src/app/AppRouter.tsx src/app/LandingPage.tsx src/app/LegalPages.tsx` PASS; `cd frontend && npm run lint` PASS; `cd frontend && npm run typecheck` PASS; `make technical-docs-check` PASS; `git diff --check` PASS.
 - Latest `SPEC-314` implementation validation: `make test-backend` PASS with 115 selected backend tests and 2 DB tests deselected; `make migrations-check` PASS with Alembic upgrade through `0013` and no new upgrade operations; `make lint` PASS; `make format-check` PASS; `make typecheck` PASS; `make prod-config` PASS with backend/worker Resend env wiring.
 - Latest `SPEC-314` review validation: `make test-backend` PASS with 115 selected backend tests and 2 DB tests deselected; `make lint` PASS; `make format-check` PASS; `make typecheck` PASS; `make memory-check SPEC=SPEC-314` PASS; `git diff --check` PASS. Elevated `make migrations-check` could not connect to PostgreSQL at `127.0.0.1:5432`, and elevated `make prod-config` could not find `docker` in this WSL distro; both had passed before the review-only logging adjustment.
 - Latest `SPEC-314` PR validation: GitHub Actions run `34576823985` passed `verify` in 2m1s and `e2e` in 2m41s on PR #19 before this evidence-memory update.
