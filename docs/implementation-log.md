@@ -35,6 +35,34 @@ Known gaps:
 
 ## Entries
 
+### 2026-09-16 — Operations Readiness production release
+
+Role: Ingeniero de software
+Branch: main
+Commit/PR: Production Release run `35080510017`, deployed `a22dce9`
+Status: Merged
+
+Summary:
+- Updated the VPS `/srv/opdesk/.env.production` with the required `SPEC-314` production email settings for Resend-backed delivery and created backup `.env.production.backup.20260916-093729`.
+- Ran the manual Production Release workflow with `target_ref=a22dce9dc67cb52f01e012b4ac763799bd1d122e`, `deploy_to_production=true`, and changelog entry `2026-09-16 - Operations Readiness Release`.
+- Deployed the Operations Readiness release to production with migration head `0014`, scheduler service running, and release manifest written at `/srv/opdesk/releases/latest-release.txt`.
+
+Validation:
+- command: `ssh opdesk-vps` env presence check: PASS — `PROD_PUBLIC_APP_URL`, `PROD_EMAIL_DELIVERY_PROVIDER`, `PROD_RESEND_API_KEY`, `PROD_RESEND_FROM_EMAIL`, `EMAIL_NOTIFICATIONS_ENABLED`, and `EMAIL_PROVIDER_TIMEOUT_SECONDS` are present in `/srv/opdesk/.env.production`.
+- command: `ssh opdesk-vps 'cd /srv/opdesk/current && docker compose --project-name opdesk-prod --env-file /srv/opdesk/.env.production -f docker-compose.prod.yml config >/dev/null'`: PASS.
+- command: `gh workflow run production-release.yml --repo RGAlvaro/opdesk --ref main ...`: PASS — triggered Production Release run `35080510017`.
+- command: `gh run watch 35080510017 --repo RGAlvaro/opdesk --exit-status`: PASS — release job completed in 4m3s.
+- command: `ssh opdesk-vps 'cat /srv/opdesk/releases/latest-release.txt'`: PASS — backup `/srv/opdesk/backups/opdesk-20260916-094007-a22dce9dc67cb52f01e012b4ac763799.dump`, `migrations=PASS`, `migration_drift_check=PASS`, `alembic_current=0014 (head)`, `compose_update=PASS`, `backend_health=PASS`, `frontend=PASS`, `redis=PASS`, `worker=PASS`, and `scheduler=PASS`.
+- command: `ssh opdesk-vps 'curl --fail --silent --show-error --retry 5 --retry-delay 2 --retry-all-errors https://rgalvaro.es/health && curl --fail --silent --show-error --retry 5 --retry-delay 2 --retry-all-errors https://rgalvaro.es/ | head -c 120'`: PASS.
+- command: local `curl --fail --silent --show-error https://rgalvaro.es/health`: PASS once with `{"status":"ok"}`; later local DNS resolution for `rgalvaro.es` and `www.rgalvaro.es` failed from this workstation, while VPS-side public checks and workflow public checks passed.
+
+Review:
+- decision: APPROVED by release workflow and post-deploy checks.
+
+Known gaps:
+- A full privacy policy remains needed before production use that relies on real user account/profile data beyond portfolio evaluation.
+- The Resend API key was exposed during operator setup and should be rotated in Resend, then updated in `/srv/opdesk/.env.production`.
+
 ### 2026-09-16 — Production update preparation merged
 
 Role: Ingeniero de software
