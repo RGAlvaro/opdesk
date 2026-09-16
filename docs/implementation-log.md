@@ -35,6 +35,31 @@ Known gaps:
 
 ## Entries
 
+### 2026-09-16 — Production update preparation merged
+
+Role: Ingeniero de software
+Branch: main
+Commit/PR: PR #23, merge `9319a2b`
+Status: Merged
+
+Summary:
+- Merged the operations readiness changelog entry and production-release preparation memory through PR #23.
+- The next production workflow should target current `main` and use changelog entry `2026-09-16 - Operations Readiness Release`.
+- Local `main` was fast-forwarded to merge commit `9319a2b`.
+
+Validation:
+- command: `gh pr checks 23 --repo RGAlvaro/opdesk --watch`: PASS — `verify` passed in 1m30s and `e2e` passed in 3m3s on run `35071896950`.
+- command: `gh pr view 23 --repo RGAlvaro/opdesk --json mergeStateStatus,isDraft,statusCheckRollup,headRefOid,baseRefName,headRefName,url`: PASS before merge — PR was not draft, merge state `CLEAN`, `verify` and `e2e` succeeded on head `d2e0e5d`.
+- command: `gh pr merge 23 --repo RGAlvaro/opdesk --merge --delete-branch`: PASS.
+- command: `git switch main && git pull --ff-only`: PASS — fast-forwarded local `main` to merge commit `9319a2b`.
+
+Review:
+- decision: APPROVED by passing CI and release-preparation validation.
+
+Known gaps:
+- Before production deployment, confirm the VPS `.env.production` has `PROD_PUBLIC_APP_URL`, `PROD_RESEND_API_KEY`, `PROD_RESEND_FROM_EMAIL`, and other `SPEC-314` email settings required by production Compose.
+- A full privacy policy remains needed before production use that relies on real user account/profile data beyond portfolio evaluation.
+
 ### 2026-09-16 — Production update preparation started
 
 Role: Ingeniero de software
