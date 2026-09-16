@@ -35,6 +35,30 @@ Known gaps:
 
 ## Entries
 
+### 2026-09-16 — Production update preparation started
+
+Role: Ingeniero de software
+Branch: main
+Commit/PR: Pending
+Status: Implemented
+
+Summary:
+- Added the required production changelog heading `2026-09-16 - Operations Readiness Release` for the next release workflow run.
+- The release entry summarizes changes merged since the 2026-08-18 production deployment: cross-browser/accessibility E2E hardening, external email notifications, real-time notification inbox, scheduler/operational audit, public legal pages, and technical documentation.
+
+Validation:
+- command: `make changelog-check`: PASS.
+- command: `make prod-config`: PASS — production Compose renders backend, frontend, PostgreSQL, Redis, worker, scheduler, and Caddy with placeholder production env.
+- command: `make technical-docs-check`: PASS.
+- command: `make release-workflow-check`: PASS — changelog validation, workflow static validation, release script syntax, and missing-env failure guard passed.
+
+Review:
+- decision: N/A
+
+Known gaps:
+- A full privacy policy remains needed before production use that relies on real user account/profile data beyond portfolio evaluation.
+- Before production deployment, confirm the VPS `.env.production` has the required Resend variables and production public app URL for `SPEC-314`.
+
 ### 2026-09-16 — SPEC-317 — Merged to main
 
 Role: Ingeniero de software
