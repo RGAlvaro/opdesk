@@ -1,5 +1,22 @@
 # Changelog
 
+## 2026-09-16 - Operations Readiness Release
+
+### Added
+
+- Cross-browser Playwright smoke coverage and automated accessibility checks for critical public, authenticated, and client-facing routes.
+- External notification delivery with Resend-backed email support, delivery audit rows, retry handling, and safe provider logging.
+- Real-time notification inbox updates through authenticated WebSockets with REST polling fallback.
+- Scheduled maintenance jobs with Celery beat, operational audit records, and an owner/admin operational audit screen.
+- Public terms, copyright, and cookie-policy pages linked from the public portfolio home.
+- Internal technical documentation covering architecture, stack, runtime services, data model, API surfaces, validation, and production constraints.
+
+### Changed
+
+- Production Compose now includes a private Celery beat scheduler service alongside the backend, frontend, PostgreSQL, Redis, and worker services.
+- Production release checks now expect the scheduler service to be running after deployment.
+- The frontend public surface now includes legal-information routes in addition to the portfolio home and changelog.
+
 ## 2026-08-18 - Collaboration Release
 
 ### Added
