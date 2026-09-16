@@ -35,6 +35,35 @@ Known gaps:
 
 ## Entries
 
+### 2026-09-16 — SPEC-317 — Public legal pages implemented
+
+Role: Ingeniero de software
+Branch: main
+Commit/PR: Pending
+Status: Implemented
+
+Summary:
+- Added `SPEC-317` for public terms, copyright, and cookie-policy pages before the next production deployment.
+- Added public frontend routes `/terms`, `/copyright`, and `/cookies` with static legal text and production review caveats.
+- Added landing footer links to the legal pages and frontend route coverage for the pages and footer links.
+- Updated technical documentation route inventory and documented the remaining pre-production privacy-policy gap.
+
+Validation:
+- command: `cd frontend && ./node_modules/.bin/vitest run src/app/AppRouter.test.tsx --testNamePattern "public legal|portfolio home" --reporter verbose --maxWorkers 1`: PASS — legal route tests and landing footer link test passed.
+- command: `cd frontend && ./node_modules/.bin/vitest run src/app/AppRouter.test.tsx --maxWorkers 1`: PASS — 28 router tests passed.
+- command: `cd frontend && npm run format:check -- src/app/AppRouter.test.tsx src/app/AppRouter.tsx src/app/LandingPage.tsx src/app/LegalPages.tsx`: PASS.
+- command: `cd frontend && npm run lint`: PASS.
+- command: `cd frontend && npm run typecheck`: PASS.
+- command: `make technical-docs-check`: PASS.
+- command: `git diff --check`: PASS.
+
+Review:
+- decision: N/A — implementation pending review.
+
+Known gaps:
+- A full privacy policy remains needed before production use that relies on real user account/profile data beyond portfolio evaluation.
+- The public legal text is a conservative template and should be reviewed with final responsible-party/contact details before being relied on legally.
+
 ### 2026-09-15 — Technical documentation maintenance harness added
 
 Role: Arquitecto de specs

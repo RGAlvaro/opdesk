@@ -487,6 +487,9 @@ The frontend is organized by application shell and feature folders:
 Public routes:
 
 - `/`
+- `/terms`
+- `/copyright`
+- `/cookies`
 - `/login`
 - `/signup`
 - `/changelog`
@@ -781,6 +784,7 @@ These are future scale/operations concerns, not required for the current portfol
 The current known gaps are intentionally documented rather than hidden:
 
 - Production currently needs a release to move from deployed Alembic `0012` to current `main` through `0014`.
+- A full privacy policy remains needed before production use that relies on real user account/profile data beyond portfolio evaluation.
 - Redis pub/sub or another shared fan-out layer is needed before horizontal backend scaling of WebSockets.
 - Scheduler production V1 expects exactly one scheduler instance; multiple schedulers require future locking/scaling design.
 - Manual deletion/retention management for notifications, delivery audits, and operational audit rows is future scope.
