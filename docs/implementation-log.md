@@ -35,6 +35,36 @@ Known gaps:
 
 ## Entries
 
+### 2026-09-16 — SPEC-317 — Merged to main
+
+Role: Ingeniero de software
+Branch: main
+Commit/PR: PR #22, merge `eab66a6`
+Status: Merged
+
+Summary:
+- Published local documentation/legal commits through branch `agent/spec-317-legal-docs` and opened PR #22.
+- Waited for GitHub Actions; `verify` and `e2e` passed on the PR head.
+- Merged PR #22 into `main` with the merge strategy and deleted the remote feature branch through GitHub.
+- Fast-forwarded local `main` to merge commit `eab66a6`.
+
+Validation:
+- command: `gh auth status`: PASS — authenticated as `RGAlvaro` with `repo` and `workflow` scopes.
+- command: `git push -u origin agent/spec-317-legal-docs`: PASS.
+- command: `gh pr create --repo RGAlvaro/opdesk --base main --head agent/spec-317-legal-docs`: PASS — opened PR #22.
+- command: `gh pr checks 22 --repo RGAlvaro/opdesk --watch`: PASS — `verify` passed in 1m57s and `e2e` passed in 2m48s on run `35070466769`.
+- command: `gh pr view 22 --repo RGAlvaro/opdesk --json mergeStateStatus,isDraft,statusCheckRollup,headRefOid,baseRefName,headRefName,url`: PASS before merge — PR was not draft, merge state `CLEAN`, `verify` and `e2e` succeeded on head `91b0c90`.
+- command: `gh pr merge 22 --repo RGAlvaro/opdesk --merge --delete-branch`: PASS.
+- command: `git switch main`: PASS.
+- command: `git pull --ff-only`: PASS — fast-forwarded local `main` to merge commit `eab66a6`.
+
+Review:
+- decision: APPROVED by passing CI and prior local validation; no separate review-agent pass was requested before merge.
+
+Known gaps:
+- A full privacy policy remains needed before production use that relies on real user account/profile data beyond portfolio evaluation.
+- The public legal text is a conservative template and should be reviewed with final responsible-party/contact details before being relied on legally.
+
 ### 2026-09-16 — SPEC-317 — Public legal pages implemented
 
 Role: Ingeniero de software
