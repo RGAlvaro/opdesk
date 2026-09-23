@@ -39,13 +39,13 @@ Known gaps:
 
 Role: Ingeniero de software
 Branch: agent/spec-318-portfolio-landing
-Commit/PR: pending local commit and PR
+Commit/PR: implementation commit `0865173`; PR #24 (`https://github.com/RGAlvaro/opdesk/pull/24`)
 Status: Implemented
 
 Summary:
 - Audited the local changes against `SPEC-318`: the landing, scoped CSS, reference asset, factual ERP copy/repository link, frontend assertions, responsive and accessibility browser coverage, and project memory are in scope. The authenticated OpsDesk interface and backend are unchanged.
 - Added the user-facing `2026-09-23 - Portfolio Landing Release` entry to `CHANGELOG.md` for the required production release gate.
-- Prepared the implementation branch and ran the full verification and release checks before publication. No production change has occurred yet.
+- Published the implementation branch and opened PR #24 after the full verification and release checks. No production change has occurred yet.
 
 Validation:
 - command: `make verify`: PASS — lint, format, types, 124 selected backend tests, 70 frontend tests, technical docs, and Alembic upgrade/check with no new operations.
@@ -58,7 +58,7 @@ Review:
 - decision: N/A — PR review has not yet happened.
 
 Known gaps:
-- Publish the branch/PR, obtain review approval, merge, deploy with the specified changelog entry, and verify the production desktop/mobile rendering.
+- Obtain PR review approval, merge, deploy with the specified changelog entry, and verify the production desktop/mobile rendering.
 
 ### 2026-09-23 — SPEC-318 — ERP current foundation and future modules clarified
 
