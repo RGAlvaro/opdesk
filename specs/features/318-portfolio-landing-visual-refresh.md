@@ -1,6 +1,6 @@
 # SPEC-318 — Portfolio Landing Visual Refresh
 
-Status: Ready
+Status: Implemented
 Owner: Arquitecto de specs
 Last updated: 2026-09-23
 

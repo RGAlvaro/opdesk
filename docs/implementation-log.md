@@ -35,6 +35,28 @@ Known gaps:
 
 ## Entries
 
+### 2026-09-23 — SPEC-318 — Portfolio landing PR merged to main
+
+Role: Ingeniero de software
+Branch: main
+Commit/PR: PR #24 (`https://github.com/RGAlvaro/opdesk/pull/24`); merge `4fb97e27e67b657206523b0b24b638b5382c5901`
+Status: Merged
+
+Summary:
+- Merged the independently approved `SPEC-318` implementation through PR #24 on 2026-09-23. Local `main` fast-forwarded to the merge commit; the public portfolio refresh and its `2026-09-23 - Portfolio Landing Release` changelog entry are now versioned on `main`.
+- Marked the spec/index as implemented and recorded the post-merge operational state before production deployment. No production change has occurred yet.
+
+Validation:
+- command: GitHub Actions `Verify` run `35839127910` on final PR head `2705f19`: PASS — `verify` in 1m59s and `e2e` in 2m36s.
+- command: `gh pr view 24 --json state,mergedAt,mergeCommit,mergedBy`: PASS — PR merged as `4fb97e27e67b657206523b0b24b638b5382c5901`.
+- command: `git pull --ff-only`: PASS — local `main` aligned with merged remote.
+
+Review:
+- decision: APPROVED — independent Review agent approved AC-1 through AC-8 before merge; AC-9 remains the release checkpoint.
+
+Known gaps:
+- Run the changelog-gated production workflow, inspect deployed desktop/mobile landing and links, and record deployed revision and validation evidence.
+
 ### 2026-09-23 — SPEC-318 — Independent PR review approved
 
 Role: Review agent

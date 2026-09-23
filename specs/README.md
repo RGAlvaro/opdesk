@@ -54,7 +54,7 @@ Use this index for routing. Use `docs/project-state.md` for the compact current 
 | `SPEC-315` | Implemented | Real-time notification inbox | `SPEC-306`, `SPEC-304`, `SPEC-307` | Notification WebSocket endpoint, unread-count live updates, polling fallback, frontend cache updates |
 | `SPEC-316` | Implemented | Scheduled jobs and operational audit | `SPEC-201`, `SPEC-301`, `SPEC-306`, `SPEC-314` | Celery beat scheduler service, scheduled job audit table, admin audit UI, production Compose/docs |
 | `SPEC-317` | Implemented | Public legal pages | `SPEC-104`, `SPEC-311` | Public terms, copyright, cookies routes, landing footer links, frontend tests |
-| `SPEC-318` | Ready | Portfolio landing visual refresh and factual ERP current-versus-planned presentation | `SPEC-311`, `SPEC-310`, `SPEC-317`, `SPEC-313`, `SPEC-307` | Public `/` layout, OpsDesk entry, ERP repository card, responsive and accessibility checks, release visual verification |
+| `SPEC-318` | Implemented | Portfolio landing visual refresh and factual ERP current-versus-planned presentation | `SPEC-311`, `SPEC-310`, `SPEC-317`, `SPEC-313`, `SPEC-307` | Public `/` layout, OpsDesk entry, ERP repository card, responsive and accessibility checks, release visual verification |
 
 Implementation order should usually follow spec dependencies:
 
