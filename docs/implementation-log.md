@@ -35,6 +35,31 @@ Known gaps:
 
 ## Entries
 
+### 2026-09-23 — SPEC-318 — Independent PR review approved
+
+Role: Review agent
+Branch: agent/spec-318-portfolio-landing
+Commit/PR: PR #24 at reviewed head `a5bb425` (`https://github.com/RGAlvaro/opdesk/pull/24`)
+Status: Reviewed
+
+Summary:
+- Compared AC-1 through AC-8 against the implementation, route and browser tests, desktop/mobile captures, factual ERP repository evidence, and the committed visual reference. The composition, responsive order, public navigation, accessibility coverage, and truthful current-versus-planned ERP copy meet the spec; no product changes are required.
+- AC-9 remains a mandatory production-release checkpoint: visually inspect desktop/mobile deployment and record the deployed revision and any deviation.
+
+Validation:
+- command: `make memory-check SPEC=SPEC-318`: PASS — current memory shape checked by the reviewer.
+- command: `make test-frontend`: PASS — 70 frontend tests checked by the reviewer.
+- command: `make changelog-check`: PASS — release entry validated by the reviewer.
+- command: `make release-workflow-check`: PASS — release workflow validated by the reviewer.
+- command: `git diff --check`: PASS — no whitespace errors.
+- command: GitHub Actions `Verify` run `35838529047`: PASS — `verify` and `e2e` on reviewed head `a5bb425`.
+
+Review:
+- decision: APPROVED — no product changes required; commit this review-memory checkpoint and recheck CI before merge.
+
+Known gaps:
+- Merge PR #24 after CI on the review-memory commit, run the changelog-gated production release, and complete AC-9 with desktop/mobile visual verification and merge/deploy memory.
+
 ### 2026-09-23 — SPEC-318 — Portfolio landing release candidate prepared
 
 Role: Ingeniero de software
@@ -54,6 +79,7 @@ Validation:
 - command: `make prod-config`: PASS — production Compose configuration rendered with placeholder values.
 - command: `make test-e2e`: PASS — 14 browser tests passed and 1 skipped; includes SPEC-318 responsive widths, public accessibility, Firefox/WebKit smoke, and critical authenticated flow.
 - command: GitHub Actions `Verify` run `35838116771` on PR #24 at `8b12bd3`: PASS — `verify` in 1m52s and `e2e` in 2m47s.
+- command: GitHub Actions `Verify` run `35838529047` on PR #24 at `a5bb425`: PASS — final published head passed `verify` in 1m35s and `e2e` in 2m54s.
 
 Review:
 - decision: N/A — PR review has not yet happened.
