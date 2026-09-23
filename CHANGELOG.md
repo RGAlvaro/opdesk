@@ -1,5 +1,12 @@
 # Changelog
 
+## 2026-09-23 - Portfolio Landing Release
+
+### Changed
+
+- Refreshed the public portfolio landing with an editorial layout that keeps OpsDesk as the featured available app.
+- Updated the ERP project card to distinguish its current authentication and human-resources foundation from planned modules and to link to its public source code.
+
 ## 2026-09-16 - Operations Readiness Release
 
 ### Added

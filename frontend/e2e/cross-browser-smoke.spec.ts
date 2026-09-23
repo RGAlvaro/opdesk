@@ -28,7 +28,7 @@ test.describe("SPEC-313 Firefox and WebKit smoke coverage", () => {
     await page.goto("/");
     await expect(
       page.getByRole("heading", {
-        name: /production-minded SaaS projects/i,
+        name: "Selected work",
       }),
     ).toBeVisible();
 
@@ -44,7 +44,7 @@ test.describe("SPEC-313 Firefox and WebKit smoke coverage", () => {
     await page.getByRole("button", { name: "Sign out" }).click();
     await expect(
       page.getByRole("heading", {
-        name: /production-minded SaaS projects/i,
+        name: "Selected work",
       }),
     ).toBeVisible();
 

@@ -232,31 +232,63 @@ afterEach(() => {
 });
 
 describe("SPEC-104 frontend app shell and auth UI", () => {
-  it("renders the portfolio home with app cards and public links", async () => {
+  it("renders the SPEC-318 portfolio sections and public links", async () => {
     const fetchMock = mockFetch();
 
     renderRoute("/");
 
     expect(
       await screen.findByRole("heading", {
-        name: /production-minded SaaS projects/i,
+        name: "Selected work",
       }),
     ).toBeInTheDocument();
     expect(screen.getByText(/software engineer/i)).toBeInTheDocument();
     expect(
-      screen.getByRole("heading", { name: "OpsDesk" }),
-    ).toBeInTheDocument();
+      screen.queryByText(/ideas · tools · better days/i),
+    ).not.toBeInTheDocument();
+    const opsDesk = screen.getByRole("region", { name: "OpsDesk" });
+    const approach = screen.getByRole("region", { name: "My approach" });
+    const erp = screen.getByRole("region", { name: "ERP · Human Resources" });
+    expect(within(opsDesk).getByText("Available")).toBeInTheDocument();
     expect(
-      screen.getByRole("heading", { name: "Small-team ERP" }),
-    ).toBeInTheDocument();
-    expect(screen.getAllByText("Available")).toHaveLength(1);
-    expect(screen.getAllByText("Coming soon")).toHaveLength(1);
-    expect(
-      screen.getAllByRole("link", { name: /open opsdesk/i })[0],
+      within(opsDesk).getByRole("link", { name: /open opsdesk/i }),
     ).toHaveAttribute("href", "/login");
     expect(
-      screen.getAllByRole("link", { name: /create account/i })[0],
+      within(opsDesk).getByRole("link", { name: /create account/i }),
     ).toHaveAttribute("href", "/signup");
+    expect(
+      within(approach)
+        .getAllByRole("heading", { level: 3 })
+        .map((heading) => heading.textContent),
+    ).toEqual(["Spec", "Build", "Validate", "Release"]);
+    expect(within(erp).getByText("Code available")).toBeInTheDocument();
+    expect(
+      within(erp).getByText(/authentication foundation with hashed passwords/i),
+    ).toBeInTheDocument();
+    expect(
+      within(erp).getByText(/human-resources management module/i),
+    ).toBeInTheDocument();
+    expect(
+      within(erp).getByText(
+        /planned modules include finance, inventory management, sales and invoicing, CRM, and production/i,
+      ),
+    ).toBeInTheDocument();
+    expect(within(erp).queryByText(/small team/i)).not.toBeInTheDocument();
+    expect(
+      within(erp).getByRole("link", { name: /view repository/i }),
+    ).toHaveAttribute(
+      "href",
+      "https://github.com/RGAlvaro/ERP-ASA-final-project",
+    );
+    expect(
+      opsDesk.compareDocumentPosition(approach) &
+        Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
+    expect(
+      approach.compareDocumentPosition(erp) & Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
+    expect(screen.getAllByText("Available")).toHaveLength(1);
+    expect(screen.queryByText("Coming soon")).not.toBeInTheDocument();
     expect(
       screen.getAllByRole("link", { name: /changelog|release notes/i })[0],
     ).toHaveAttribute("href", "/changelog");
@@ -575,23 +607,26 @@ describe("SPEC-104 frontend app shell and auth UI", () => {
     ).toBeInTheDocument();
   });
 
-  it("keeps the ERP coming-soon card without fake app navigation", async () => {
+  it("distinguishes current and planned ERP modules without a fake app link", async () => {
     mockFetch();
 
     renderRoute("/");
 
-    const erpCard = (
-      await screen.findByRole("heading", {
-        name: "Small-team ERP",
-      })
-    ).closest("article");
-    expect(erpCard).not.toBeNull();
+    const erpCard = await screen.findByRole("region", {
+      name: "ERP · Human Resources",
+    });
+    expect(within(erpCard).getByText("Code available")).toBeInTheDocument();
+    expect(within(erpCard).getByText("ERP project")).toBeInTheDocument();
     expect(
-      within(erpCard as HTMLElement).getByText("Coming soon"),
+      within(erpCard).getByText(/no live demo is published/i),
     ).toBeInTheDocument();
+    expect(within(erpCard).getAllByRole("link")).toHaveLength(1);
     expect(
-      within(erpCard as HTMLElement).queryByRole("link"),
-    ).not.toBeInTheDocument();
+      within(erpCard).getByRole("link", { name: /view repository/i }),
+    ).toHaveAttribute(
+      "href",
+      "https://github.com/RGAlvaro/ERP-ASA-final-project",
+    );
   });
 
   it("renders the public changelog without authentication", async () => {
@@ -932,7 +967,7 @@ describe("SPEC-104 frontend app shell and auth UI", () => {
 
     expect(
       await screen.findByRole("heading", {
-        name: /production-minded SaaS projects/i,
+        name: "Selected work",
       }),
     ).toBeInTheDocument();
   });
