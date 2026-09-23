@@ -53,12 +53,13 @@ Validation:
 - command: `make release-workflow-check`: PASS — changelog and release workflow validation.
 - command: `make prod-config`: PASS — production Compose configuration rendered with placeholder values.
 - command: `make test-e2e`: PASS — 14 browser tests passed and 1 skipped; includes SPEC-318 responsive widths, public accessibility, Firefox/WebKit smoke, and critical authenticated flow.
+- command: GitHub Actions `Verify` run `35838116771` on PR #24 at `8b12bd3`: PASS — `verify` in 1m52s and `e2e` in 2m47s.
 
 Review:
 - decision: N/A — PR review has not yet happened.
 
 Known gaps:
-- Obtain PR review approval, merge, deploy with the specified changelog entry, and verify the production desktop/mobile rendering.
+- Obtain an independent PR review approval before merge; then deploy with the specified changelog entry and verify the production desktop/mobile rendering.
 
 ### 2026-09-23 — SPEC-318 — ERP current foundation and future modules clarified
 
