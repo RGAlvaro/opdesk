@@ -35,6 +35,31 @@ Known gaps:
 
 ## Entries
 
+### 2026-09-23 — SPEC-318 — Portfolio Landing Release deployed and visually verified
+
+Role: Ingeniero de software
+Branch: main
+Commit/PR: PR #24 (`https://github.com/RGAlvaro/opdesk/pull/24`); merge `4fb97e27e67b657206523b0b24b638b5382c5901`; deployed `03cb929d3b8bc55735c78f9c96d296ef1e9e1cec`
+Status: Merged
+
+Summary:
+- Production Release workflow `35839847151` deployed the merged SPEC-318 portfolio landing at `https://rgalvaro.es/` and `https://www.rgalvaro.es/` with changelog entry `2026-09-23 - Portfolio Landing Release`.
+- The VPS release manifest records backup `/srv/opdesk/backups/opdesk-20260923-085648-03cb929d3b8bc55735c78f9c96d296ef.dump`, Alembic `0014 (head)`, no migration drift, and healthy backend/frontend/Redis/worker/scheduler services.
+- Completed AC-9: inspected production browser captures at 390 px and 1440 px against the selected reference and local approved captures. Section order, dominant OpsDesk card/action, factual ERP status/repository link, footer, and responsive layout match without material visual deviation.
+
+Validation:
+- command: GitHub Actions `Production Release` run `35839847151`: PASS — full verify, frontend build, production config/workflow/changelog checks, secret checks, archive upload, and remote production update.
+- command: `ssh opdesk-vps 'sed -n "1,100p" /srv/opdesk/releases/latest-release.txt'`: PASS — deployed revision, backup, migrations, drift check, compose update, backend health, frontend, Redis, worker, and scheduler confirmed.
+- command: `curl -fsS https://rgalvaro.es/health`: PASS — `status: ok`.
+- command: HTTP HEAD for `/`, `/changelog`, `/terms`, `/copyright`, `/cookies`, and `https://www.rgalvaro.es/`: PASS — all HTTP 200.
+- command: Docker Playwright public portfolio checks against `https://rgalvaro.es` at 390/768/1440 px: PASS — 3/3; production mobile/desktop captures visually inspected.
+
+Review:
+- decision: APPROVED — independent SPEC-318 review passed before PR #24 merge; post-deploy AC-9 is now verified.
+
+Known gaps:
+- No remaining SPEC-318 implementation or release gap. Existing privacy-policy and Resend-key rotation operational gaps remain separate.
+
 ### 2026-09-23 — SPEC-318 — Portfolio landing PR merged to main
 
 Role: Ingeniero de software
