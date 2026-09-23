@@ -49,7 +49,7 @@ test.describe("SPEC-312 auth and profile browser coverage", () => {
 
     await page.getByRole("button", { name: "Sign out" }).click();
     await expect(
-      page.getByRole("heading", { name: /production-minded SaaS projects/i }),
+      page.getByRole("heading", { name: "Selected work" }),
     ).toBeVisible();
 
     await page.goto("/app/profile");

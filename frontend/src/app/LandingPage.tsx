@@ -1,190 +1,330 @@
-// Public portfolio home that presents OpsDesk and future app work.
+// Public portfolio home in the selected SPEC-318 editorial layout.
 
-import {
-  ArrowRight,
-  CheckCircle2,
-  Clock,
-  ExternalLink,
-  LogIn,
-} from "lucide-react";
+import { ArrowRight, ArrowUpRight } from "lucide-react";
 import { Link } from "react-router-dom";
 
-import portfolioHubImage from "../assets/portfolio-hub.png";
+import "./LandingPage.css";
 
-type PortfolioApp = {
-  name: string;
-  status: "Available" | "Coming soon";
-  description: string;
-  points: string[];
-  primaryAction?: { label: string; to: string };
-  secondaryAction?: { label: string; to: string };
-};
-
-const apps: PortfolioApp[] = [
+const approachSteps = [
   {
-    name: "OpsDesk",
-    status: "Available",
-    description:
-      "A production-minded B2B operations app for organizations, projects, tasks, labels, metadata, and release discipline.",
-    primaryAction: { label: "Open OpsDesk", to: "/login" },
-    secondaryAction: { label: "Create account", to: "/signup" },
-    points: ["FastAPI backend", "React TypeScript UI", "Docker release path"],
+    title: "Spec",
+    description: "Define the problem and make the intended behavior explicit.",
   },
   {
-    name: "Small-team ERP",
-    status: "Coming soon",
-    description:
-      "A future easy-to-use ERP concept for small teams that need simple operations, clients, tickets, and back-office workflows.",
-    points: ["Future app", "No live product yet", "Planned portfolio slot"],
+    title: "Build",
+    description: "Turn the plan into a focused, maintainable product.",
+  },
+  {
+    title: "Validate",
+    description: "Test the important flows and check the result in a browser.",
+  },
+  {
+    title: "Release",
+    description: "Deploy carefully and keep improving from evidence.",
   },
 ] as const;
 
-/** Present the public portfolio hub without requiring backend session state. */
+/** Show the portfolio and project entry points without session data. */
 export function LandingPage() {
   return (
-    <main className="min-h-screen bg-surface text-ink">
-      <section className="mx-auto max-w-6xl px-4 py-6 sm:py-8">
-        <header className="flex flex-wrap items-center justify-between gap-3">
-          <Link to="/" className="text-sm font-semibold text-ink">
+    <div className="portfolio-home">
+      <header className="portfolio-header">
+        <div className="portfolio-container portfolio-header__inner">
+          <Link className="portfolio-wordmark" to="/">
             RGAlvaro
           </Link>
-          <nav
-            aria-label="Public navigation"
-            className="flex items-center gap-4 text-sm font-semibold"
-          >
-            <Link to="/changelog" className="text-muted hover:text-brand">
-              Changelog
-            </Link>
-            <Link to="/login" className="text-muted hover:text-brand">
-              Log in
+          <nav className="portfolio-header__nav" aria-label="Public navigation">
+            <a href="#work">Work</a>
+            <Link to="/changelog">Changelog</Link>
+            <Link className="portfolio-header__login" to="/login">
+              Log in <ArrowUpRight aria-hidden="true" size={14} />
             </Link>
           </nav>
-        </header>
+        </div>
+      </header>
 
-        <div className="grid min-h-[calc(100vh-5rem)] items-center gap-10 py-10 lg:grid-cols-[1fr_0.92fr]">
-          <div className="max-w-3xl">
-            <p className="text-sm font-semibold uppercase tracking-wide text-brand">
-              Portfolio app hub
+      <main className="portfolio-container">
+        <section className="portfolio-hero" aria-labelledby="portfolio-title">
+          <div className="portfolio-hero__intro">
+            <p className="portfolio-eyebrow">Building useful things</p>
+            <span className="portfolio-short-rule" aria-hidden="true" />
+            <p>
+              I am a software engineer building practical products for
+              operational work.
             </p>
-            <h1 className="mt-4 text-4xl font-semibold leading-tight sm:text-5xl">
-              Production-minded SaaS projects, built for inspection.
-            </h1>
-            <p className="mt-5 text-lg leading-8 text-muted">
-              I am a software engineer building focused B2B products with
-              FastAPI, React, PostgreSQL, Docker, CI, and spec-driven delivery.
-              This public hub links the live OpsDesk app and future portfolio
-              work without presenting unfinished products as available.
+          </div>
+          <div className="portfolio-hero__title">
+            <span className="portfolio-index">01</span>
+            <h1 id="portfolio-title">Selected work</h1>
+            <p>Real problems. Thoughtful solutions.</p>
+          </div>
+        </section>
+
+        <section
+          className="portfolio-feature"
+          id="work"
+          aria-labelledby="opsdesk-title"
+        >
+          <div className="portfolio-feature__content">
+            <div className="portfolio-section-heading">
+              <span className="portfolio-index">01</span>
+              <span className="portfolio-section-heading__rule" />
+              <span>Featured project</span>
+            </div>
+            <div className="portfolio-feature__name">
+              <h2 id="opsdesk-title">OpsDesk</h2>
+              <span className="portfolio-status portfolio-status--available">
+                <span aria-hidden="true" /> Available
+              </span>
+            </div>
+            <p className="portfolio-feature__lead">
+              An operations workspace for getting work done.
             </p>
-            <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-              <Link
-                to="/login"
-                className="inline-flex items-center justify-center gap-2 rounded-md bg-brand px-5 py-3 font-semibold text-white hover:bg-brand/90"
-              >
-                <LogIn aria-hidden="true" className="h-5 w-5" />
-                Open OpsDesk
+            <p className="portfolio-feature__description">
+              Organize teams, projects, tasks, and client tickets in one place.
+              Built with careful permissions, tests, and a repeatable release
+              process.
+            </p>
+            <ul className="portfolio-tech-list" aria-label="OpsDesk technology">
+              <li>FastAPI</li>
+              <li>React</li>
+              <li>PostgreSQL</li>
+              <li>Docker</li>
+            </ul>
+            <div className="portfolio-feature__actions">
+              <Link className="portfolio-primary-link" to="/login">
+                Open OpsDesk <ArrowRight aria-hidden="true" size={20} />
               </Link>
-              <Link
-                to="/changelog"
-                className="inline-flex items-center justify-center gap-2 rounded-md border border-line bg-white px-5 py-3 font-semibold hover:bg-surface"
-              >
-                Release notes
-                <ArrowRight aria-hidden="true" className="h-5 w-5" />
+              <Link className="portfolio-text-link" to="/signup">
+                Create account <ArrowUpRight aria-hidden="true" size={17} />
               </Link>
             </div>
           </div>
 
-          <div className="overflow-hidden rounded-md border border-line bg-white shadow-panel">
-            <img
-              src={portfolioHubImage}
-              alt="Abstract SaaS dashboard displayed on a laptop"
-              className="aspect-[16/10] w-full object-cover"
+          <svg
+            className="portfolio-feature__art"
+            viewBox="0 0 560 440"
+            fill="none"
+            aria-hidden="true"
+            focusable="false"
+          >
+            <circle cx="322" cy="167" r="114" fill="#4D9AEF" />
+            <circle cx="484" cy="159" r="19" fill="#FF873F" />
+            <circle cx="105" cy="320" r="40" fill="#1E63F1" />
+            <rect
+              x="180"
+              y="219"
+              width="337"
+              height="126"
+              rx="20"
+              fill="#A9D5FF"
             />
+            <path
+              d="M170 121H314C328 121 340 133 340 147V299C340 313 352 325 366 325H399"
+              stroke="#14396D"
+              strokeWidth="2"
+            />
+            <circle cx="340" cy="242" r="8" fill="#14396D" />
+            <rect x="63" y="91" width="248" height="105" rx="18" fill="white" />
+            <circle cx="106" cy="140" r="20" fill="#2166F3" />
+            <rect
+              x="150"
+              y="128"
+              width="122"
+              height="12"
+              rx="6"
+              fill="#AED5FC"
+            />
+            <rect
+              x="150"
+              y="151"
+              width="83"
+              height="10"
+              rx="5"
+              fill="#D2E7FB"
+            />
+            <rect
+              x="330"
+              y="178"
+              width="129"
+              height="119"
+              rx="17"
+              fill="#102A55"
+            />
+            <rect
+              x="357"
+              y="211"
+              width="67"
+              height="7"
+              rx="3.5"
+              fill="#5FA4F7"
+            />
+            <rect
+              x="357"
+              y="231"
+              width="79"
+              height="7"
+              rx="3.5"
+              fill="#397BD2"
+            />
+            <rect
+              x="357"
+              y="251"
+              width="52"
+              height="7"
+              rx="3.5"
+              fill="#397BD2"
+            />
+            <rect
+              x="264"
+              y="283"
+              width="175"
+              height="130"
+              rx="18"
+              fill="white"
+            />
+            <circle cx="351" cy="348" r="33" fill="#B2D8FF" />
+            <path
+              d="M338 348L348 358L365 338"
+              stroke="white"
+              strokeWidth="6"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+            <g fill="#7DADE7">
+              <circle cx="177" cy="366" r="2" />
+              <circle cx="197" cy="366" r="2" />
+              <circle cx="217" cy="366" r="2" />
+              <circle cx="177" cy="386" r="2" />
+              <circle cx="197" cy="386" r="2" />
+              <circle cx="217" cy="386" r="2" />
+              <circle cx="177" cy="406" r="2" />
+              <circle cx="197" cy="406" r="2" />
+              <circle cx="217" cy="406" r="2" />
+            </g>
+          </svg>
+          <div className="portfolio-feature__foot" aria-hidden="true">
+            <span>A practical tool for real work</span>
+            <span className="portfolio-feature__foot-rule" />
+            <span>Keep things moving</span>
           </div>
-        </div>
-      </section>
+        </section>
 
-      <section className="border-t border-line bg-white">
-        <div className="mx-auto grid max-w-6xl gap-5 px-4 py-10 md:grid-cols-2">
-          {apps.map((app) => (
-            <article
-              key={app.name}
-              className="rounded-md border border-line bg-white p-5"
+        <section
+          className="portfolio-approach"
+          id="approach"
+          aria-labelledby="approach-title"
+        >
+          <div className="portfolio-section-heading portfolio-section-heading--line">
+            <span className="portfolio-index">02</span>
+            <span className="portfolio-section-heading__rule" />
+            <h2 id="approach-title">My approach</h2>
+            <span className="portfolio-section-heading__fill" />
+          </div>
+          <ol className="portfolio-approach__steps">
+            {approachSteps.map((step) => (
+              <li key={step.title}>
+                <h3>{step.title}</h3>
+                <p>{step.description}</p>
+              </li>
+            ))}
+          </ol>
+        </section>
+
+        <section className="portfolio-next" aria-labelledby="erp-title">
+          <div className="portfolio-next__content">
+            <div className="portfolio-section-heading">
+              <span className="portfolio-index">03</span>
+              <span className="portfolio-section-heading__rule" />
+              <span>ERP project</span>
+            </div>
+            <div className="portfolio-next__name">
+              <h2 id="erp-title">ERP · Human Resources</h2>
+              <span className="portfolio-status portfolio-status--team">
+                <span aria-hidden="true" /> Code available
+              </span>
+            </div>
+            <p>
+              The ERP currently has an authentication foundation with hashed
+              passwords and a human-resources management module. Planned modules
+              include finance, inventory management, sales and invoicing, CRM,
+              and production. The source is public; no live demo is published.
+            </p>
+            <a
+              className="portfolio-text-link portfolio-next__source"
+              href="https://github.com/RGAlvaro/ERP-ASA-final-project"
+              target="_blank"
+              rel="noopener noreferrer"
             >
-              <div className="flex flex-wrap items-center justify-between gap-3">
-                <h2 className="text-xl font-semibold">{app.name}</h2>
-                <span
-                  className={
-                    app.status === "Available"
-                      ? "inline-flex items-center gap-1 rounded-md bg-brand/10 px-2.5 py-1 text-sm font-semibold text-brand"
-                      : "inline-flex items-center gap-1 rounded-md bg-surface px-2.5 py-1 text-sm font-semibold text-muted"
-                  }
-                >
-                  {app.status === "Available" ? (
-                    <CheckCircle2 aria-hidden="true" className="h-4 w-4" />
-                  ) : (
-                    <Clock aria-hidden="true" className="h-4 w-4" />
-                  )}
-                  {app.status}
-                </span>
-              </div>
-              <p className="mt-3 leading-7 text-muted">{app.description}</p>
-              <ul className="mt-4 grid gap-2 text-sm text-ink">
-                {app.points.map((point) => (
-                  <li key={point} className="flex items-center gap-2">
-                    <span
-                      aria-hidden="true"
-                      className="h-1.5 w-1.5 rounded-full bg-brand"
-                    />
-                    {point}
-                  </li>
-                ))}
-              </ul>
-              {app.primaryAction ? (
-                <div className="mt-5 flex flex-col gap-3 sm:flex-row">
-                  <Link
-                    to={app.primaryAction.to}
-                    className="inline-flex items-center justify-center gap-2 rounded-md bg-brand px-4 py-2.5 font-semibold text-white hover:bg-brand/90"
-                  >
-                    {app.primaryAction.label}
-                    <ExternalLink aria-hidden="true" className="h-4 w-4" />
-                  </Link>
-                  {app.secondaryAction ? (
-                    <Link
-                      to={app.secondaryAction.to}
-                      className="inline-flex items-center justify-center rounded-md border border-line px-4 py-2.5 font-semibold hover:bg-surface"
-                    >
-                      {app.secondaryAction.label}
-                    </Link>
-                  ) : null}
-                </div>
-              ) : null}
-            </article>
-          ))}
-        </div>
-      </section>
-
-      <footer className="border-t border-line bg-surface">
-        <div className="mx-auto flex max-w-6xl flex-col gap-3 px-4 py-6 text-sm text-muted sm:flex-row sm:items-center sm:justify-between">
-          <p>OpsDesk is the currently available portfolio app.</p>
-          <div className="flex gap-4 font-semibold">
-            <Link to="/changelog" className="hover:text-brand">
-              Changelog
-            </Link>
-            <Link to="/terms" className="hover:text-brand">
-              Terms
-            </Link>
-            <Link to="/copyright" className="hover:text-brand">
-              Copyright
-            </Link>
-            <Link to="/cookies" className="hover:text-brand">
-              Cookies
-            </Link>
-            <Link to="/signup" className="hover:text-brand">
-              Create account
-            </Link>
+              View repository <ArrowUpRight aria-hidden="true" size={17} />
+            </a>
           </div>
+          <svg
+            className="portfolio-next__art"
+            viewBox="0 0 350 200"
+            fill="none"
+            aria-hidden="true"
+            focusable="false"
+          >
+            <circle cx="206" cy="104" r="88" fill="#D8ECFF" />
+            <circle cx="304" cy="38" r="17" fill="#FF873F" />
+            <path
+              d="M206 100V131M111 131H301M111 131V151M301 131V151"
+              stroke="#2367DB"
+              strokeWidth="3"
+              strokeLinecap="round"
+            />
+            <rect x="161" y="23" width="90" height="78" rx="13" fill="white" />
+            <circle cx="206" cy="50" r="12" fill="#4D9AEF" />
+            <rect
+              x="182"
+              y="71"
+              width="48"
+              height="7"
+              rx="3.5"
+              fill="#B7D9FB"
+            />
+            <rect x="65" y="151" width="92" height="48" rx="11" fill="white" />
+            <circle cx="88" cy="175" r="10" fill="#7BB4F0" />
+            <rect
+              x="105"
+              y="170"
+              width="34"
+              height="7"
+              rx="3.5"
+              fill="#B7D9FB"
+            />
+            <rect x="255" y="151" width="92" height="48" rx="11" fill="white" />
+            <circle cx="278" cy="175" r="10" fill="#1E63F1" />
+            <rect
+              x="295"
+              y="170"
+              width="34"
+              height="7"
+              rx="3.5"
+              fill="#B7D9FB"
+            />
+          </svg>
+        </section>
+      </main>
+
+      <footer className="portfolio-footer">
+        <div className="portfolio-container portfolio-footer__inner">
+          <div className="portfolio-footer__identity">
+            <span className="portfolio-wordmark">RGAlvaro</span>
+            <p>Code. Systems. Progress.</p>
+          </div>
+          <nav aria-label="Footer navigation">
+            <Link to="/changelog">Changelog</Link>
+            <Link to="/terms">Terms</Link>
+            <Link to="/copyright">Copyright</Link>
+            <Link to="/cookies">Cookies</Link>
+          </nav>
+          <Link className="portfolio-footer__changelog" to="/changelog">
+            Release notes <ArrowRight aria-hidden="true" size={18} />
+          </Link>
         </div>
       </footer>
-    </main>
+    </div>
   );
 }

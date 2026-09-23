@@ -61,7 +61,7 @@ test.describe("SPEC-313 accessibility coverage", () => {
     await page.goto("/");
     await expect(
       page.getByRole("heading", {
-        name: /production-minded SaaS projects/i,
+        name: "Selected work",
       }),
     ).toBeVisible();
     await expectNoSeriousAccessibilityViolations(page, "public home");

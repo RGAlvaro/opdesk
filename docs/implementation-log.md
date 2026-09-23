@@ -35,6 +35,149 @@ Known gaps:
 
 ## Entries
 
+### 2026-09-23 — SPEC-318 — Portfolio landing release candidate prepared
+
+Role: Ingeniero de software
+Branch: agent/spec-318-portfolio-landing
+Commit/PR: pending local commit and PR
+Status: Implemented
+
+Summary:
+- Audited the local changes against `SPEC-318`: the landing, scoped CSS, reference asset, factual ERP copy/repository link, frontend assertions, responsive and accessibility browser coverage, and project memory are in scope. The authenticated OpsDesk interface and backend are unchanged.
+- Added the user-facing `2026-09-23 - Portfolio Landing Release` entry to `CHANGELOG.md` for the required production release gate.
+- Prepared the implementation branch and ran the full verification and release checks before publication. No production change has occurred yet.
+
+Validation:
+- command: `make verify`: PASS — lint, format, types, 124 selected backend tests, 70 frontend tests, technical docs, and Alembic upgrade/check with no new operations.
+- command: `cd frontend && npm run build`: PASS — production Vite build with the new changelog entry.
+- command: `make release-workflow-check`: PASS — changelog and release workflow validation.
+- command: `make prod-config`: PASS — production Compose configuration rendered with placeholder values.
+- command: `make test-e2e`: PASS — 14 browser tests passed and 1 skipped; includes SPEC-318 responsive widths, public accessibility, Firefox/WebKit smoke, and critical authenticated flow.
+
+Review:
+- decision: N/A — PR review has not yet happened.
+
+Known gaps:
+- Publish the branch/PR, obtain review approval, merge, deploy with the specified changelog entry, and verify the production desktop/mobile rendering.
+
+### 2026-09-23 — SPEC-318 — ERP current foundation and future modules clarified
+
+Role: Ingeniero de software
+Branch: main
+Commit/PR: uncommitted local implementation; no PR
+Status: Implemented
+
+Summary:
+- Revised `SPEC-318` and its index to remove team-size attribution from the ERP card and distinguish its present authentication foundation and HR management module from planned finance, inventory, sales/invoicing, CRM, and production modules.
+- Checked the public ERP authentication model and service: passwords are hashed with Werkzeug and checked against the stored hash, so the landing says `hashed passwords` rather than implying reversible encryption. Preserved the public repository link and no-live-demo wording.
+- Updated the public landing, component assertions, and responsive browser assertions. The authenticated OpsDesk interface, backend, and persistence remain unchanged.
+
+Validation:
+- command: `make test-frontend`: PASS — 70 frontend tests.
+- command: `make lint`: PASS — backend Ruff and frontend ESLint.
+- command: `make format-check`: PASS — backend Ruff format and frontend Prettier.
+- command: `make typecheck`: PASS — backend mypy and frontend TypeScript.
+- command: `cd frontend && npm run build`: PASS — production Vite build.
+- command: `docker compose up -d --build frontend`: PASS — local frontend rebuilt and running.
+- command: focused Docker Chromium responsive E2E: PASS — 3/3 checks at 390/768/1440 px; mobile screenshot reviewed.
+- command: `make test-e2e`: PASS — 14 browser tests passed and 1 skipped, including accessibility and Firefox/WebKit smoke.
+- command: `make memory-check SPEC=SPEC-318`: PASS — project memory shape is current.
+- command: `git diff --check`: PASS — no whitespace errors.
+- command: `curl -fsSI --max-time 5 http://localhost:5173/`: PASS — local landing responds with HTTP 200.
+
+Review:
+- decision: N/A — independent review has not been requested or completed.
+
+Known gaps:
+- Independent review, merge, changelog-backed production release, and post-deploy desktop/mobile verification remain.
+
+### 2026-09-23 — SPEC-318 — ERP attribution and landing copy corrected
+
+Role: Ingeniero de software
+Branch: main
+Commit/PR: uncommitted local implementation; no PR
+Status: Implemented
+
+Summary:
+- Revised `SPEC-318` after checking the public ERP repository's HR models, routes, and frontend modules. The project is now described as collaboratively built in a small team, not aimed at small teams; the panel names evidenced employee, department, salary, and job-offer interface work without claiming unsupported features or a live deployment.
+- Removed the decorative side slogan beside `Selected work`, added the ERP repository link and source-available status, updated its illustration and mobile spacing, and aligned frontend and browser assertions. OpsDesk's authenticated design is unchanged.
+- Updated the spec index and current project state; the prior mockup's side slogan and ERP placeholder are explicitly superseded by the revised spec.
+
+Validation:
+- command: `make test-frontend`: PASS — 70 frontend tests.
+- command: `make lint`: PASS — backend Ruff and frontend ESLint.
+- command: `make format-check`: PASS — backend Ruff format and frontend Prettier.
+- command: `make typecheck`: PASS — backend mypy and frontend TypeScript.
+- command: `cd frontend && npm run build`: PASS — production Vite build.
+- command: `make test-e2e`: PASS — 14 browser tests passed and 1 skipped, including 390/768/1440 px responsive checks, accessibility, and Firefox/WebKit smoke.
+- command: `docker compose run --rm -e PLAYWRIGHT_OUTPUT_DIR=/work/test-results e2e sh -c 'npm ci --silent && npx playwright test e2e/portfolio-landing.spec.ts --project=chromium-desktop'`: PASS — final 3/3 responsive checks and mobile screenshot after art-spacing adjustment.
+- command: `make memory-check SPEC=SPEC-318`: PASS — spec and implementation memory shape is current.
+- command: `git diff --check`: PASS — no whitespace errors.
+- command: `curl -I --max-time 5 http://localhost:5173/`: PASS — local app responds with HTTP 200.
+
+Review:
+- decision: N/A — independent review has not been requested or completed.
+
+Known gaps:
+- Independent review, merge, changelog-backed production release, and post-deploy desktop/mobile verification remain.
+
+### 2026-09-23 — SPEC-318 — Public portfolio landing implemented locally
+
+Role: Ingeniero de software
+Branch: main
+Commit/PR: uncommitted local implementation; no PR
+Status: Implemented
+
+Summary:
+- Replaced the public `/` composition in `frontend/src/app/LandingPage.tsx` and added scoped `LandingPage.css`: dark header, editorial hero, dominant OpsDesk panel, four-step process, ERP coming-soon panel, and public footer following the versioned reference.
+- Built the project illustrations in semantic frontend code and retained real `/login`, `/signup`, `/changelog`, `/terms`, `/copyright`, and `/cookies` destinations. No authenticated OpsDesk styling, backend API, data model, or migration changed.
+- Updated route assertions and public-route E2E expectations; added 390/768/1440 px browser checks and desktop/mobile review captures. Compared both captures with the reference: hierarchy, section order, blue palette, and dominant OpsDesk panel match; illustrative controls, mockup copy, and erroneous copyright date were intentionally omitted.
+
+Validation:
+- command: `make test-frontend`: PASS — 70 frontend tests.
+- command: `make lint`: PASS — backend Ruff and frontend ESLint.
+- command: `make format-check`: PASS — backend Ruff format and frontend Prettier.
+- command: `make typecheck`: PASS — backend mypy and frontend TypeScript.
+- command: `cd frontend && npm run build`: PASS — production Vite build.
+- command: `make test-e2e`: PASS — 14 browser tests passed and 1 project-specific test skipped; includes SPEC-318 widths, public accessibility, and Firefox/WebKit smoke.
+- command: `docker compose run --rm -e PLAYWRIGHT_OUTPUT_DIR=/work/test-results e2e sh -c 'npm ci --silent && npx playwright test e2e/portfolio-landing.spec.ts --project=chromium-desktop'`: PASS — 3 responsive checks with ignored desktop/mobile screenshot artifacts for visual review.
+- command: `make verify`: PASS — lint, format, types, 124 selected backend tests, 70 frontend tests, technical docs check, Alembic upgrade/check with no new operations.
+- command: `make memory-check SPEC=SPEC-318`: PASS — implementation and project-state memory shape is current.
+- command: `git diff --check`: PASS — no whitespace errors.
+- command: local host `playwright test e2e/portfolio-landing.spec.ts`: UNAVAILABLE — Chromium could not launch because host `libnspr4.so` is absent; the Docker Playwright runs above passed.
+
+Review:
+- decision: N/A — review has not been requested or completed.
+
+Known gaps:
+- Independent review, merge, changelog-backed production release, and post-deploy desktop/mobile visual verification remain.
+- The existing privacy-policy and Resend-key rotation operational gaps are separate from SPEC-318.
+
+### 2026-09-23 — SPEC-318 — Portfolio landing visual spec ready
+
+Role: Arquitecto de specs
+Branch: main
+Commit/PR: uncommitted spec-preparation changes; no PR
+Status: Ready
+
+Summary:
+- Created `SPEC-318` for the selected public portfolio landing composition and stored its generated mockup as `specs/assets/spec-318-portfolio-landing-reference.png` so the design target survives a production release cycle.
+- Defined desktop and responsive section hierarchy, existing project and legal-link preservation, accessible presentation, truthful-copy constraints, and pre/post-release visual checks. The authenticated OpsDesk interface is outside scope.
+- Updated the spec index and project state. No product code or production deployment was changed.
+
+Validation:
+- command: `git diff --check`: PASS — no whitespace errors in planning changes.
+- command: `make memory-check SPEC=SPEC-318`: PASS — spec memory shape is current.
+- command: `file specs/assets/spec-318-portfolio-landing-reference.png`: PASS — versioned PNG reference is 1024 × 1536.
+- command: implementation/test/release checks: NOT RUN — specification preparation only.
+
+Review:
+- decision: N/A — implementation and review have not begun.
+
+Known gaps:
+- `SPEC-318` implementation, browser comparison with the reference, review, and production deployment remain outstanding.
+- The existing privacy-policy and Resend-key rotation operational gaps remain separate from this spec.
+
 ### 2026-09-16 — Operations Readiness production release
 
 Role: Ingeniero de software
