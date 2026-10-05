@@ -35,6 +35,34 @@ Known gaps:
 
 ## Entries
 
+### 2026-10-05 — SPEC-319 — EventFlow second portfolio card implemented locally
+
+Role: Ingeniero de software
+Branch: feat/spec-319-eventflow-portfolio-card
+Commit/PR: Uncommitted local changes; no PR yet
+Status: Implemented
+
+Summary:
+- Replaced the ERP panel on the public portfolio home with EventFlow, a short current-capability description, its public source link, and a conceptual SVG thumbnail of event ingestion, outbox, worker, and signed delivery.
+- Based the claims on EventFlow's 2026-10-05 project state, code, and integration-test evidence. Its README still describes an older milestone. The card explicitly identifies the interface and live demo as work in progress.
+- Updated the portfolio component and browser checks, the SPEC-319 contract and index, and the changelog entry for a future production release. Desktop and mobile browser captures were inspected; the illustration and copy fit the existing hierarchy without material visual deviation.
+
+Validation:
+- command: `make verify-no-db`: PASS — 124 backend tests (2 database tests deselected), 70 frontend tests, lint, format, type checks, and technical-docs check.
+- command: `make test-frontend`: PASS — 70 tests across 5 files, including EventFlow landing assertions.
+- command: `make lint`, `make format-check`, `make typecheck`: PASS — backend and frontend checks.
+- command: `cd frontend && npm run build`: PASS — production bundle built.
+- command: isolated Playwright container on `e2e/portfolio-landing.spec.ts --project=chromium-desktop`: PASS — 3 widths (390, 768, 1440 px), including no horizontal overflow and repository link. Screenshots at 390 and 1440 px inspected.
+- command: `make changelog-check`, `make release-workflow-check`, `git diff --check`: PASS.
+- command: `make memory-check SPEC=SPEC-319`: PASS.
+- command: `make test-e2e`: NOT COMPLETED — local EventFlow Redis occupies host port 6379; the focused portfolio browser test above passed without touching those services.
+
+Review:
+- decision: N/A — review pending after final memory and validation check.
+
+Known gaps:
+- The change is not committed, merged, or deployed; production still shows the ERP panel.
+
 ### 2026-09-23 — SPEC-318 — Portfolio Landing Release deployed and visually verified
 
 Role: Ingeniero de software

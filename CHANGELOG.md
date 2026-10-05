@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-10-05 - EventFlow Portfolio Update
+
+### Changed
+
+- Replaced the second portfolio project with EventFlow, including a conceptual delivery-flow thumbnail, a brief description of its current backend, and its public repository link.
+
 ## 2026-09-23 - Portfolio Landing Release
 
 ### Changed

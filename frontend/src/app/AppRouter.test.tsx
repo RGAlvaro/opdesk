@@ -248,7 +248,7 @@ describe("SPEC-104 frontend app shell and auth UI", () => {
     ).not.toBeInTheDocument();
     const opsDesk = screen.getByRole("region", { name: "OpsDesk" });
     const approach = screen.getByRole("region", { name: "My approach" });
-    const erp = screen.getByRole("region", { name: "ERP · Human Resources" });
+    const eventflow = screen.getByRole("region", { name: "EventFlow" });
     expect(within(opsDesk).getByText("Available")).toBeInTheDocument();
     expect(
       within(opsDesk).getByRole("link", { name: /open opsdesk/i }),
@@ -261,31 +261,25 @@ describe("SPEC-104 frontend app shell and auth UI", () => {
         .getAllByRole("heading", { level: 3 })
         .map((heading) => heading.textContent),
     ).toEqual(["Spec", "Build", "Validate", "Release"]);
-    expect(within(erp).getByText("Code available")).toBeInTheDocument();
+    expect(within(eventflow).getByText("Code available")).toBeInTheDocument();
     expect(
-      within(erp).getByText(/authentication foundation with hashed passwords/i),
-    ).toBeInTheDocument();
-    expect(
-      within(erp).getByText(/human-resources management module/i),
-    ).toBeInTheDocument();
-    expect(
-      within(erp).getByText(
-        /planned modules include finance, inventory management, sales and invoicing, CRM, and production/i,
+      within(eventflow).getByText(
+        /durable event ingestion and signed webhook delivery/i,
       ),
     ).toBeInTheDocument();
-    expect(within(erp).queryByText(/small team/i)).not.toBeInTheDocument();
     expect(
-      within(erp).getByRole("link", { name: /view repository/i }),
-    ).toHaveAttribute(
-      "href",
-      "https://github.com/RGAlvaro/ERP-ASA-final-project",
-    );
+      within(eventflow).getByText(/still in development/i),
+    ).toBeInTheDocument();
+    expect(
+      within(eventflow).getByRole("link", { name: /view repository/i }),
+    ).toHaveAttribute("href", "https://github.com/RGAlvaro/eventflow");
     expect(
       opsDesk.compareDocumentPosition(approach) &
         Node.DOCUMENT_POSITION_FOLLOWING,
     ).toBeTruthy();
     expect(
-      approach.compareDocumentPosition(erp) & Node.DOCUMENT_POSITION_FOLLOWING,
+      approach.compareDocumentPosition(eventflow) &
+        Node.DOCUMENT_POSITION_FOLLOWING,
     ).toBeTruthy();
     expect(screen.getAllByText("Available")).toHaveLength(1);
     expect(screen.queryByText("Coming soon")).not.toBeInTheDocument();
@@ -607,26 +601,32 @@ describe("SPEC-104 frontend app shell and auth UI", () => {
     ).toBeInTheDocument();
   });
 
-  it("distinguishes current and planned ERP modules without a fake app link", async () => {
+  it("shows EventFlow's current backend work without a fake app link", async () => {
     mockFetch();
 
     renderRoute("/");
 
-    const erpCard = await screen.findByRole("region", {
-      name: "ERP · Human Resources",
+    const eventflowCard = await screen.findByRole("region", {
+      name: "EventFlow",
     });
-    expect(within(erpCard).getByText("Code available")).toBeInTheDocument();
-    expect(within(erpCard).getByText("ERP project")).toBeInTheDocument();
     expect(
-      within(erpCard).getByText(/no live demo is published/i),
+      within(eventflowCard).getByText("Code available"),
     ).toBeInTheDocument();
-    expect(within(erpCard).getAllByRole("link")).toHaveLength(1);
     expect(
-      within(erpCard).getByRole("link", { name: /view repository/i }),
-    ).toHaveAttribute(
-      "href",
-      "https://github.com/RGAlvaro/ERP-ASA-final-project",
-    );
+      within(eventflowCard).getByText("Backend project"),
+    ).toBeInTheDocument();
+    expect(
+      within(eventflowCard).getByText(
+        /interface and live demo are still in development/i,
+      ),
+    ).toBeInTheDocument();
+    expect(within(eventflowCard).getAllByRole("link")).toHaveLength(1);
+    expect(
+      eventflowCard.querySelector("img.portfolio-next__art"),
+    ).toHaveAttribute("alt", "");
+    expect(
+      within(eventflowCard).getByRole("link", { name: /view repository/i }),
+    ).toHaveAttribute("href", "https://github.com/RGAlvaro/eventflow");
   });
 
   it("renders the public changelog without authentication", async () => {

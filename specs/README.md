@@ -55,6 +55,7 @@ Use this index for routing. Use `docs/project-state.md` for the compact current 
 | `SPEC-316` | Implemented | Scheduled jobs and operational audit | `SPEC-201`, `SPEC-301`, `SPEC-306`, `SPEC-314` | Celery beat scheduler service, scheduled job audit table, admin audit UI, production Compose/docs |
 | `SPEC-317` | Implemented | Public legal pages | `SPEC-104`, `SPEC-311` | Public terms, copyright, cookies routes, landing footer links, frontend tests |
 | `SPEC-318` | Implemented | Portfolio landing visual refresh and factual ERP current-versus-planned presentation | `SPEC-311`, `SPEC-310`, `SPEC-317`, `SPEC-313`, `SPEC-307` | Public `/` layout, OpsDesk entry, ERP repository card, responsive and accessibility checks, release visual verification |
+| `SPEC-319` | Implemented | EventFlow second portfolio card and conceptual thumbnail | `SPEC-318` | Replace ERP panel with factual EventFlow copy, source link, responsive illustration, and regression checks; local review pending |
 
 Implementation order should usually follow spec dependencies:
 
@@ -71,6 +72,7 @@ SPEC-315 can be implemented after `SPEC-306` and `SPEC-304` because it reuses pe
 SPEC-314 should be implemented before `SPEC-316` because scheduled delivery retry sweeps depend on external delivery audit state.
 SPEC-317 can be implemented after `SPEC-311` because it extends the public portfolio surface.
 SPEC-318 follows `SPEC-311` and `SPEC-317` because it redesigns the existing public portfolio presentation while retaining legal links. It supersedes `SPEC-311`'s earlier ERP coming-soon/small-team-market assumption with a source-available ERP whose current authentication and HR foundation is distinguished from planned modules; its production release uses the established `SPEC-307` and `SPEC-310` gates.
+SPEC-319 replaces only SPEC-318's second project panel with EventFlow while retaining the established layout and release gates.
 ```
 
 ## Agent Routing

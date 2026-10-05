@@ -404,6 +404,7 @@
 .portfolio-next__art {
   width: min(100%, 330px);
   justify-self: end;
+  height: auto;
 }
 
 .portfolio-footer {

@@ -1,15 +1,16 @@
 # Project State
 
-Last updated: 2026-09-23
+Last updated: 2026-10-05
 
 This file is the compact operational state for agents. Use it to orient quickly before reading detailed specs, ADRs, implementation history, or code.
 
 ## Current Work
 
-- Active branch: `main` (SPEC-318 merged and deployed)
+- Active branch: `feat/spec-319-eventflow-portfolio-card` (local implementation)
+- Active spec: `SPEC-319` replaces the second portfolio project panel with EventFlow. Source evidence in EventFlow's 2026-10-05 project state and tests supports current ingesta, worker delivery, recovery, and signed webhooks; its interface and public demo are pending. The portfolio change is local and not yet merged or deployed.
 - Current state: `SPEC-307` release automation was re-reviewed and approved on 2026-07-30 after the pre-backup data-service recreation fix; GitHub Actions production secrets were configured on 2026-08-03 and the first manual workflow execution completed successfully on 2026-08-11, first validation-only and then with production deploy enabled. `SPEC-308` was implemented, review-fixed, deployed to production, and smoke-checked on 2026-08-11 with migration `0006`, profile/email-change APIs, backend-owned organization slug suffixing, project/task metadata APIs, task watchers, frontend metadata forms/display states, and backend/frontend tests. `SPEC-309` was merged to `main` on 2026-08-12 with migration `0007`, project-scoped task label APIs, task label assignments, `label_id` task filtering, frontend label management/filtering/display, and backend tests. `SPEC-310` was merged to `main` through PR #11 on 2026-08-12 with root `CHANGELOG.md`, changelog format validation, production workflow changelog-entry enforcement before secrets/SSH, public `/changelog` route, landing-page release-notes link, frontend route coverage, deployment docs, and harness docs. `SPEC-311` was merged to `main` through PR #12 on 2026-08-12 with a static public portfolio home, recruiter-facing developer copy, OpsDesk available app card, ERP coming-soon card with no fake link, changelog navigation, generated portfolio hub bitmap asset, and frontend tests. Production is available at `https://rgalvaro.es/` and `https://www.rgalvaro.es/`. `SPEC-303`, `SPEC-306`, `SPEC-305`, and `SPEC-304` are merged and deployed through the 2026-08-18 Collaboration Release at app revision `cc354148dee2d1f69b3d99d34b3f0aaced3f06b6`, Alembic `0012 (head)`. On 2026-09-07 the known gaps were converted into Ready specs: `SPEC-313`, `SPEC-314`, `SPEC-315`, and `SPEC-316`. `SPEC-313` is now merged to `main` through PR #18 at merge commit `8006844` with `@axe-core/playwright`, Firefox/WebKit smoke projects, Chromium accessibility scans for public/authenticated/client surfaces, updated Playwright config, harness docs, local validation passing, and GitHub Actions `Verify` run `34325273247` passing on the final PR head.
 - Current local `SPEC-314` state: merged to `main` through PR #19 at merge commit `70fcbee` on 2026-09-11 with Resend/console email delivery, delivery audit migration `0013`, Celery delivery tasks, `ticket.created` notification fan-out, production env/docs, safer delivery logs, and GitHub Actions `Verify` run `34577119234` passing before merge.
-- Active spec: `SPEC-318` is implemented, independently review approved, merged to `main` through PR #24 at merge commit `4fb97e27e67b657206523b0b24b638b5382c5901`, and deployed through Production Release run `35839847151` at app revision `03cb929d3b8bc55735c78f9c96d296ef1e9e1cec` on 2026-09-23. AC-9 production desktop/mobile visual verification passed with no material deviation. `SPEC-317` merged to `main` through PR #22 at merge commit `eab66a6`.
+- Previous release: `SPEC-318` is implemented, independently review approved, merged to `main` through PR #24 at merge commit `4fb97e27e67b657206523b0b24b638b5382c5901`, and deployed through Production Release run `35839847151` at app revision `03cb929d3b8bc55735c78f9c96d296ef1e9e1cec` on 2026-09-23. AC-9 production desktop/mobile visual verification passed with no material deviation. `SPEC-317` merged to `main` through PR #22 at merge commit `eab66a6`.
 - `SPEC-318` deployed checkpoint: the selected editorial mockup is versioned at `specs/assets/spec-318-portfolio-landing-reference.png`; the public `/` has the dark header, editorial hero without its side slogan, dominant OpsDesk panel, four-step process, ERP panel with a public repository link, and footer. The ERP panel names hashed-password authentication and human-resources management as current, distinguishes finance, inventory, sales/invoicing, CRM, and production as plans, and makes no team-size claim. Its password-hashing wording was checked against the public GitHub source. Local and production browser checks at 390/768/1440 px, accessibility, cross-browser smoke, full E2E, frontend checks, production build, and `make verify` passed. Production desktop/mobile captures were compared with the reference and approved local layout with no material deviation.
 - Production update preparation: completed. Production Release run `35080510017` deployed `a22dce9dc67cb52f01e012b4ac763799bd1d122e` on 2026-09-16 with changelog entry `2026-09-16 - Operations Readiness Release`.
 - Current local `SPEC-315` state: merged to `main` with authenticated notification WebSockets, in-process recipient fan-out, unread/list cache updates, REST polling fallback, review approval, and GitHub Actions `Verify` run `34943597736` passing before merge.
@@ -19,12 +20,13 @@ This file is the compact operational state for agents. Use it to orient quickly 
 - Technical documentation checkpoint: `docs/technical-documentation.md` is the full internal architecture document and `make technical-docs-check` validates required sections, current Alembic head, Compose services, required stack terms, and PDF-friendly ASCII content. `verify-no-db` now includes this target so architecture/runtime changes must update the technical documentation.
 - Recent validation recorded in `docs/implementation-log.md`: the 2026-08-18 Collaboration Release deployed merged `SPEC-305` and `SPEC-304` to production through Production Release run `32133588953` after local changelog/test/lint/format/typecheck validation, GitHub Actions `Verify` run `32127831767`, backup, migrations, drift check, compose update, public smoke checks, and direct VPS manifest/Alembic checks passed.
 - Current validation baseline: `SPEC-318` passed local `make verify` (124 selected backend tests, 70 frontend tests, lint, format, types, technical docs, Alembic check), production build, release-workflow/config checks, and `make test-e2e` (14 passed, 1 skipped). GitHub Actions `Verify` run `35839127910` passed both jobs before merge. Production Release run `35839847151` passed validation and remote update at `03cb929d3b8bc55735c78f9c96d296ef1e9e1cec`; VPS manifest confirms backup, Alembic `0014 (head)`, no drift, and healthy services. Public health/routes returned HTTP 200 and production Playwright checks passed at 390/768/1440 px; desktop/mobile captures matched the approved layout.
+- `SPEC-319` local validation: `make verify-no-db` passed with 124 backend tests (2 DB tests deselected), 70 frontend tests, lint, format, type checks, and technical documentation; frontend production build, changelog and release-workflow checks, memory check, and focused Playwright portfolio checks at 390/768/1440 px also passed. The focused browser screenshots at 390 and 1440 px were reviewed. Full `make test-e2e` could not start because EventFlow holds host Redis port 6379; it remains a release validation gap until CI or an isolated full stack run passes.
 - Harness note: managed-sandbox agents should run migration validation targets with elevated execution from the first attempt because host PostgreSQL TCP access and the Docker socket can be blocked by the sandbox even when services are healthy.
 - CI harness note: GitHub official actions were updated to `@v6` in `verify.yml` and `production-release.yml`; GitHub Actions `Verify` run `31516781996` passed without the prior Node 20 deprecation annotation.
 
 ## Next Handoff
 
-- Next role: no SPEC-318 implementation or release handoff remains.
+- Next role: review SPEC-319 after validation, then merge and publish through the existing release workflow.
 - Next likely integration work: prioritize a full privacy policy and rotate the Resend API key exposed during operator setup, update `/srv/opdesk/.env.production` with the rotated key, and record that operational change separately.
 - Keep `SPEC-301` production docs aligned if future scheduled jobs or scheduler topology changes are added.
 
@@ -60,6 +62,7 @@ This file is the compact operational state for agents. Use it to orient quickly 
 | `SPEC-316` | Scheduled jobs and operational audit | Celery beat scheduler service, scheduled job audit table, admin audit UI, production Compose/docs | Merged through PR #21 at `e0b1bea`; GitHub Actions passed before merge |
 | `SPEC-317` | Public legal pages | Public terms, copyright, cookies routes, landing footer legal links | Merged through PR #22 at `eab66a6`; GitHub Actions passed before merge |
 | `SPEC-318` | Public portfolio landing visual refresh | `/` route, public styles/assets, frontend tests, release visual check | Independently review approved, merged through PR #24 at `4fb97e2`, production deployed at `03cb929`, AC-9 passed |
+| `SPEC-319` | EventFlow second portfolio card | `/` route, SVG thumbnail, frontend and browser checks | Local implementation awaiting review, merge, and deployment |
 
 ## Ready Specs
 
@@ -69,7 +72,7 @@ This file is the compact operational state for agents. Use it to orient quickly 
 
 ## Next Likely Work
 
-1. Address the separate privacy-policy gap and Resend API-key rotation before the next planned release.
+1. Review, merge, and deploy SPEC-319; then address the separate privacy-policy gap and Resend API-key rotation.
 
 ## Known Gaps
 
@@ -81,6 +84,7 @@ This file is the compact operational state for agents. Use it to orient quickly 
 - `SPEC-314` implements Resend-backed real email delivery and delivery audit with indefinite retention. `SPEC-316` now implements Celery beat scheduled jobs and persistent operational audit with owner/admin UI and indefinite retention. Production must run exactly one scheduler instance; horizontal scheduler locking remains future scope if multiple scheduler replicas are ever needed.
 - `SPEC-317` adds public legal pages for terms, copyright, and cookies. A full privacy policy remains a pre-production legal gap because the app processes user account/profile data.
 - `SPEC-318` is merged, independently review approved, and production deployed with AC-9 passed. The selected mockup included illustrative controls and an incorrect year that the implementation intentionally did not copy; no material visual deviation was seen after deploy.
+- `SPEC-319` is local only. The EventFlow repository README still describes an older milestone; the new card follows its current project state and executable tests. Production still shows the ERP panel until a release completes.
 
 ## Validation Baseline
 
