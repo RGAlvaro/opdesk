@@ -39,7 +39,7 @@ Known gaps:
 
 Role: Ingeniero de software
 Branch: feat/spec-319-eventflow-portfolio-card
-Commit/PR: `502f9f5` (initial implementation); PR #25 (`https://github.com/RGAlvaro/opdesk/pull/25`)
+Commit/PR: `502f9f5` (initial implementation), `077da49` (linked thumbnail); PR #25 (`https://github.com/RGAlvaro/opdesk/pull/25`)
 Status: Implemented
 
 Summary:
