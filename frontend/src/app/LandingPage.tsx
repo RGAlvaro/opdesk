@@ -260,11 +260,19 @@ export function LandingPage() {
               View repository <ArrowUpRight aria-hidden="true" size={17} />
             </a>
           </div>
-          <img
-            className="portfolio-next__art"
-            src={eventflowThumbnail}
-            alt=""
-          />
+          <a
+            className="portfolio-next__art-link"
+            href="https://github.com/RGAlvaro/eventflow"
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="View EventFlow repository"
+          >
+            <img
+              className="portfolio-next__art"
+              src={eventflowThumbnail}
+              alt=""
+            />
+          </a>
         </section>
       </main>
 

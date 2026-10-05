@@ -45,9 +45,12 @@ test.describe("SPEC-318/319 portfolio landing", () => {
       ).toBeVisible();
       await expect(eventflow.locator("img.portfolio-next__art")).toBeVisible();
       await expect(
+        eventflow.getByRole("link", { name: "View EventFlow repository" }),
+      ).toHaveAttribute("href", "https://github.com/RGAlvaro/eventflow");
+      await expect(
         eventflow.getByRole("link", { name: "View repository" }),
       ).toHaveAttribute("href", "https://github.com/RGAlvaro/eventflow");
-      await expect(eventflow.getByRole("link")).toHaveCount(1);
+      await expect(eventflow.getByRole("link")).toHaveCount(2);
       await expect(
         page.getByRole("navigation", { name: "Footer navigation" }),
       ).toBeVisible();

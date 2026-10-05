@@ -620,12 +620,17 @@ describe("SPEC-104 frontend app shell and auth UI", () => {
         /interface and live demo are still in development/i,
       ),
     ).toBeInTheDocument();
-    expect(within(eventflowCard).getAllByRole("link")).toHaveLength(1);
+    expect(within(eventflowCard).getAllByRole("link")).toHaveLength(2);
     expect(
       eventflowCard.querySelector("img.portfolio-next__art"),
     ).toHaveAttribute("alt", "");
     expect(
       within(eventflowCard).getByRole("link", { name: /view repository/i }),
+    ).toHaveAttribute("href", "https://github.com/RGAlvaro/eventflow");
+    expect(
+      within(eventflowCard).getByRole("link", {
+        name: "View EventFlow repository",
+      }),
     ).toHaveAttribute("href", "https://github.com/RGAlvaro/eventflow");
   });
 

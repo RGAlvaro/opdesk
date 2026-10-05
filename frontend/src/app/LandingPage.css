@@ -401,9 +401,16 @@
   margin-top: 17px;
 }
 
-.portfolio-next__art {
+.portfolio-next__art-link {
   width: min(100%, 330px);
   justify-self: end;
+  display: block;
+  border-radius: 18px;
+}
+
+.portfolio-next__art {
+  display: block;
+  width: 100%;
   height: auto;
 }
 
@@ -584,8 +591,7 @@
     font-size: 3rem;
   }
 
-  .portfolio-next__art {
-    display: block;
+  .portfolio-next__art-link {
     width: min(100%, 220px);
     margin: 8px auto 0;
   }

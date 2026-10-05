@@ -39,13 +39,14 @@ Known gaps:
 
 Role: Ingeniero de software
 Branch: feat/spec-319-eventflow-portfolio-card
-Commit/PR: `502f9f5` (implementation); PR pending
+Commit/PR: `502f9f5` (initial implementation); PR #25 (`https://github.com/RGAlvaro/opdesk/pull/25`)
 Status: Implemented
 
 Summary:
 - Replaced the ERP panel on the public portfolio home with EventFlow, a short current-capability description, its public source link, and a conceptual SVG thumbnail of event ingestion, outbox, worker, and signed delivery.
 - Based the claims on EventFlow's 2026-10-05 project state, code, and integration-test evidence. Its README still describes an older milestone. The card explicitly identifies the interface and live demo as work in progress.
 - Updated the portfolio component and browser checks, the SPEC-319 contract and index, and the changelog entry for a future production release. Desktop and mobile browser captures were inspected; the illustration and copy fit the existing hierarchy without material visual deviation.
+- At the user's request, made the thumbnail itself a second accessible link to the same public EventFlow repository; the visible text link remains.
 
 Validation:
 - command: `make verify-no-db`: PASS — 124 backend tests (2 database tests deselected), 70 frontend tests, lint, format, type checks, and technical-docs check.
@@ -53,6 +54,7 @@ Validation:
 - command: `make lint`, `make format-check`, `make typecheck`: PASS — backend and frontend checks.
 - command: `cd frontend && npm run build`: PASS — production bundle built.
 - command: isolated Playwright container on `e2e/portfolio-landing.spec.ts --project=chromium-desktop`: PASS — 3 widths (390, 768, 1440 px), including no horizontal overflow and repository link. Screenshots at 390 and 1440 px inspected.
+- command: focused `AppRouter.test.tsx`, frontend format/type/build, and isolated Playwright at 390/768/1440 px after the thumbnail-link adjustment: PASS — 28 route tests and 3 browser checks.
 - command: `make changelog-check`, `make release-workflow-check`, `git diff --check`: PASS.
 - command: `make memory-check SPEC=SPEC-319`: PASS.
 - command: `make test-e2e`: NOT COMPLETED — local EventFlow Redis occupies host port 6379; the focused portfolio browser test above passed without touching those services.
