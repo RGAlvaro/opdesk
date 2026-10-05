@@ -35,6 +35,27 @@ Known gaps:
 
 ## Entries
 
+### 2026-10-05 — SPEC-319 — Portfolio card review approved
+
+Role: Review agent
+Branch: feat/spec-319-eventflow-portfolio-card
+Commit/PR: `ea87927` (reviewed head); PR #25 (`https://github.com/RGAlvaro/opdesk/pull/25`)
+Status: Reviewed
+
+Summary:
+- Compared the EventFlow card, linked thumbnail, descriptive copy, source destination, tests, and responsive captures with SPEC-319. All five acceptance criteria are covered; the implementation stays within the public portfolio surface and makes no live-app claim.
+- Verified project memory, changelog, spec index, and the absence of backend, schema, or deployment-topology changes.
+
+Validation:
+- command: GitHub Actions `Verify` run `37346780340`: PASS — `verify` and full `e2e` jobs on the final product-code head.
+- command: `make memory-check SPEC=SPEC-319`, `git diff origin/main...HEAD --check`: PASS.
+
+Review:
+- decision: APPROVED — no required changes before merge.
+
+Known gaps:
+- PR #25 remains unmerged and the portfolio change is not yet deployed.
+
 ### 2026-10-05 — SPEC-319 — EventFlow second portfolio card implemented locally
 
 Role: Ingeniero de software
@@ -57,7 +78,7 @@ Validation:
 - command: focused `AppRouter.test.tsx`, frontend format/type/build, and isolated Playwright at 390/768/1440 px after the thumbnail-link adjustment: PASS — 28 route tests and 3 browser checks.
 - command: `make changelog-check`, `make release-workflow-check`, `git diff --check`: PASS.
 - command: `make memory-check SPEC=SPEC-319`: PASS.
-- command: `make test-e2e`: NOT COMPLETED — local EventFlow Redis occupies host port 6379; the focused portfolio browser test above passed without touching those services.
+- command: `make test-e2e`: NOT COMPLETED locally — EventFlow Redis occupies host port 6379; focused portfolio browser checks passed, and PR `Verify` run `37346780340` passed the full E2E job.
 
 Review:
 - decision: N/A — review pending after final memory and validation check.
