@@ -35,6 +35,57 @@ Known gaps:
 
 ## Entries
 
+### 2026-10-05 — SPEC-319 — Portfolio card review approved
+
+Role: Review agent
+Branch: feat/spec-319-eventflow-portfolio-card
+Commit/PR: `ea87927` (reviewed head); PR #25 (`https://github.com/RGAlvaro/opdesk/pull/25`)
+Status: Reviewed
+
+Summary:
+- Compared the EventFlow card, linked thumbnail, descriptive copy, source destination, tests, and responsive captures with SPEC-319. All five acceptance criteria are covered; the implementation stays within the public portfolio surface and makes no live-app claim.
+- Verified project memory, changelog, spec index, and the absence of backend, schema, or deployment-topology changes.
+
+Validation:
+- command: GitHub Actions `Verify` run `37346780340`: PASS — `verify` and full `e2e` jobs on the final product-code head.
+- command: `make memory-check SPEC=SPEC-319`, `git diff origin/main...HEAD --check`: PASS.
+
+Review:
+- decision: APPROVED — no required changes before merge.
+
+Known gaps:
+- PR #25 remains unmerged and the portfolio change is not yet deployed.
+
+### 2026-10-05 — SPEC-319 — EventFlow second portfolio card implemented locally
+
+Role: Ingeniero de software
+Branch: feat/spec-319-eventflow-portfolio-card
+Commit/PR: `502f9f5` (initial implementation), `077da49` (linked thumbnail); PR #25 (`https://github.com/RGAlvaro/opdesk/pull/25`)
+Status: Implemented
+
+Summary:
+- Replaced the ERP panel on the public portfolio home with EventFlow, a short current-capability description, its public source link, and a conceptual SVG thumbnail of event ingestion, outbox, worker, and signed delivery.
+- Based the claims on EventFlow's 2026-10-05 project state, code, and integration-test evidence. Its README still describes an older milestone. The card explicitly identifies the interface and live demo as work in progress.
+- Updated the portfolio component and browser checks, the SPEC-319 contract and index, and the changelog entry for a future production release. Desktop and mobile browser captures were inspected; the illustration and copy fit the existing hierarchy without material visual deviation.
+- At the user's request, made the thumbnail itself a second accessible link to the same public EventFlow repository; the visible text link remains.
+
+Validation:
+- command: `make verify-no-db`: PASS — 124 backend tests (2 database tests deselected), 70 frontend tests, lint, format, type checks, and technical-docs check.
+- command: `make test-frontend`: PASS — 70 tests across 5 files, including EventFlow landing assertions.
+- command: `make lint`, `make format-check`, `make typecheck`: PASS — backend and frontend checks.
+- command: `cd frontend && npm run build`: PASS — production bundle built.
+- command: isolated Playwright container on `e2e/portfolio-landing.spec.ts --project=chromium-desktop`: PASS — 3 widths (390, 768, 1440 px), including no horizontal overflow and repository link. Screenshots at 390 and 1440 px inspected.
+- command: focused `AppRouter.test.tsx`, frontend format/type/build, and isolated Playwright at 390/768/1440 px after the thumbnail-link adjustment: PASS — 28 route tests and 3 browser checks.
+- command: `make changelog-check`, `make release-workflow-check`, `git diff --check`: PASS.
+- command: `make memory-check SPEC=SPEC-319`: PASS.
+- command: `make test-e2e`: NOT COMPLETED locally — EventFlow Redis occupies host port 6379; focused portfolio browser checks passed, and PR `Verify` run `37346780340` passed the full E2E job.
+
+Review:
+- decision: N/A — review pending after final memory and validation check.
+
+Known gaps:
+- The change is not committed, merged, or deployed; production still shows the ERP panel.
+
 ### 2026-09-23 — SPEC-318 — Portfolio Landing Release deployed and visually verified
 
 Role: Ingeniero de software

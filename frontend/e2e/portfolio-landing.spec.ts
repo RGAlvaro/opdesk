@@ -1,8 +1,8 @@
-// Browser checks and review captures for the SPEC-318 public landing layout.
+// Browser checks and review captures for the SPEC-318/319 public landing layout.
 
 import { expect, test } from "@playwright/test";
 
-test.describe("SPEC-318 portfolio landing", () => {
+test.describe("SPEC-318/319 portfolio landing", () => {
   for (const width of [390, 768, 1440]) {
     test(`keeps the portfolio usable at ${width}px`, async ({
       page,
@@ -23,7 +23,7 @@ test.describe("SPEC-318 portfolio landing", () => {
 
       const opsDesk = page.getByRole("region", { name: "OpsDesk" });
       const approach = page.getByRole("region", { name: "My approach" });
-      const erp = page.getByRole("region", { name: "ERP · Human Resources" });
+      const eventflow = page.getByRole("region", { name: "EventFlow" });
       await expect(opsDesk.getByText("Available")).toBeVisible();
       await expect(
         opsDesk.getByRole("link", { name: "Open OpsDesk" }),
@@ -32,23 +32,25 @@ test.describe("SPEC-318 portfolio landing", () => {
         opsDesk.getByRole("link", { name: "Create account" }),
       ).toHaveAttribute("href", "/signup");
       await expect(approach.getByRole("listitem")).toHaveCount(4);
-      await expect(erp.getByText("Code available")).toBeVisible();
+      await expect(eventflow.getByText("Code available")).toBeVisible();
       await expect(
-        erp.getByText(/authentication foundation with hashed passwords/i),
-      ).toBeVisible();
-      await expect(
-        erp.getByText(
-          /planned modules include finance, inventory management, sales and invoicing, CRM, and production/i,
+        eventflow.getByText(
+          /durable event ingestion and signed webhook delivery/i,
         ),
       ).toBeVisible();
-      await expect(erp.getByText(/small team/i)).toHaveCount(0);
       await expect(
-        erp.getByRole("link", { name: "View repository" }),
-      ).toHaveAttribute(
-        "href",
-        "https://github.com/RGAlvaro/ERP-ASA-final-project",
-      );
-      await expect(erp.getByRole("link")).toHaveCount(1);
+        eventflow.getByText(
+          /interface and live demo are still in development/i,
+        ),
+      ).toBeVisible();
+      await expect(eventflow.locator("img.portfolio-next__art")).toBeVisible();
+      await expect(
+        eventflow.getByRole("link", { name: "View EventFlow repository" }),
+      ).toHaveAttribute("href", "https://github.com/RGAlvaro/eventflow");
+      await expect(
+        eventflow.getByRole("link", { name: "View repository" }),
+      ).toHaveAttribute("href", "https://github.com/RGAlvaro/eventflow");
+      await expect(eventflow.getByRole("link")).toHaveCount(2);
       await expect(
         page.getByRole("navigation", { name: "Footer navigation" }),
       ).toBeVisible();

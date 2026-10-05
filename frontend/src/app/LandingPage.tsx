@@ -2,6 +2,7 @@
 
 import { ArrowRight, ArrowUpRight } from "lucide-react";
 import { Link } from "react-router-dom";
+import eventflowThumbnail from "../assets/eventflow-thumbnail.svg";
 
 import "./LandingPage.css";
 
@@ -231,80 +232,47 @@ export function LandingPage() {
           </ol>
         </section>
 
-        <section className="portfolio-next" aria-labelledby="erp-title">
+        <section className="portfolio-next" aria-labelledby="eventflow-title">
           <div className="portfolio-next__content">
             <div className="portfolio-section-heading">
               <span className="portfolio-index">03</span>
               <span className="portfolio-section-heading__rule" />
-              <span>ERP project</span>
+              <span>Backend project</span>
             </div>
             <div className="portfolio-next__name">
-              <h2 id="erp-title">ERP · Human Resources</h2>
+              <h2 id="eventflow-title">EventFlow</h2>
               <span className="portfolio-status portfolio-status--team">
                 <span aria-hidden="true" /> Code available
               </span>
             </div>
             <p>
-              The ERP currently has an authentication foundation with hashed
-              passwords and a human-resources management module. Planned modules
-              include finance, inventory management, sales and invoicing, CRM,
-              and production. The source is public; no live demo is published.
+              A backend for durable event ingestion and signed webhook delivery.
+              PostgreSQL keeps delivery work recoverable while Celery workers
+              send webhooks. Source code is public; the interface and live demo
+              are still in development.
             </p>
             <a
               className="portfolio-text-link portfolio-next__source"
-              href="https://github.com/RGAlvaro/ERP-ASA-final-project"
+              href="https://github.com/RGAlvaro/eventflow"
               target="_blank"
               rel="noopener noreferrer"
             >
               View repository <ArrowUpRight aria-hidden="true" size={17} />
             </a>
           </div>
-          <svg
-            className="portfolio-next__art"
-            viewBox="0 0 350 200"
-            fill="none"
-            aria-hidden="true"
-            focusable="false"
+          <a
+            className="portfolio-next__art-link"
+            href="https://github.com/RGAlvaro/eventflow"
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="View EventFlow repository"
           >
-            <circle cx="206" cy="104" r="88" fill="#D8ECFF" />
-            <circle cx="304" cy="38" r="17" fill="#FF873F" />
-            <path
-              d="M206 100V131M111 131H301M111 131V151M301 131V151"
-              stroke="#2367DB"
-              strokeWidth="3"
-              strokeLinecap="round"
+            <img
+              className="portfolio-next__art"
+              src={eventflowThumbnail}
+              alt=""
             />
-            <rect x="161" y="23" width="90" height="78" rx="13" fill="white" />
-            <circle cx="206" cy="50" r="12" fill="#4D9AEF" />
-            <rect
-              x="182"
-              y="71"
-              width="48"
-              height="7"
-              rx="3.5"
-              fill="#B7D9FB"
-            />
-            <rect x="65" y="151" width="92" height="48" rx="11" fill="white" />
-            <circle cx="88" cy="175" r="10" fill="#7BB4F0" />
-            <rect
-              x="105"
-              y="170"
-              width="34"
-              height="7"
-              rx="3.5"
-              fill="#B7D9FB"
-            />
-            <rect x="255" y="151" width="92" height="48" rx="11" fill="white" />
-            <circle cx="278" cy="175" r="10" fill="#1E63F1" />
-            <rect
-              x="295"
-              y="170"
-              width="34"
-              height="7"
-              rx="3.5"
-              fill="#B7D9FB"
-            />
-          </svg>
+          </a>
         </section>
       </main>
 
