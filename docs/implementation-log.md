@@ -35,6 +35,28 @@ Known gaps:
 
 ## Entries
 
+### 2026-10-05 — SPEC-319 — EventFlow portfolio card merged to main
+
+Role: Ingeniero de software
+Branch: main
+Commit/PR: PR #25 (`https://github.com/RGAlvaro/opdesk/pull/25`); merge `d9d3fdeac7012d36937db9cf25307fcef89d35d8`
+Status: Merged
+
+Summary:
+- Merged the review-approved SPEC-319 change to `main`, including the EventFlow copy, linked conceptual thumbnail, source link, tests, and release changelog entry.
+- Production is still on the prior portfolio release until the manual Production Release workflow completes.
+
+Validation:
+- command: GitHub Actions `Verify` run `37347398428`: PASS — both `verify` and full `e2e` jobs on PR #25's final head.
+- command: `gh pr view 25 --json mergeCommit,mergedAt,state`: PASS — merged to `main` as `d9d3fdeac7012d36937db9cf25307fcef89d35d8`.
+- command: `make merge-memory-check SPEC=SPEC-319`: PASS after recording this merge.
+
+Review:
+- decision: APPROVED — SPEC-319 review recorded before merge.
+
+Known gaps:
+- Production deployment and public visual verification are pending.
+
 ### 2026-10-05 — SPEC-319 — Portfolio card review approved
 
 Role: Review agent

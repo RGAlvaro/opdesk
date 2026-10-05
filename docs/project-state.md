@@ -6,8 +6,8 @@ This file is the compact operational state for agents. Use it to orient quickly 
 
 ## Current Work
 
-- Active branch: `feat/spec-319-eventflow-portfolio-card` (local implementation)
-- Active spec: `SPEC-319` replaces the second portfolio project panel with EventFlow. Source evidence in EventFlow's 2026-10-05 project state and tests supports current ingestion, worker delivery, recovery, and signed webhooks; its interface and public demo are pending. The conceptual thumbnail and text action both link to its public repository. PR #25 is review approved with CI green, awaiting merge and deployment.
+- Active branch: `main` (SPEC-319 merged; production deployment pending)
+- Active spec: `SPEC-319` replaces the second portfolio project panel with EventFlow. Source evidence in EventFlow's 2026-10-05 project state and tests supports current ingestion, worker delivery, recovery, and signed webhooks; its interface and public demo are pending. The conceptual thumbnail and text action both link to its public repository. PR #25 merged to `main` at `d9d3fdeac7012d36937db9cf25307fcef89d35d8`; production deployment is pending.
 - Current state: `SPEC-307` release automation was re-reviewed and approved on 2026-07-30 after the pre-backup data-service recreation fix; GitHub Actions production secrets were configured on 2026-08-03 and the first manual workflow execution completed successfully on 2026-08-11, first validation-only and then with production deploy enabled. `SPEC-308` was implemented, review-fixed, deployed to production, and smoke-checked on 2026-08-11 with migration `0006`, profile/email-change APIs, backend-owned organization slug suffixing, project/task metadata APIs, task watchers, frontend metadata forms/display states, and backend/frontend tests. `SPEC-309` was merged to `main` on 2026-08-12 with migration `0007`, project-scoped task label APIs, task label assignments, `label_id` task filtering, frontend label management/filtering/display, and backend tests. `SPEC-310` was merged to `main` through PR #11 on 2026-08-12 with root `CHANGELOG.md`, changelog format validation, production workflow changelog-entry enforcement before secrets/SSH, public `/changelog` route, landing-page release-notes link, frontend route coverage, deployment docs, and harness docs. `SPEC-311` was merged to `main` through PR #12 on 2026-08-12 with a static public portfolio home, recruiter-facing developer copy, OpsDesk available app card, ERP coming-soon card with no fake link, changelog navigation, generated portfolio hub bitmap asset, and frontend tests. Production is available at `https://rgalvaro.es/` and `https://www.rgalvaro.es/`. `SPEC-303`, `SPEC-306`, `SPEC-305`, and `SPEC-304` are merged and deployed through the 2026-08-18 Collaboration Release at app revision `cc354148dee2d1f69b3d99d34b3f0aaced3f06b6`, Alembic `0012 (head)`. On 2026-09-07 the known gaps were converted into Ready specs: `SPEC-313`, `SPEC-314`, `SPEC-315`, and `SPEC-316`. `SPEC-313` is now merged to `main` through PR #18 at merge commit `8006844` with `@axe-core/playwright`, Firefox/WebKit smoke projects, Chromium accessibility scans for public/authenticated/client surfaces, updated Playwright config, harness docs, local validation passing, and GitHub Actions `Verify` run `34325273247` passing on the final PR head.
 - Current local `SPEC-314` state: merged to `main` through PR #19 at merge commit `70fcbee` on 2026-09-11 with Resend/console email delivery, delivery audit migration `0013`, Celery delivery tasks, `ticket.created` notification fan-out, production env/docs, safer delivery logs, and GitHub Actions `Verify` run `34577119234` passing before merge.
 - Previous release: `SPEC-318` is implemented, independently review approved, merged to `main` through PR #24 at merge commit `4fb97e27e67b657206523b0b24b638b5382c5901`, and deployed through Production Release run `35839847151` at app revision `03cb929d3b8bc55735c78f9c96d296ef1e9e1cec` on 2026-09-23. AC-9 production desktop/mobile visual verification passed with no material deviation. `SPEC-317` merged to `main` through PR #22 at merge commit `eab66a6`.
@@ -26,7 +26,7 @@ This file is the compact operational state for agents. Use it to orient quickly 
 
 ## Next Handoff
 
-- Next role: merge SPEC-319 PR #25 and publish through the existing release workflow, then record production evidence.
+- Next role: deploy SPEC-319 through the existing Production Release workflow, verify the public page, and record production evidence.
 - Next likely integration work: prioritize a full privacy policy and rotate the Resend API key exposed during operator setup, update `/srv/opdesk/.env.production` with the rotated key, and record that operational change separately.
 - Keep `SPEC-301` production docs aligned if future scheduled jobs or scheduler topology changes are added.
 
@@ -62,7 +62,7 @@ This file is the compact operational state for agents. Use it to orient quickly 
 | `SPEC-316` | Scheduled jobs and operational audit | Celery beat scheduler service, scheduled job audit table, admin audit UI, production Compose/docs | Merged through PR #21 at `e0b1bea`; GitHub Actions passed before merge |
 | `SPEC-317` | Public legal pages | Public terms, copyright, cookies routes, landing footer legal links | Merged through PR #22 at `eab66a6`; GitHub Actions passed before merge |
 | `SPEC-318` | Public portfolio landing visual refresh | `/` route, public styles/assets, frontend tests, release visual check | Independently review approved, merged through PR #24 at `4fb97e2`, production deployed at `03cb929`, AC-9 passed |
-| `SPEC-319` | EventFlow second portfolio card | `/` route, SVG thumbnail, frontend and browser checks | Review approved; PR #25 CI green, awaiting merge and deployment |
+| `SPEC-319` | EventFlow second portfolio card | `/` route, SVG thumbnail, frontend and browser checks | Review approved and merged through PR #25 at `d9d3fde`; production deployment pending |
 
 ## Ready Specs
 
@@ -72,7 +72,7 @@ This file is the compact operational state for agents. Use it to orient quickly 
 
 ## Next Likely Work
 
-1. Merge and deploy SPEC-319; then address the separate privacy-policy gap and Resend API-key rotation.
+1. Deploy SPEC-319; then address the separate privacy-policy gap and Resend API-key rotation.
 
 ## Known Gaps
 
@@ -84,7 +84,7 @@ This file is the compact operational state for agents. Use it to orient quickly 
 - `SPEC-314` implements Resend-backed real email delivery and delivery audit with indefinite retention. `SPEC-316` now implements Celery beat scheduled jobs and persistent operational audit with owner/admin UI and indefinite retention. Production must run exactly one scheduler instance; horizontal scheduler locking remains future scope if multiple scheduler replicas are ever needed.
 - `SPEC-317` adds public legal pages for terms, copyright, and cookies. A full privacy policy remains a pre-production legal gap because the app processes user account/profile data.
 - `SPEC-318` is merged, independently review approved, and production deployed with AC-9 passed. The selected mockup included illustrative controls and an incorrect year that the implementation intentionally did not copy; no material visual deviation was seen after deploy.
-- `SPEC-319` is in PR #25 and not yet deployed. The EventFlow repository README still describes an older milestone; the new card follows its current project state and executable tests. Production still shows the ERP panel until a release completes.
+- `SPEC-319` is merged to `main` but not yet deployed. The EventFlow repository README still describes an older milestone; the new card follows its current project state and executable tests. Production still shows the ERP panel until a release completes.
 
 ## Validation Baseline
 
