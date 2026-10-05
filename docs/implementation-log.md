@@ -35,6 +35,30 @@ Known gaps:
 
 ## Entries
 
+### 2026-10-05 — SPEC-319 — EventFlow portfolio update deployed and visually verified
+
+Role: Ingeniero de software
+Branch: main
+Commit/PR: PR #25 (`https://github.com/RGAlvaro/opdesk/pull/25`); merge `d9d3fdeac7012d36937db9cf25307fcef89d35d8`; deployed `0d98bf46347e71755cca8fc047ce5460f5ffbb0e`
+Status: Merged
+
+Summary:
+- Production Release workflow `37350559335` deployed the merged EventFlow portfolio card at `https://rgalvaro.es/` with changelog entry `2026-10-05 - EventFlow Portfolio Update`.
+- The public second project panel now shows the factual EventFlow description and conceptual thumbnail. Both the thumbnail and visible source action lead to `https://github.com/RGAlvaro/eventflow`; no EventFlow live-app claim appears.
+- Inspected production mobile and desktop captures. The visual hierarchy, copy, thumbnail, OpsDesk card, and footer match the locally approved layout without material deviation.
+
+Validation:
+- command: GitHub Actions `Production Release` run `37350559335`: PASS — full verification, frontend build, production config/workflow/changelog checks, archive transfer, and remote update.
+- command: `ssh opdesk-vps 'sed -n "1,80p" /srv/opdesk/releases/latest-release.txt'`: PASS — deployed revision `0d98bf4`, backup `/srv/opdesk/backups/opdesk-20261005-174501-0d98bf46347e71755cca8fc047ce5460.dump`, Alembic `0014 (head)`, no migration drift, and healthy backend/frontend/Redis/worker/scheduler.
+- command: `curl -I -fsS https://rgalvaro.es/`: PASS — HTTP 200.
+- command: production Playwright `e2e/portfolio-landing.spec.ts --project=chromium-desktop`: PASS — 3/3 at 390, 768, and 1440 px, including EventFlow link destinations and no horizontal overflow. Mobile and desktop screenshots visually inspected.
+
+Review:
+- decision: APPROVED — SPEC-319 review and full PR CI passed before merge; production verification passed.
+
+Known gaps:
+- No remaining SPEC-319 release gap. EventFlow's own interface and public demo remain future work in its repository.
+
 ### 2026-10-05 — SPEC-319 — EventFlow portfolio card merged to main
 
 Role: Ingeniero de software
