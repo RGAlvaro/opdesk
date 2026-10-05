@@ -39,7 +39,7 @@ Known gaps:
 
 Role: Ingeniero de software
 Branch: feat/spec-319-eventflow-portfolio-card
-Commit/PR: Uncommitted local changes; no PR yet
+Commit/PR: `502f9f5` (implementation); PR pending
 Status: Implemented
 
 Summary:
